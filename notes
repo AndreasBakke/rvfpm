@@ -1,0 +1,51 @@
+Is it better to compute then add result to pipeline. Or just add instructions to pipeline?
+-- We need to decode it first to know if we have any hazards. If we just add the instructions we dont know before hand
+-- If we compute/decode etc, we can run a "checkHazards" at every step.
+
+
+TODO: Make sure NANs are canonical NANs unless otherwise specified (check chap. 8.3 in rsic)
+OBS: Only signal and raise exception of the NAN is canonical/signaling
+If it is quiet, just move on and write the result.
+TODO: Define different NANS for comparisons.
+    - difficulty because the mantissa may vary in some of them.
+    - Add some functions for ease of testing. isqNaN(FPNumber) and issNan(FPNumber)?
+    - Use the RISC-V  FCLASS functions?
+TODO: Add NAN propagation/signaling for all operations (Maybe at the start before the switchcase if either operand is signaling?)
+    -Some differences in behavuour when encountering NANs (Especially for FCMP)
+
+
+
+//TODO: all flags, overflow/underflows etc.
+When writing the result in pipeline. Remember to write flags!
+
+
+TODO: Status-flags ut av C++ model? Trenger vi ready etc...?
+TODO: Bruk av fcsr
+
+TODO: Instructions using Xreg or Mem should only fetch data once it is in "execution". How do we parameterize this? At what point does fromMem need to be the input? At the start?
+
+
+//TODO: Bør dataen som skal behandles fra minne være tilgjengelig når operation() kalles, eller på et satt sted (eller variabelt) i pipelinen?
+Statusmøte:
+- Hvordan burde interfacet egentlig se ut?
+
+
+
+Tanker 10.11:
+ - Kan ta inn en oversikt over antall pipe-steg for en operation. F.eks operation division: numExec, numLoad, etc...
+ - TODO 11.11: 
+    - Clean opp alle filer (spesielt operations)
+    - Clean opp top og gjør klar for pipeling
+    - Se hva som bør inn i pipe
+
+
+ - Å gjøre pipe step bør ikke være en del av operation().
+ - Operation bør bare regne ut hva som bør legges inn.
+ - Interface bør kjøre operation() hvis det er en operation, så pipelineStep() på hver klokke. Bruke en referanse mellom disse for neste som legges inn? 
+ - Må begynne på interface snart.
+ - Reset signal to reset (function to deconstruct and construct the pipeline?)
+
+
+
+ Hvis vi får masse invalids, husk:
+ FpuPipeObj result = {};
