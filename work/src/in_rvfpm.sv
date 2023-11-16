@@ -21,11 +21,11 @@
 
 
 module in_rvfpm #(
-    parameter NUM_REGS          = `NUM_FPU_REGS,
+    parameter NUM_REGS          = 32,
 
 
     //Pipeline parameters
-    parameter PIPELINE_STAGES   = `FPU_PIPE_STAGES,
+    parameter PIPELINE_STAGES   = 4,
     //CORE-V-XIF parameters
     parameter X_NUM_RS          = 2, //Read ports //TODO: not used
     parameter X_ID_WIDTH        = 4,
