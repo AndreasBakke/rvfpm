@@ -91,7 +91,7 @@ module in_rvfpm #(
 
     always @(posedge ck) begin: la_main
         if (rst) begin
-            resetFPU(fpu);
+            reset_fpu(fpu);
         end
         else if (enable) begin //TODO: if implemented as coprosessor, follow CORE-V-XIF conventions
             operation(fpu, instruction, id, data_fromXreg, data_fromMem, id_out, data_toMem, data_toXreg, pipelineFull);

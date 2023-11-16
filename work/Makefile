@@ -63,10 +63,10 @@ TestFloat_all_l2: #NOTE: Takes WAY too long for mulAdd function
 # ./bin/testfloat_gen_arm f32_mulAdd 	-level 2 | ./bin/rvfpm_testFloat fmadd $(args) | ./bin/testfloat_ver_arm $(args)  	f32_mulAdd -tininessbefore
 
 macSL:
-	$(CXX) $(CXXFLAGS) -shared -undefined dynamic_lookup -fno-fast-math -O2 -o bin/lib_rvfpm.dylib -I ./include src/in_TestFloat.cpp src/fpu_top.cpp src/fpu_rf.cpp src/fpu_operations.cpp src/fp_number.cpp
+	$(CXX) $(CXXFLAGS) -shared -undefined dynamic_lookup -fno-fast-math -O2 -o bin/lib_rvfpm.dylib -I ./include src/dpi_wrapper.cpp src/fpu_top.cpp src/fpu_rf.cpp src/fpu_operations.cpp src/fp_number.cpp
 
 rhelSL:
-	$(CXX) $(CXXFLAGS) -shared -undefined dynamic_lookup -static-libstdc++ -frounding-math -fsignaling-nans -O2 -o bin/lib_rvfpm.so -I ./include src/in_TestFloat.cpp src/fpu_top.cpp src/fpu_rf.cpp src/fpu_operations.cpp src/fp_number.cpp
+	$(CXX) $(CXXFLAGS) -shared -fPIC -static-libstdc++ -frounding-math -fsignaling-nans -O2 -o bin/lib_rvfpm.so -I ./include src/dpi_wrapper.cpp src/fpu_top.cpp src/fpu_rf.cpp src/fpu_operations.cpp src/fp_number.cpp
 
 
 clean:

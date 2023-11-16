@@ -1,6 +1,7 @@
 #pragma once
 #include <cmath> //Needed for NAN
 #include <limits>
+#include <cstdint>
 
 //Include convertion functions here depending on ifdefs?
 #if defined(EXT_Q)

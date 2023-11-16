@@ -236,10 +236,10 @@ FpuPipeObj operation_RTYPE(RTYPE instr, FpuRf* registerFile, int32_t fromXReg){
                 } else if (data1.f == INFINITY) //positive inf
                 {
                     result.uDataToXreg = 0b0010000000;
-                } else if (isnan(data1.f) && !(data1.parts.mantissa & 0x00400000)) //If leadning mantissa-bit is not set -> sNaN
+                } else if (std::isnan(data1.f) && !(data1.parts.mantissa & 0x00400000)) //If leadning mantissa-bit is not set -> sNaN
                 {
                     result.uDataToXreg = 0b0100000000; //SNaN
-                } else if (isnan(data1.f))
+                } else if (std::isnan(data1.f))
                 {
                     result.uDataToXreg = 0b1000000000; //QNaN
                 } else {
