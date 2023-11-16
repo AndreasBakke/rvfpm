@@ -6,12 +6,14 @@ using namespace std; // Use the standard namespace
 
 FPU::FPU (int pipelineStages, int rfDepth) : registerFile(rfDepth), pipeline(pipelineStages) {
     #ifndef ZFINX
-    for (auto &pipe : pipeline) { 
-        pipe = {}; //Initialize to empty operations
-    }
+    
     #else
         //Todo: Expand to support ZFINX
     #endif
+    for (auto &pipe : pipeline) { 
+        pipe = {}; //Initialize to empty operations
+    }
+    numPipeStages = pipelineStages;
 };
 
 FPU::~FPU(){
@@ -93,7 +95,7 @@ FpuPipeObj FPU::decodeOp(uint32_t instruction, int fromXReg, float fromMem) {
     return result;
 };
 
-void FPU::executeOp(FpuPipeObj op, float* toMem, uint32_t* toXreg, unsigned int* flags_out) {
+void FPU::executeOp(FpuPipeObj op, float* toMem, uint32_t* toXreg) {
     switch (op.instr_type)
         {
         case it_ITYPE:
@@ -127,14 +129,14 @@ void FPU::executeOp(FpuPipeObj op, float* toMem, uint32_t* toXreg, unsigned int*
             break;
     }
     registerFile.raiseFlags(op.flags);
-    if (flags_out != nullptr) {
-        // *flags_out = op.flags;
-    }
+    // if (flags_out != nullptr) {
+    //     // *flags_out = op.flags;
+    // }
 }
 
 
 
-FpuPipeObj FPU::pipelineStep(FpuPipeObj nextOp){
+FpuPipeObj FPU::pipelineStep(FpuPipeObj nextOp, bool* pipelineFull){
     FpuPipeObj op = {};
     if (!pipeline.empty()) {
         op = pipeline.front();
@@ -142,27 +144,32 @@ FpuPipeObj FPU::pipelineStep(FpuPipeObj nextOp){
     }
 
     if (!nextOp.isEmpty()) {
-        pipeline.push_back(nextOp); //Check for full pipeline
+        pipeline.push_back(nextOp);
+        if (pipeline.size() == numPipeStages) {
+             //Check for full pipeline
+            if (pipelineFull != nullptr){
+                *pipelineFull = true;
+            }
+        } else {
+            if (pipelineFull != nullptr){
+                *pipelineFull = false;
+            }
+        }
     }
-    // if stall()
-    //     add to bufferqueue;
-    //     lower ready flag;
-    //TODO: Advance pipeline one step, check hazards, and write the popped result to register/return to Xregs
-    // cout << pipeline.size() << endl;
     return op;
 };
 
 
-FpuPipeObj FPU::operation(uint32_t instruction, int fromXReg, float fromMem, float* toMem, uint32_t* toXreg, unsigned int* flags_out) {
+FpuPipeObj FPU::operation(uint32_t instruction, int fromXReg, float fromMem, float* toMem, uint32_t* toXreg, bool* pipelineFull) {
     FpuPipeObj newOp = decodeOp(instruction, fromXReg, fromMem);
     FpuPipeObj currOp = {};
     if(pipeline.size() == 0){ //Execute immediately
         currOp = newOp;
     } else 
     { //add to pipeline - check for full pipeline/stalls etc.
-        currOp = pipelineStep(newOp);
+        currOp = pipelineStep(newOp, pipelineFull);
     }
-    executeOp(currOp, toMem, toXreg, flags_out);
+    executeOp(currOp, toMem, toXreg);
     return currOp; //Only for testing
 }
 

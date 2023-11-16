@@ -7,6 +7,7 @@
 
 struct FpuPipeObj {
     std::vector<uint32_t> addrFrom; //For hazards
+    unsigned int id;  //from Core-V-XIF standard
     uint32_t addrTo;  //For Hazards
     FPNumber data;
     int instr_type;

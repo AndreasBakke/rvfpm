@@ -13,46 +13,90 @@
 // Or have fpu_topp.cpp and just wrap that for verilog. so that we import a whole fpu?
 // What makes it easiest for expanding with zfinx?
 
+// TODO: extract these definitions to separate parameter file
 
-//Pseudocode:
-signal result
-operation(opcode, fromInt, FromXreg, result)
+`define FLEN 32
+`define XLEN 32
+`define NUM_FPU_REGS 32
+
 
 module in_rvfpm #(
-    parameter NUM_REGS = `NUM_FPU_REGS,
-    parameter PIPELINE_STAGES = `FPU_PIPE_STAGES
+    parameter NUM_REGS          = `NUM_FPU_REGS,
+
+
+    //Pipeline parameters
+    parameter PIPELINE_STAGES   = `FPU_PIPE_STAGES,
+    //CORE-V-XIF parameters
+    parameter X_NUM_RS          = 2, //Read ports //TODO: not used
+    parameter X_ID_WIDTH        = 4,
+    parameter X_MEM_WIDTH       = FLEN, //TODO: dependent on extension
+    parameter X_RFR_WIDTH       = FLEN, //Read acces width //TODO: not used
+    parameter X_RFW_WIDTH       = FLEN, //Write acces width //TODO: not used
+    parameter X_MISA            = 0x0000_0000, //TODO: not used
+    parameter X_ECS_XS          = 2'b0,        //TODO: not used
+    parameter X_DUALREAD        = 0, //TODO: not implemented
+    parameter X_DUALWRITE       = 0 //TODO: not implemented
+
 )
  
 (
-    input clk;
-    input reset_n;
+    input logic ck,
+    input logic rst,
+    input logic enable,
     //TODO: expand for other formats to correct num of bits.
-    input [31:0] instruction;
-    input [31:0] data_fromXreg;
-    input [31:0] data_fromMem;
+    input logic [31:0] instruction,
+    input logic [X_ID_WIDTH-1:0] id,
+    input logic [31:0] data_fromXreg, //Todo: when does this data need to be present in the pipeline?
+    input logic [31:0] data_fromMem,
 
     //TODO: if ZFinx - have operands as inputs, and output
 
-    output [31:0] data_toXreg;
-    output [31:0] data_toMem;
-    output flag;//TODO: what flags? Should we split in the interface?
+    output logic [31:0] data_toXreg,
+    output logic [31:0] data_toMem,
+    output logic toXreg_valid, //valid flags for outputs
+    output logic toMem_valid,
+    output logic id_out,
+    output logic fpu_ready //Indicate stalls
 );
+    //-----------------------
+    //-- DPI-C Imports
+    //-----------------------
+    import "DPI-C" function chandle create_fpu_model(input int pipelineStages, input int rfDepth);
+    import "DPI-C" function void operation(
+        input chandle fpu_ptr,
+        input logic[31:0] instruction,
+        input int fromXReg,
+        input real fromMem,
+        output real toMem,
+        output logic[31:0] toXreg,
+        output logic pipelineFull
+        );
+    import "DPI-C" function void reset_fpu(input chandle fpu_ptr);
+    import "DPI-C" function void destroy_fpu(input chandle fpu_ptr);
 
-    void* fpu_model;
-
+    //-----------------------
+    //-- Local parameters
+    //-----------------------
+    logic pipelineFull; //status signal
+    //-----------------------
+    //-- Initialization
+    //-----------------------
+    chandle fpu;
     initial begin
-        fpu_model = create_fpu_model(PIPELINE_STAGES, NUM_REGS);
+        fpu= create_fpu_model(PIPELINE_STAGES, NUM_REGS);
     end
 
-    always @(posedge clk) begin
+
+    always @(posedge ck) begin: la_main
         if (reset) begin
             resetFPU(fpu);
         end
-        else begin
-            operation(fpu_model, data_fromXreg, data_fromMem, data_toMem, data_toXreg, flags_out);
+        else if (enable) begin //TODO: if implemented as coprosessor, follow CORE-V-XIF conventions
+            operation(fpu, instruction, id, data_fromXreg, data_fromMem, id_out data_toMem, data_toXreg, pipelineFull);
+        end begin
         end
     end
-        fpu->operation(instruction, fromXReg, fromMem, toMem, toXreg, flags_out);
 
+    fpu_ready <= pipelineFull;
 
 endmodule;

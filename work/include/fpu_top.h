@@ -9,18 +9,19 @@ class FPU {
   private:
     FpuRf registerFile;
     std::deque<FpuPipeObj> pipeline;
+    int numPipeStages;
     
 
   public:
     FPU(int pipelineStages, int rfDepth=32);
     ~FPU();
     void resetFPU();
-    FpuPipeObj operation(uint32_t instruction, int fromXReg, float fromMem, float* toMem, uint32_t* toXreg, unsigned int* flags_out); //add toXreg and toMem
+    FpuPipeObj operation(uint32_t instruction, int fromXReg, float fromMem, float* toMem, uint32_t* toXreg, bool* pipelineFull); //add toXreg and toMem
     FpuPipeObj decodeOp(uint32_t instruction, int fromXReg, float fromMem);
-    void executeOp(FpuPipeObj op, float* toMem, uint32_t* toXreg, unsigned int* flags_out);
+    void executeOp(FpuPipeObj op, float* toMem, uint32_t* toXreg);
 
     //Pipeline operations
-    FpuPipeObj pipelineStep(FpuPipeObj nextOp); //Advance pipeline by one step (called by clock in interface)
+    FpuPipeObj pipelineStep(FpuPipeObj nextOp, bool* pipelineFull); //Advance pipeline by one step (called by clock in interface)
     int pipelineFlush(); //Flush pipeline
 
 

@@ -17,7 +17,7 @@ test_RHEL:  #run using args="-D EXT_D/Q" to test with D/Q
 	./bin/rvfpm_test_RHEL
 
 TestFloat: #Compile and test for IEEE754 compliance
-	$(CXX) $(CXXFLAGS) -fno-fast-math -O2 -I ./include src/TestFloatSuite.cpp src/fpu_top.cpp src/fpu_rf.cpp src/fpu_operations.cpp src/fp_number.cpp  -o bin/rvfpm_testFloat -D TESTFLOAT
+	$(CXX) $(CXXFLAGS) -fno-fast-math -O2 -I ./include src/in_TestFloat.cpp src/fpu_top.cpp src/fpu_rf.cpp src/fpu_operations.cpp src/fp_number.cpp  -o bin/rvfpm_testFloat -D TESTFLOAT
 	make TestFloat_all args="-rnear_even"
 	make TestFloat_all args="-rminMag"
 	make TestFloat_all args="-rmin"
@@ -41,7 +41,7 @@ TestFloat_all:
 
 
 TestFloat_l2:  #Compile and Test for IEEE754 compliance using Level 2 testing
-	$(CXX) $(CXXFLAGS) -fno-fast-math -O2 -I ./include src/TestFloatSuite.cpp src/fpu_top.cpp src/fpu_rf.cpp src/fpu_operations.cpp src/fp_number.cpp  -o bin/rvfpm_testFloat -D TESTFLOAT
+	$(CXX) $(CXXFLAGS) -fno-fast-math -O2 -I ./include src/in_TestFloat.cpp src/fpu_top.cpp src/fpu_rf.cpp src/fpu_operations.cpp src/fp_number.cpp  -o bin/rvfpm_testFloat -D TESTFLOAT
 	make TestFloat_all_l2 args="-rnear_even"
 	make TestFloat_all_l2 args="-rminMag"
 	make TestFloat_all_l2 args="-rmin"
