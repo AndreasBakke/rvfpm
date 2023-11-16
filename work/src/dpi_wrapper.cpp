@@ -9,7 +9,7 @@ extern "C" {
     //Todo: What should the operation return?
     //Thought: create a new pipe object that can be passsed by reference from fpu_operation to the interface in sv. then back to pipelineStep/others
     //So that it works "As a signal". going from operation to pipeline.
-    void operation(void* fpu_ptr, uint32_t instruction, int fromXReg = NAN, float fromMem = NAN, float* toMem, uint32_t* toXreg, bool* pipelineFull){ //data only passed for operations using int(X)-registers
+    void operation(void* fpu_ptr, uint32_t instruction, unsigned int id, int fromXReg = NAN, float fromMem = NAN, unsigned int id_out, float* toMem, uint32_t* toXreg, bool* pipelineFull){ //data only passed for operations using int(X)-registers
         FPU* fpu = static_cast<FPU*>(fpu_ptr); //from generic pointer to FPU pointer
         //Call operation function for fpu.
         fpu->operation(instruction, fromXReg, fromMem, toMem, toXreg, pipelineFull);

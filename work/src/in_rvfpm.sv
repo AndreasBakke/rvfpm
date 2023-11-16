@@ -65,8 +65,10 @@ module in_rvfpm #(
     import "DPI-C" function void operation(
         input chandle fpu_ptr,
         input logic[31:0] instruction,
+        input logic[X_ID_WIDTH-1:0] id,
         input int fromXReg,
         input real fromMem,
+        output ligix[X_ID_WIDTH-1:0] id_out,
         output real toMem,
         output logic[31:0] toXreg,
         output logic pipelineFull
@@ -88,15 +90,18 @@ module in_rvfpm #(
 
 
     always @(posedge ck) begin: la_main
-        if (reset) begin
+        if (rst) begin
             resetFPU(fpu);
         end
         else if (enable) begin //TODO: if implemented as coprosessor, follow CORE-V-XIF conventions
-            operation(fpu, instruction, id, data_fromXreg, data_fromMem, id_out data_toMem, data_toXreg, pipelineFull);
+            operation(fpu, instruction, id, data_fromXreg, data_fromMem, id_out, data_toMem, data_toXreg, pipelineFull);
         end begin
         end
     end
 
-    fpu_ready <= pipelineFull;
+    always_comb begin
+        
+    end
+    fpu_ready = pipelineFull;
 
 endmodule;
