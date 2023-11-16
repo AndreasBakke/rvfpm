@@ -23,6 +23,10 @@ TestFloat: #Compile and test for IEEE754 compliance
 	make TestFloat_all args="-rmin"
 	make TestFloat_all args="-rmax"
 
+TestFloatRhel:
+	$(CXX) $(CXXFLAGS) -static-libstdc++ -frounding-math -fsignaling-nans -O2  -I ./include src/in_TestFloat.cpp src/test.cpp src/fpu_top.cpp src/fpu_rf.cpp src/fpu_operations.cpp src/fp_number.cpp  -o bin/rvfpm_testFloat -D TESTFLOAT 
+	make TestFloat_all
+
 TestFloat_all:
 	./bin/testfloat_gen_arm f32_add 	| ./bin/rvfpm_testFloat fadd  $(args) 		| ./bin/testfloat_ver_arm $(args)	f32_add
 	./bin/testfloat_gen_arm f32_sub 	| ./bin/rvfpm_testFloat fsub  $(args) 		| ./bin/testfloat_ver_arm $(args)	f32_sub
@@ -58,9 +62,18 @@ TestFloat_all_l2: #NOTE: Takes WAY too long for mulAdd function
 	./bin/testfloat_gen_arm f32_le  	-level 2 | ./bin/rvfpm_testFloat fle   $(args) | ./bin/testfloat_ver_arm $(args)		f32_le
 # ./bin/testfloat_gen_arm f32_mulAdd 	-level 2 | ./bin/rvfpm_testFloat fmadd $(args) | ./bin/testfloat_ver_arm $(args)  	f32_mulAdd -tininessbefore
 
+macSL:
+	$(CXX) $(CXXFLAGS) -shared -undefined dynamic_lookup -fno-fast-math -O2 -o bin/rvfpmlib.dylib -I ./include src/in_TestFloat.cpp src/fpu_top.cpp src/fpu_rf.cpp src/fpu_operations.cpp src/fp_number.cpp
+
+rhelSL:
+	$(CXX) $(CXXFLAGS) -shared -undefined dynamic_lookup -static-libstdc++ -frounding-math -fsignaling-nans -O2 -o bin/rvfpmlib.so -I ./include src/in_TestFloat.cpp src/fpu_top.cpp src/fpu_rf.cpp src/fpu_operations.cpp src/fp_number.cpp
+
+
 clean:
 	rm bin/rvfpm
 	rm bin/rvfpm_D
 	rm bin/rvfpm_Q
 	rm bin/rvfpm_test
 	rm bin/rvfpm_testFloat
+	rm bin/rvfpmlib.dylib
+	rm bin/rvfpmlib.so
