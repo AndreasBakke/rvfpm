@@ -34,7 +34,7 @@ module rvfpm_tb;
         .enable(enable),
         .instruction(instruction),
         .id(id),
-        .id_out(id_out)
+        .id_out(id_out),
         .data_fromXreg(data_fromXreg),
         .data_fromMem(data_fromMem),
         .data_toXreg(data_toXreg),
