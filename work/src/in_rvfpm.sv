@@ -29,9 +29,9 @@ module in_rvfpm #(
     //CORE-V-XIF parameters
     parameter X_NUM_RS          = 2, //Read ports //TODO: not used
     parameter X_ID_WIDTH        = 4,
-    parameter X_MEM_WIDTH       = FLEN, //TODO: dependent on extension
-    parameter X_RFR_WIDTH       = FLEN, //Read acces width //TODO: not used
-    parameter X_RFW_WIDTH       = FLEN, //Write acces width //TODO: not used
+    parameter X_MEM_WIDTH       = `FLEN, //TODO: dependent on extension
+    parameter X_RFR_WIDTH       = `FLEN, //Read acces width //TODO: not used
+    parameter X_RFW_WIDTH       = `FLEN, //Write acces width //TODO: not used
     parameter X_MISA            = 0x0000_0000, //TODO: not used
     parameter X_ECS_XS          = 2'b0,        //TODO: not used
     parameter X_DUALREAD        = 0, //TODO: not implemented
