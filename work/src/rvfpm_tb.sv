@@ -13,10 +13,10 @@ module rvfpm_tb;
     //-----------------------
     //-- Signals
     //-----------------------
-    logic ck, rst, enable;
+    logic ck, rst, enable, fpu_ready, toMem_valid, toXreg_valid;
     logic [31:0] instruction;
-    logic [3:0] id; // Assuming X_ID_WIDTH is 4
-    logic [31:0] data_fromXreg, data_fromMem;
+    logic [3:0] id, id_out; // Assuming X_ID_WIDTH is 4
+    logic [31:0] data_fromXreg, data_fromMem, data_toMem, data_toXreg;
 
 
 
@@ -34,14 +34,19 @@ module rvfpm_tb;
         .enable(enable),
         .instruction(instruction),
         .id(id),
+        .id_out(id_out)
         .data_fromXreg(data_fromXreg),
-        .data_fromMem(data_fromMem)
+        .data_fromMem(data_fromMem),
+        .data_toXreg(data_toXreg),
+        .data_toMem(data_toMem),
+        .toXreg_valid(toXreg_valid),
+        .toMem_valid(toMem_valid)
         // ... other ports if needed ...
     );
 
     
     // Clock generation
-    always #20 ck = ~ck; // 20MHz clock
+    always #20 ck = ~ck; // 25MHz clock
 
     // Initial block for test stimulus
     initial begin

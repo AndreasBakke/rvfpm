@@ -85,7 +85,7 @@ module in_rvfpm #(
     //-----------------------
     chandle fpu;
     initial begin
-        fpu= create_fpu_model(PIPELINE_STAGES, NUM_REGS);
+        fpu = create_fpu_model(PIPELINE_STAGES, NUM_REGS);
     end
 
 
