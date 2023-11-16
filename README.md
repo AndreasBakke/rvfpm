@@ -13,4 +13,4 @@ make TestFloat
 
 run:
 make rhelSL
- vsim -sv_lib bin/lib_rvfpm rvfpm_tb 
+ vsim -sv_lib bin/lib_rvfpm -novopt work.rvfpm_tb -suppress 12110

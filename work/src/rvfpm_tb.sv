@@ -46,7 +46,10 @@ module rvfpm_tb;
 
     
     // Clock generation
-    always #20 ck = ~ck; // 25MHz clock
+    always begin
+        ck=0; #20;
+        ck=1; #20;
+    end
 
     // Initial block for test stimulus
     initial begin
@@ -70,14 +73,15 @@ module rvfpm_tb;
         data_fromMem = 0;
         instruction = 'b0000000_00010_00001_000_00011_1010011; //Add r1 r2 and store in r3
         #20;
-        
-        
+        instruction = 'b000000000000_00000_010_00011_0100011; //store r3 value to memory;
+        #20;
+        instruction = 0;
 
         // Apply test vectors
         // ... Your test cases here ...
 
         // Finish the simulation
-        #1000 $finish;
+        #100 $finish;
     end
 
     // Additional test scenarios, monitoring, checks, etc.
