@@ -68,7 +68,7 @@ module in_rvfpm #(
         input logic[X_ID_WIDTH-1:0] id,
         input int fromXReg,
         input real fromMem,
-        output ligix[X_ID_WIDTH-1:0] id_out,
+        output logic[X_ID_WIDTH-1:0] id_out,
         output real toMem,
         output logic[31:0] toXreg,
         output logic pipelineFull
@@ -100,8 +100,8 @@ module in_rvfpm #(
     end
 
     always_comb begin
-        
+        fpu_ready <= pipelineFull;
     end
-    fpu_ready = pipelineFull;
+
 
 endmodule;
