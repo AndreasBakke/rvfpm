@@ -1,5 +1,5 @@
 #include "fpu_top.h"
-#include <svdpi.h>
+// #include <svdpi.h>
 
 extern "C" {
     void* create_fpu_model(int pipelineStages, int rfDepth){
@@ -26,12 +26,12 @@ extern "C" {
         delete fpu;
     }
 
-    void getRFContent(void* fpu_ptr, const svOpenArrayHandle output) { //Backdoor to read content of the entire fp_register
+    void getRFContent(void* fpu_ptr, float* output) { //Backdoor to read content of the entire fp_register
         FPU* fpu = static_cast<FPU*>(fpu_ptr);
         std::vector<float> res = fpu->bd_getRF();
         for (int i = 0; i < res.size(); i++)
         {
-            svPutLogicArrElemVecVal(output, res[i], i);
+            output[i] =  res[i];
         }
         
     }
