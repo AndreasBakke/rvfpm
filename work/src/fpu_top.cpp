@@ -122,6 +122,12 @@ void FPU::executeOp(FpuPipeObj op, float* toMem, uint32_t* toXreg) {
             } else
             {
                 registerFile.write(op.addrTo, op.data);
+                if (toXreg != nullptr){
+                    *toXreg = 0;
+                };
+                if (toMem != nullptr){
+                    *toMem = 0;
+                };
             }
             break;
         default:
@@ -188,3 +194,6 @@ void FPU::bd_setRoundingMode(unsigned int rm){
     registerFile.setfrm(rm);
 };
 
+std::vector<float> FPU::bd_getRF(){
+    return registerFile.getRf();
+};

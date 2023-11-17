@@ -59,6 +59,8 @@ class FpuRf {
     //Helper functions
     int get_NUM_F_REGISTERS();
     int get_length();
+    std::vector<float> getRf();
+
 
 
 };

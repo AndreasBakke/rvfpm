@@ -69,17 +69,19 @@ module in_rvfpm #(
         input int fromXReg,
         input real fromMem,
         output logic[X_ID_WIDTH-1:0] id_out,
-        output real toMem,
+        output logic[31:0] toMem,
         output logic[31:0] toXreg,
         output logic pipelineFull
         );
     import "DPI-C" function void reset_fpu(input chandle fpu_ptr);
     import "DPI-C" function void destroy_fpu(input chandle fpu_ptr);
+    import "DPI-C" function void getRFContent(input chandle fpu_ptr, input real svArray[]);
 
     //-----------------------
     //-- Local parameters
     //-----------------------
     logic pipelineFull; //status signal
+    real registerFile[NUM_REGS]; //For verification
     //-----------------------
     //-- Initialization
     //-----------------------
@@ -95,6 +97,7 @@ module in_rvfpm #(
         end
         else if (enable) begin //TODO: if implemented as coprosessor, follow CORE-V-XIF conventions
             operation(fpu, instruction, id, data_fromXreg, data_fromMem, id_out, data_toMem, data_toXreg, pipelineFull);
+            getRFContent(fpu, registerFile);
         end begin
         end
     end

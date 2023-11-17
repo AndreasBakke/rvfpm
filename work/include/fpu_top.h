@@ -28,5 +28,6 @@ class FPU {
     //Backdoor functions
     FPNumber bd_getData(uint32_t addr);
     void bd_setRoundingMode(unsigned int rm);
+    std::vector<float> bd_getRF();
 
 };

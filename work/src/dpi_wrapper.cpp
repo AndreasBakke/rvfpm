@@ -1,5 +1,5 @@
 #include "fpu_top.h"
-// #include <svdpi.h>
+#include <svdpi.h>
 
 extern "C" {
     void* create_fpu_model(int pipelineStages, int rfDepth){
@@ -21,10 +21,20 @@ extern "C" {
         fpu->resetFPU();
     };
 
-    void destroy_fpu(FPU* fpu) {
+    void destroy_fpu(void* fpu_ptr) {
+        FPU* fpu = static_cast<FPU*>(fpu_ptr);
         delete fpu;
     }
 
+    void getRFContent(void* fpu_ptr, const svOpenArrayHandle output) { //Backdoor to read content of the entire fp_register
+        FPU* fpu = static_cast<FPU*>(fpu_ptr);
+        std::vector<float> res = fpu->bd_getRF();
+        for (int i = 0; i < res.size(); i++)
+        {
+            svPutFloatElem(output, res[i], i);
+        }
+        
+    }
     //Something for exceptions?
     //Something for flags?
 }
