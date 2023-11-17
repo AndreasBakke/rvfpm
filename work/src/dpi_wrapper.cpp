@@ -26,15 +26,8 @@ extern "C" {
         delete fpu;
     }
 
-    void getRFContent(void* fpu_ptr, float* output) { //Backdoor to read content of the entire fp_register
+    float getRFContent(void* fpu_ptr, int reg) { //Backdoor to read content of the entire fp_register
         FPU* fpu = static_cast<FPU*>(fpu_ptr);
-        std::vector<float> res = fpu->bd_getRF();
-        for (int i = 0; i < res.size(); i++)
-        {
-            output[i] =  res[i];
-        }
-        
+        return  fpu->bd_getData(reg).f;
     }
-    //Something for exceptions?
-    //Something for flags?
 }

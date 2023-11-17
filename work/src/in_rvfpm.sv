@@ -75,7 +75,7 @@ module in_rvfpm #(
         );
     import "DPI-C" function void reset_fpu(input chandle fpu_ptr);
     import "DPI-C" function void destroy_fpu(input chandle fpu_ptr);
-    import "DPI-C" function void getRFContent(input chandle fpu_ptr, input real svArray[]);
+    import "DPI-C" function real getRFContent(input chandle fpu_ptr, input int addr);
 
     //-----------------------
     //-- Local parameters
@@ -97,7 +97,10 @@ module in_rvfpm #(
         end
         else if (enable) begin //TODO: if implemented as coprosessor, follow CORE-V-XIF conventions
             operation(fpu, instruction, id, data_fromXreg, data_fromMem, id_out, data_toMem, data_toXreg, pipelineFull);
-            getRFContent(fpu, registerFile);
+            //Get entire rf for verification
+            for (int i=0; i< NUM_REGS; ++i) begin
+                registerFile[i] = getRFContent(fpu, i);
+            end
         end begin
         end
     end
