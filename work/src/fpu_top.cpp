@@ -14,6 +14,7 @@ FPU::FPU (int pipelineStages, int rfDepth) : registerFile(rfDepth), pipeline(pip
         pipe = {}; //Initialize to empty operations
     }
     numPipeStages = pipelineStages;
+    std::cout << "FPU pipelineStages: " << numPipeStages << std::endl;
 };
 
 FPU::~FPU(){
@@ -149,19 +150,19 @@ FpuPipeObj FPU::pipelineStep(FpuPipeObj nextOp, bool* pipelineFull){
         pipeline.pop_front();
     }
 
-    if (!nextOp.isEmpty()) {
-        pipeline.push_back(nextOp);
-        if (pipeline.size() == numPipeStages) {
-             //Check for full pipeline
-            if (pipelineFull != nullptr){
-                *pipelineFull = true;
-            }
-        } else {
-            if (pipelineFull != nullptr){
-                *pipelineFull = false;
-            }
+    // if (!nextOp.isEmpty()) {
+    pipeline.push_back(nextOp);
+    if (pipeline.size() == numPipeStages) {
+            //Check for full pipeline
+        if (pipelineFull != nullptr){
+            *pipelineFull = true;
+        }
+    } else {
+        if (pipelineFull != nullptr){
+            *pipelineFull = false;
         }
     }
+    // }
     return op;
 };
 
@@ -169,12 +170,15 @@ FpuPipeObj FPU::pipelineStep(FpuPipeObj nextOp, bool* pipelineFull){
 FpuPipeObj FPU::operation(uint32_t instruction, int fromXReg, float fromMem, float* toMem, uint32_t* toXreg, bool* pipelineFull) {
     FpuPipeObj newOp = decodeOp(instruction, fromXReg, fromMem);
     FpuPipeObj currOp = {};
+    std::cout << "from the withinside: " << pipeline.size() << endl;
     if(pipeline.size() == 0){ //Execute immediately
         currOp = newOp;
     } else 
     { //add to pipeline - check for full pipeline/stalls etc.
         currOp = pipelineStep(newOp, pipelineFull);
     }
+    //TODO: parameterize at what point we "execute" and "decode" + how hazards and stuff
+    //TODO: Decode != compute result, that should be in "execute".
     executeOp(currOp, toMem, toXreg);
     return currOp; //Only for testing
 }
