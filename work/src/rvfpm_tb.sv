@@ -14,11 +14,10 @@ module rvfpm_tb;
     //-- Signals
     //-----------------------
     logic ck, rst, enable, fpu_ready, toMem_valid, toXreg_valid;
-    logic [31:0] instruction;
+    int unsigned instruction;
     logic [3:0] id, id_out; // Assuming X_ID_WIDTH is 4
-    logic [31:0] data_fromXreg, data_fromMem, data_toMem, data_toXreg;
-
-
+    int data_fromXreg, data_toXreg;
+    shortreal data_fromMem, data_toMem;
 
     //-----------------------
     //-- DUT
@@ -40,8 +39,8 @@ module rvfpm_tb;
         .data_toXreg(data_toXreg),
         .data_toMem(data_toMem),
         .toXreg_valid(toXreg_valid),
-        .toMem_valid(toMem_valid)
-        // ... other ports if needed ...
+        .toMem_valid(toMem_valid),
+	.fpu_ready(fpu_ready) 
     );
 
     
@@ -63,26 +62,25 @@ module rvfpm_tb;
 
         #50 rst = 0; // Release reset after 30ns
         #45 enable = 1;
-        #40;
-        data_fromMem = 'h3f800000; //Corresponds to 1
-        instruction = 'b0000000_00000_00000_010_00001_0000011; //load from mem into register1;
-        #40;
-        data_fromMem = 'h412028f6; //Corresponds to 10.01
-        instruction = 'b0000000_00000_00000_010_00010_0000011; //load from mem into register2;
+        #50;
+        data_fromMem = 1.7;
+	    $display("Instruction in SV: %h", instruction);
+        instruction = 32'b0000000_00000_00000_010_00001_0000111; //load from mem into register1;
+        #90;
+        data_fromMem = 11.4;
+        instruction = 32'b0000000_00000_00000_010_00010_0000111;; //load from mem into register2;
+        #200;
 
-        #200;
         data_fromMem = 0;
-        instruction = 'b0000000_00010_00001_000_00011_1010011; //Add r1 r2 and store in r3
+        instruction = 32'b0000000_00010_00001_000_00011_1010011; //Add r1 r2 and store in r3
         #200;
-        instruction = 'b0000000_00000_00011_010_00011_0100011; //store r3 value to memory;
+        instruction = 32'b0000000_00000_00011_010_00011_0100111; //store r3 value to memory;
         #40;
         instruction = 0;
 
-        // Apply test vectors
-        // ... Your test cases here ...
-
-        // Finish the simulation
         #1000;
+	$display("Instruction in SV: %h", instruction);
+	$finish;
     end
 
     // Additional test scenarios, monitoring, checks, etc.

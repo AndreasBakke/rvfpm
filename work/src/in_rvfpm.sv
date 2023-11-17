@@ -20,9 +20,8 @@
 `define NUM_FPU_REGS 32
 
 
-module in_rvfpm #(
+module in_rvfpm #( 
     parameter NUM_REGS          = 32,
-
 
     //Pipeline parameters
     parameter PIPELINE_STAGES   = 4,
@@ -44,15 +43,15 @@ module in_rvfpm #(
     input logic rst,
     input logic enable,
     //TODO: expand for other formats to correct num of bits.
-    input logic [31:0] instruction,
+    input int unsigned instruction,
     input logic [X_ID_WIDTH-1:0] id,
-    input logic [31:0] data_fromXreg, //Todo: when does this data need to be present in the pipeline?
-    input logic [31:0] data_fromMem,
+    input int data_fromXreg, //Todo: when does this data need to be present in the pipeline?
+    input shortreal data_fromMem,
 
     //TODO: if ZFinx - have operands as inputs, and output
 
-    output logic [31:0] data_toXreg,
-    output logic [31:0] data_toMem,
+    output int data_toXreg,
+    output shortreal  data_toMem,
     output logic toXreg_valid, //valid flags for outputs
     output logic toMem_valid,
     output logic id_out,
@@ -62,26 +61,28 @@ module in_rvfpm #(
     //-- DPI-C Imports
     //-----------------------
     import "DPI-C" function chandle create_fpu_model(input int pipelineStages, input int rfDepth);
-    import "DPI-C" function void operation(
+    import "DPI-C" function void fpu_operation(
         input chandle fpu_ptr,
-        input logic[31:0] instruction,
+        input int unsigned instruction,
         input logic[X_ID_WIDTH-1:0] id,
         input int fromXReg,
-        input real fromMem,
+        input shortreal fromMem,
         output logic[X_ID_WIDTH-1:0] id_out,
-        output logic[31:0] toMem,
-        output logic[31:0] toXreg,
+        output shortreal toMem,
+        output int toXreg,
         output logic pipelineFull
         );
     import "DPI-C" function void reset_fpu(input chandle fpu_ptr);
     import "DPI-C" function void destroy_fpu(input chandle fpu_ptr);
-    import "DPI-C" function real getRFContent(input chandle fpu_ptr, input int addr);
+    import "DPI-C" function shortreal getRFContent(input chandle fpu_ptr, input int addr);
 
     //-----------------------
     //-- Local parameters
     //-----------------------
     logic pipelineFull; //status signal
-    real registerFile[NUM_REGS]; //For verification
+    shortreal dtm; //data to mem
+    int dtx; //data to X-reg
+    shortreal registerFile[NUM_REGS]; //For verification
     //-----------------------
     //-- Initialization
     //-----------------------
@@ -96,7 +97,7 @@ module in_rvfpm #(
             reset_fpu(fpu);
         end
         else if (enable) begin //TODO: if implemented as coprosessor, follow CORE-V-XIF conventions
-            operation(fpu, instruction, id, data_fromXreg, data_fromMem, id_out, data_toMem, data_toXreg, pipelineFull);
+            fpu_operation(fpu, instruction, 0, 0, data_fromMem, id_out, dtm, dtx, pipelineFull);
             //Get entire rf for verification
             for (int i=0; i< NUM_REGS; ++i) begin
                 registerFile[i] = getRFContent(fpu, i);
@@ -107,6 +108,8 @@ module in_rvfpm #(
 
     always_comb begin
         fpu_ready <= pipelineFull;
+        data_toMem <= dtm;
+        data_toXreg <= dtx;
     end
 
 
