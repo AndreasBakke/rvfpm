@@ -31,7 +31,7 @@ extern "C" {
         std::vector<float> res = fpu->bd_getRF();
         for (int i = 0; i < res.size(); i++)
         {
-            svPutFloatElem(output, res[i], i);
+            svPutLogicArrElemVecVal(output, res[i], i);
         }
         
     }

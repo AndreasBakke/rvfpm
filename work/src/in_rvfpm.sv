@@ -81,7 +81,7 @@ module in_rvfpm #(
     //-- Local parameters
     //-----------------------
     logic pipelineFull; //status signal
-    real registerFile[NUM_REGS]; //For verification
+    logic[NUM_REGS][31:0] registerFile; //For verification
     //-----------------------
     //-- Initialization
     //-----------------------
