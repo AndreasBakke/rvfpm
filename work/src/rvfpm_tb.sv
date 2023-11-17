@@ -80,7 +80,7 @@ module rvfpm_tb;
 
         #1000;
 	$display("Instruction in SV: %h", instruction);
-	$finish;
+	$stop;
     end
 
     // Additional test scenarios, monitoring, checks, etc.

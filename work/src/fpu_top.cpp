@@ -170,7 +170,8 @@ FpuPipeObj FPU::pipelineStep(FpuPipeObj nextOp, bool* pipelineFull){
 FpuPipeObj FPU::operation(uint32_t instruction, int fromXReg, float fromMem, float* toMem, uint32_t* toXreg, bool* pipelineFull) {
     FpuPipeObj newOp = decodeOp(instruction, fromXReg, fromMem);
     FpuPipeObj currOp = {};
-    std::cout << "from the withinside: " << pipeline.size() << endl;
+    std::cout << "from the withinside: " << pipeline.size() << std::endl;
+    std::cout << "hmm" << numPipeStages << std::endl;
     if(pipeline.size() == 0){ //Execute immediately
         currOp = newOp;
     } else 
