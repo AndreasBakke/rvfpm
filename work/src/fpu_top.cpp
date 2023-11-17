@@ -10,9 +10,14 @@ FPU::FPU (int pipelineStages, int rfDepth) : registerFile(rfDepth), pipeline(pip
     #else
         //Todo: Expand to support ZFINX
     #endif
-    for (auto &pipe : pipeline) { 
-        pipe = {}; //Initialize to empty operations
+    // for (auto &pipe : pipeline) { 
+    //     pipe = {}; //Initialize to empty operations
+    // }
+    for (int i = 0; i < pipelineStages; i++)
+    {
+        pipeline[i] = {};
     }
+    
     numPipeStages = pipelineStages;
     std::cout << "FPU pipelineStages: " << numPipeStages << std::endl;
 };
@@ -145,10 +150,8 @@ void FPU::executeOp(FpuPipeObj op, float* toMem, uint32_t* toXreg) {
 
 FpuPipeObj FPU::pipelineStep(FpuPipeObj nextOp, bool* pipelineFull){
     FpuPipeObj op = {};
-    if (!pipeline.empty()) {
-        op = pipeline.front();
-        pipeline.pop_front();
-    }
+    op = pipeline.front();
+    pipeline.pop_front();
 
     // if (!nextOp.isEmpty()) {
     pipeline.push_back(nextOp);
