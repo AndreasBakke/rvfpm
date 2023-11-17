@@ -172,7 +172,7 @@ FpuPipeObj FPU::operation(uint32_t instruction, int fromXReg, float fromMem, flo
     FpuPipeObj currOp = {};
     std::cout << "from the withinside: " << pipeline.size() << std::endl;
     std::cout << "hmm" << numPipeStages << std::endl;
-    if(pipeline.size() == 0){ //Execute immediately
+    if(numPipeStages == 0){ //Execute immediately
         currOp = newOp;
     } else 
     { //add to pipeline - check for full pipeline/stalls etc.
