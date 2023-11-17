@@ -61,20 +61,21 @@ module rvfpm_tb;
         data_fromXreg = 0;
         data_fromMem = 0;
 
-        #30 rst = 0; // Release reset after 30ns
-        #5 enable = 1;
+        #50 rst = 0; // Release reset after 30ns
+        #45 enable = 1;
+        #40;
         data_fromMem = 'h3f800000; //Corresponds to 1
         instruction = 'b0000000_00000_00000_010_00001_0000011; //load from mem into register1;
-        #20;
+        #40;
         data_fromMem = 'h412028f6; //Corresponds to 10.01
         instruction = 'b0000000_00000_00000_010_00010_0000011; //load from mem into register2;
 
-        #20;
+        #200;
         data_fromMem = 0;
         instruction = 'b0000000_00010_00001_000_00011_1010011; //Add r1 r2 and store in r3
-        #20;
+        #200;
         instruction = 'b0000000_00000_00011_010_00011_0100011; //store r3 value to memory;
-        #20;
+        #40;
         instruction = 0;
 
         // Apply test vectors
