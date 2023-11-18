@@ -10,6 +10,7 @@ program automatic testPr_rvfpm #(
     initial begin
         $display("--- Starting simulation ---");
         init();
+        fillRF();
         basic();
         // testLoad();
         // testRead();
@@ -31,6 +32,24 @@ program automatic testPr_rvfpm #(
         uin_rvfpm.instruction = 0;
         uin_rvfpm.fromMem = 0;
         uin_rvfpm.fromXReg = 0;
+        @(posedge uin_rvfpm.ck);
+        uin_rvfpm.enable = 1;
+    endtask
+
+    task fillRF();
+        uin_rvfpm.instruction[31:20] = 0; //imm
+        uin_rvfpm.instruction[19:15] = 0; //rs1 (base)
+        uin_rvfpm.instruction[14:12] = 0; //W
+        uin_rvfpm.instruction[11:7] = 0;  //rd (dest)
+        uin_rvfpm.instruction[6:0] = 7'b0000111;  //OPCODE
+        for (int i=1; i<NUM_FPU_REGS; ++i) begin
+            @(posedge uin_rvfpm.ck)
+            uin_rvfpm.instruction[11:7] = i; //set register
+            uin_rvfpm.fromMem = $random; //set to random real
+        end
+        @(posedge uin_rvfpm.ck)
+        uin_rvfpm.instruction = 0;
+        uin_rvfpm.fromMem = 0;
     endtask
 
 
@@ -52,7 +71,7 @@ program automatic testPr_rvfpm #(
         @(posedge uin_rvfpm.ck);
         uin_rvfpm.data_fromMem = 0;
         uin_rvfpm.instruction = 0;
-        
+
         #200;
         uin_rvfpm.instruction = 32'b0000000_00000_00011_010_00011_0100111; //store r3 value to memory;
         @(posedge uin_rvfpm.ck);
