@@ -8,9 +8,9 @@ extern "C" {
         return new FPU(pipelineStages, rfDepth); //Return pointer to FPU
     };
 
-    void fpu_operation(void* fpu_ptr, unsigned int instruction, unsigned int id, int fromXReg, float fromMem, unsigned int* id_out, float* toMem, uint32_t* toXreg, bool* pipelineFull){ //data only passed for operations using int(X)-registers
+    void fpu_operation(void* fpu_ptr, unsigned int instruction, unsigned int id, int fromXReg, float fromMem, unsigned int* id_out, float* toMem, uint32_t* toXReg, bool* pipelineFull){ //data only passed for operations using int(X)-registers
 	    FPU* fpu = static_cast<FPU*>(fpu_ptr); //from generic pointer to FPU pointer
-        fpu->operation(instruction, fromXReg, fromMem, toMem, toXreg, pipelineFull);
+        fpu->operation(instruction, fromXReg, fromMem, toMem, toXReg, pipelineFull);
         // return fpu->operation(instruction, fromXReg, fromMem);
     }
 

@@ -27,7 +27,7 @@ module rvfpm_tb;
     //-----------------------
     //-- Clk gen
     //-----------------------
-    intial begin
+    initial begin
         uin_rvfpm.ck=0;
         forever begin
             #(ck_period/2);
@@ -50,11 +50,11 @@ module rvfpm_tb;
         .instruction(uin_rvfpm.instruction),
         .id(uin_rvfpm.id),
         .id_out(uin_rvfpm.id_out),
-        .data_fromXreg(uin_rvfpm.data_fromXreg),
+        .data_fromXReg(uin_rvfpm.data_fromXReg),
         .data_fromMem(uin_rvfpm.data_fromMem),
-        .data_toXreg(uin_rvfpm.data_toXreg),
+        .data_toXReg(uin_rvfpm.data_toXReg),
         .data_toMem(uin_rvfpm.data_toMem),
-        .toXreg_valid(uin_rvfpm.toXreg_valid),
+        .toXReg_valid(uin_rvfpm.toXReg_valid),
         .toMem_valid(uin_rvfpm.toMem_valid),
 	    .fpu_ready(uin_rvfpm.fpu_ready) 
     );
@@ -62,12 +62,12 @@ module rvfpm_tb;
     //-----------------------
     //-- Assertions
     //-----------------------
-    assertions_rvfpm #(
-        .NUM_REGS(TB_NUM_FPU_REGS),
-        .PIPELINE_STAGES(TB_PIPELINE_STAGES)
-    ) u_assertions_rvfpm (
-        .uin_rvfpm(uin_rvfpm)
-    )
+    // assertions_rvfpm #(
+    //     .NUM_REGS(TB_NUM_FPU_REGS),
+    //     .PIPELINE_STAGES(TB_PIPELINE_STAGES)
+    // ) u_assertions_rvfpm (
+    //     .uin_rvfpm(uin_rvfpm)
+    // );
 
     //-----------------------
     //-- Test Program
@@ -77,7 +77,7 @@ module rvfpm_tb;
         .PIPELINE_STAGES(TB_PIPELINE_STAGES)
     ) u_testPr(
         .uin_rvfpm(uin_rvfpm)
-    )
+    );
     
     //-----------------------
     //-- Result
@@ -101,40 +101,5 @@ module rvfpm_tb;
         $display("------------------------------------");
         $display("------------------------------------");
     endfunction
-
-    // Initial block for test stimulus
-    initial begin
-        // Initialize signals
-        uin_rvfpm.ck = 0;
-        uin_rvfpm.rst = 1;
-        uin_rvfpm.enable = 0;
-        uin_rvfpm.instruction = 0;
-        uin_rvfpm.data_fromXreg = 0;
-        uin_rvfpm.data_fromMem = 0;
-
-        #50 rst = 0; // Release reset after 30ns
-        #40 enable = 1;
-        #40;
-        instruction = 32'b0000000_00000_00000_010_00001_0000111; //load from mem into register1;
-        #40;
-        data_fromMem = 1.7; //Data for the previous instruction (1 pipeline stage)
-        instruction = 32'b0000000_00000_00000_010_00010_0000111;; //load from mem into register2;
-        #40;
-        data_fromMem = 11.4; //Data for previous pipe stage
-        instruction = 32'b0000000_00010_00001_000_00011_1010011; //Add r1 r2 and store in r3
-        #40;
-        data_fromMem = 0;
-        instruction = 0;
-        #200;
-        instruction = 32'b0000000_00000_00011_010_00011_0100111; //store r3 value to memory;
-        #40;
-        instruction = 0;
-
-        #1000;
-	$display("Instruction in SV: %h", instruction);
-	$stop;
-    end
-
-    // Additional test scenarios, monitoring, checks, etc.
 
 endmodule

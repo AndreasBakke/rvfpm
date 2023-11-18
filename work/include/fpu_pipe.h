@@ -13,9 +13,9 @@ struct FpuPipeObj {
     FPNumber data;
     int instr_type;
     unsigned int flags : 5;
-    bool toXreg = 0;
+    bool toXReg = 0;
     bool toMem = 0;
-    bool fromXreg = 0;
+    bool fromXReg = 0;
     bool fromMem = 0;
     uint32_t uDataToXreg = 0; //unsigned DataToXreg
     int32_t dataToXreg = 0;
@@ -25,9 +25,9 @@ struct FpuPipeObj {
                addrTo == 0 &&
                instr_type == 0 &&
                flags == 0 &&
-               !toXreg &&
+               !toXReg &&
                !toMem &&
-               !fromXreg &&
+               !fromXReg &&
                !fromMem &&
                uDataToXreg == 0 &&
                dataToXreg == 0;

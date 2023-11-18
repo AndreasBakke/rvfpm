@@ -97,7 +97,7 @@ FpuPipeObj decode_ITYPE(uint32_t instr);
 FpuPipeObj decode_STYPE(uint32_t instr);
 
 //Execute functions
-void execute_RTYPE(FpuPipeObj& op, FpuRf* registerFile, int fromXReg, uint32_t* toXreg);
+void execute_RTYPE(FpuPipeObj& op, FpuRf* registerFile, int fromXReg, uint32_t* toXReg);
 void execute_R4TYPE(FpuPipeObj& op, FpuRf* registerFile);
 void execute_ITYPE(FpuPipeObj& op, FpuRf* registerFile, float fromMem);
 void execute_STYPE(FpuPipeObj& op, FpuRf* registerFile, float* toMem);

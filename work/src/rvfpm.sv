@@ -20,7 +20,7 @@
 `define NUM_FPU_REGS 32
 
 
-module in_rvfpm #( 
+module rvfpm #( 
     parameter NUM_REGS          = 32,
 
     //Pipeline parameters
@@ -45,14 +45,14 @@ module in_rvfpm #(
     //TODO: expand for other formats to correct num of bits.
     input int unsigned instruction,
     input logic [X_ID_WIDTH-1:0] id,
-    input int data_fromXreg, //Todo: when does this data need to be present in the pipeline?
+    input int data_fromXReg, //Todo: when does this data need to be present in the pipeline?
     input shortreal data_fromMem,
 
     //TODO: if ZFinx - have operands as inputs, and output
 
-    output int data_toXreg,
+    output int data_toXReg,
     output shortreal  data_toMem,
-    output logic toXreg_valid, //valid flags for outputs
+    output logic toXReg_valid, //valid flags for outputs
     output logic toMem_valid,
     output logic id_out,
     output logic fpu_ready //Indicate stalls
@@ -69,7 +69,7 @@ module in_rvfpm #(
         input shortreal fromMem,
         output logic[X_ID_WIDTH-1:0] id_out,
         output shortreal toMem,
-        output int toXreg,
+        output int toXReg,
         output logic pipelineFull
         );
     import "DPI-C" function void reset_fpu(input chandle fpu_ptr);
@@ -109,7 +109,7 @@ module in_rvfpm #(
     always_comb begin
         fpu_ready <= pipelineFull;
         data_toMem <= dtm;
-        data_toXreg <= dtx;
+        data_toXReg <= dtx;
     end
 
 

@@ -1,6 +1,6 @@
-
+`timescale 1ns/1ps
 program automatic testPr_rvfpm #(
-    parameter NUM_FPU_REGS,
+    parameter NUM_REGS,
     parameter PIPELINE_STAGES
 )
 (
@@ -19,7 +19,7 @@ program automatic testPr_rvfpm #(
 
 
     task reset();
-        $display("Reset")
+        $display("Reset");
         uin_rvfpm.rst = 1;
         @(posedge uin_rvfpm.ck);
         uin_rvfpm.rst = 0;
@@ -30,8 +30,8 @@ program automatic testPr_rvfpm #(
     task init();
         reset();
         uin_rvfpm.instruction = 0;
-        uin_rvfpm.fromMem = 0;
-        uin_rvfpm.fromXReg = 0;
+        uin_rvfpm.data_fromMem = 0;
+        uin_rvfpm.data_fromXReg = 0;
         @(posedge uin_rvfpm.ck);
         uin_rvfpm.enable = 1;
     endtask
@@ -42,14 +42,14 @@ program automatic testPr_rvfpm #(
         uin_rvfpm.instruction[14:12] = 0; //W
         uin_rvfpm.instruction[11:7] = 0;  //rd (dest)
         uin_rvfpm.instruction[6:0] = 7'b0000111;  //OPCODE
-        for (int i=1; i<NUM_FPU_REGS; ++i) begin
+        for (int i=1; i<NUM_REGS; ++i) begin
             @(posedge uin_rvfpm.ck)
             uin_rvfpm.instruction[11:7] = i; //set register
-            uin_rvfpm.fromMem = $random; //set to random real
+            uin_rvfpm.data_fromMem = $random; //set to random real
         end
         @(posedge uin_rvfpm.ck)
         uin_rvfpm.instruction = 0;
-        uin_rvfpm.fromMem = 0;
+        uin_rvfpm.data_fromMem = 0;
     endtask
 
 

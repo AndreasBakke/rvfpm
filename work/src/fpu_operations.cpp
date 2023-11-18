@@ -75,38 +75,38 @@ FpuPipeObj decode_RTYPE(uint32_t instr) {
         }
         case FCMP:
         {
-            result.toXreg = true;
+            result.toXReg = true;
             break;
         }
         case FCVT_W_S:
         {
             result.addrFrom = {dec_instr.parts.rs1, 999}; //Overwrite since only one address is used
-            result.toXreg = true;
+            result.toXReg = true;
             break;
         }
         case FCVT_S_W: //FCVT.S.W[U]
         {
             result.addrFrom = {dec_instr.parts.rs1, 999}; //Overwrite since only one address is used
-            result.fromXreg = true;
+            result.fromXReg = true;
             break;
         }
         case FCLASS_FMV_X_W:
         {
             result.addrFrom = {dec_instr.parts.rs1, 999}; //Overwrite since only one address is used
-            result.toXreg = true;
+            result.toXReg = true;
         }
         case FMV_W_X:
         {   
-            result.fromXreg = true;
+            result.fromXReg = true;
             break;
         }
     }
     return result;
 }
 
-// FpuPipeObj FPU::operation(uint32_t instruction, int fromXReg, float fromMem, float* toMem, uint32_t* toXreg, bool* pipelineFull) {
+// FpuPipeObj FPU::operation(uint32_t instruction, int fromXReg, float fromMem, float* toMem, uint32_t* toXReg, bool* pipelineFull) {
 
-void execute_RTYPE(FpuPipeObj& op, FpuRf* registerFile, int fromXReg, uint32_t* toXreg){
+void execute_RTYPE(FpuPipeObj& op, FpuRf* registerFile, int fromXReg, uint32_t* toXReg){
     std::feclearexcept(FE_ALL_EXCEPT); //Clear all flags
     RTYPE dec_instr = {.instr = op.instr}; //"Decode" into ITYPE
     FPNumber data1 = registerFile->read(op.addrFrom[0]);
@@ -316,19 +316,19 @@ void execute_RTYPE(FpuPipeObj& op, FpuRf* registerFile, int fromXReg, uint32_t* 
 
     op.flags |=  std::fetestexcept(FE_ALL_EXCEPT);
 
-    if (op.toXreg)
+    if (op.toXReg)
     {
         //Raise out ready flag and write to pointer
-        if (toXreg != nullptr){
-            *toXreg = op.uDataToXreg ^ op.dataToXreg;
+        if (toXReg != nullptr){
+            *toXReg = op.uDataToXreg ^ op.dataToXreg;
         };
     } else
     {
         if(registerFile != nullptr) {
             registerFile->write(op.addrTo, op.data);
         }
-        if (toXreg != nullptr){
-            *toXreg = 0;
+        if (toXReg != nullptr){
+            *toXReg = 0;
         };
     }
 };
