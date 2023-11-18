@@ -1,5 +1,11 @@
-`timescale 1ns/1ps
+/*  rvfpm - 2023
+    Andreas S. Bakke
+    
+    Description:
+    rvfpm testbench.
+*/
 
+`timescale 1ns/1ps
 module rvfpm_tb;
     //-----------------------
     //-- Parameters

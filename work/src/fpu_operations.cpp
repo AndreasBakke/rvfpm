@@ -1,3 +1,9 @@
+/*  rvfpm - 2023
+    Andreas S. Bakke
+    
+    Description:
+    Decode and execute operations for fpu.
+*/
 #include "fpu_operations.h"
 #include <cfenv> //To get flags
 #include <iostream>

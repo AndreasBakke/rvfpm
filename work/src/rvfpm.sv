@@ -1,19 +1,13 @@
-// Interface for riscv floating point verification tool
-// TODO: Connect with cpp model. Where to add pipelines?
-// Zfinx?
-// 
-//Idea: We can implement each stage in cpp. Connect the stages in a SV top module. Then add interface?
-//Weird to find a place to parameterize number of cycles delay. Except if we only want to return it to a output?
+/*  rvfpm - 2023
+    Andreas S. Bakke
+    
+    Description:
+    RISC-V Floating Point Unit Model.
+    Implemented in C++ (fpu_top) and interfaced using sv and DPI-C. 
+    Number of pipeline stages are parameterized. Note: Execute (and dependency on data_fromMem and data_fromXreg) is last stage in pipeline
+    Further work: fully parameterized pipeline. More fp types. Standardized interface (CORE-V-XIF)
+*/
 
-
-// It needs to actually function with pipelineing. eg.  8 executions can be pipelined and get correct results after each clock.
-// Not as simple  as  just delaying output.
-
-//Should we just provide fpu_rf.cpp, fpu_instr.cpp, fp_number and handle pipelineing in c++?
-// Or have fpu_topp.cpp and just wrap that for verilog. so that we import a whole fpu?
-// What makes it easiest for expanding with zfinx?
-
-// TODO: extract these definitions to separate parameter file
 
 `define FLEN 32
 `define XLEN 32

@@ -1,3 +1,11 @@
+/*  rvfpm - 2023
+    Andreas S. Bakke
+    
+    Description:
+    DPI-C Wrapper for rvfpm.sv to interface with fpu_top.cpp.
+*/
+
+
 #include "fpu_top.h"
 #include <iostream>
 // #include <svdpi.h>

@@ -1,5 +1,15 @@
-#include "test.h"
+/*  rvfpm - 2023
+    Andreas S. Bakke
+    
+    Description:
+    Simple test for fpu_top.cpp. Checks that no core functionality has changed. NOT a compliance test.
 
+    Run:
+    make test (macOS).
+    make test_RHEL (RHEL8)
+*/
+
+#include "test.h"
 //Scoreboard
 static int errorcount = 0;
 static int rfDepth = 32;

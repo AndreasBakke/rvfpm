@@ -1,3 +1,10 @@
+/*  rvfpm - 2023
+    Andreas S. Bakke
+    
+    Description:
+    Decode and execute operations for fpu.
+    Aditional types and op-code enums defined
+*/
 #pragma once
 #include "fp_number.h"
 #include "fpu_rf.h"

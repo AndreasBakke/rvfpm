@@ -1,3 +1,9 @@
+/*  rvfpm - 2023
+    Andreas S. Bakke
+    
+    Description:
+    RISC-V Floating Point Unit Model with FP registers, and parameterized number of pipelines
+*/
 #include "fpu_rf.h"
 #include "fp_number.h"
 #include "fpu_pipe.h"

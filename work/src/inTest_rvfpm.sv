@@ -1,5 +1,9 @@
-
-
+/*  rvfpm - 2023
+    Andreas S. Bakke
+    
+    Description:
+    Signal interface for rvfpm_tb
+*/
 interface inTest_rvfpm #(
     parameter int X_ID_WIDTH = 4
 );

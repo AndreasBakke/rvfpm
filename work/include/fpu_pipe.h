@@ -1,3 +1,9 @@
+/*  rvfpm - 2023
+    Andreas S. Bakke
+    
+    Description:
+    Struct for any information that needs to be passed down the pipeline.
+*/
 #pragma once
 #include "fp_number.h"
 #include <vector>
