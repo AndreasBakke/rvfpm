@@ -4,7 +4,7 @@
 using namespace std; // Use the standard namespace
 
 
-FPU::FPU (int pipelineStages, int rfDepth) : registerFile(rfDepth), pipeline(pipelineStages) {
+FPU::FPU (int pipelineStages, int rfDepth) : registerFile(rfDepth), numPipeStages(pipelineStages) {
     #ifndef ZFINX
     
     #else
@@ -13,13 +13,9 @@ FPU::FPU (int pipelineStages, int rfDepth) : registerFile(rfDepth), pipeline(pip
     // for (auto &pipe : pipeline) { 
     //     pipe = {}; //Initialize to empty operations
     // }
-    for (int i = 0; i < pipelineStages; i++)
-    {
-        pipeline[i] = {};
-    }
-    
-    numPipeStages = pipelineStages;
+    pipeline =  deque<FpuPipeObj>(numPipeStages, FpuPipeObj({}));
     std::cout << "FPU pipelineStages: " << numPipeStages << std::endl;
+    std::cout << "NewTestHomie: " << pipeline.size() <<std::endl;
 };
 
 FPU::~FPU(){
@@ -189,7 +185,7 @@ FpuPipeObj FPU::operation(uint32_t instruction, int fromXReg, float fromMem, flo
 
 
 int FPU::pipelineFlush(){
-    pipeline.clear();
+    pipeline =  deque<FpuPipeObj>(numPipeStages, FpuPipeObj({}));
     return 1;
 };
 
