@@ -6,8 +6,9 @@
 
 
 struct FpuPipeObj {
-    std::vector<uint32_t> addrFrom; //For hazards
+    uint32_t instr; //Save instruction
     unsigned int id;  //from Core-V-XIF standard
+    std::vector<uint32_t> addrFrom; //For hazards
     uint32_t addrTo;  //For Hazards
     FPNumber data;
     int instr_type;
@@ -18,8 +19,6 @@ struct FpuPipeObj {
     bool fromMem = 0;
     uint32_t uDataToXreg = 0; //unsigned DataToXreg
     int32_t dataToXreg = 0;
-    // int data_dependency; //Amount of clocks before that need to be "clear"
-    //Stalls - signify how long to stall operation (Todo: need to add a "ready" of some sort from FPU)
 
     bool isEmpty() const {
         return addrFrom.empty() &&

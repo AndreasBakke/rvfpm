@@ -10,7 +10,7 @@
 
 //Enumerate opcodes to functions?
 enum {
-    it_RTYPE, it_ITYPE, it_STYPE
+    it_RTYPE, it_R4TYPE, it_ITYPE, it_STYPE
 } instr_type;
 
 
@@ -90,18 +90,18 @@ enum RTYPE_funct7 {
     FMV_W_X             = 120
 };
 
-FpuPipeObj operation_RTYPE(RTYPE instr, FpuRf* registerFile, int32_t fromXReg);
+//Decode functions
+FpuPipeObj decode_RTYPE(uint32_t instr);
+FpuPipeObj decode_R4TYPE(uint32_t instr);
+FpuPipeObj decode_ITYPE(uint32_t instr);
+FpuPipeObj decode_STYPE(uint32_t instr);
 
-FpuPipeObj operation_R4TYPE(RTYPE instr, FpuRf* registerFile);
+//Execute functions
+void execute_RTYPE(FpuPipeObj& op, FpuRf* registerFile, int fromXReg, uint32_t* toXreg);
+void execute_R4TYPE(FpuPipeObj& op, FpuRf* registerFile);
+void execute_ITYPE(FpuPipeObj& op, FpuRf* registerFile, float fromMem);
+void execute_STYPE(FpuPipeObj& op, FpuRf* registerFile, float* toMem);
 
-FpuPipeObj operation_ITYPE(ITYPE instr, FpuRf* registerFile, float fromMem);
-
-FpuPipeObj operation_STYPE(STYPE instr, FpuRf* registerFile);
-
-
-int LOAD_FP (FpuRf* registerFile); //Etc.
-
-int FADD_FSUB(FpuRf* registerFile);
 
 void setRoundingMode(unsigned int rm);
 

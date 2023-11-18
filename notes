@@ -49,3 +49,17 @@ Tanker 10.11:
 
  Hvis vi får masse invalids, husk:
  FpuPipeObj result = {};
+
+
+
+
+
+  Ting å tenke på: 
+    1. Første steg bør uansett være decode. - her hentes det informasjon ut om hvilke registere som brukes - dependencies - etc...
+    2. Så bør det være avhengig av parametere hvor lenge før execute data må være "klar" / når det loades. Typ: data_load: 1 (klokken før execute), data_load: 2 (bruker begge 2 klokkene før execute)
+    3. Når Disse tingene er klart, vet vi alt vi trenger å vite om data-dependencies, og hvilke hazards som kommer til å skje. R-W, etc...
+    4. Når execute og writeback skjer kan også parametriseres. Bør kanskje hele pipelinen skrives inn som et parameter typ:
+        - pipeline: D-L-L-E-X-X-X-W (Decode -) //Dette kan være masteroppgave relevant!
+    5. Hvis ikke annet er spesifisert burde siste være execute
+
+    Note: Noen operasjoner tar lengre tid på noen platformer, typ divisjon og sqrt tar ofte mye lenger tid enn andre. Kan være en ide å også inkludere variabilitet i operasjonen. Type som en del av instruksjonen kan man legge inn "execution time", som staller pipelinen 

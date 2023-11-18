@@ -17,8 +17,9 @@ class FPU {
     ~FPU();
     void resetFPU();
     FpuPipeObj operation(uint32_t instruction, int fromXReg, float fromMem, float* toMem, uint32_t* toXreg, bool* pipelineFull); //add toXreg and toMem
-    FpuPipeObj decodeOp(uint32_t instruction, int fromXReg, float fromMem);
-    void executeOp(FpuPipeObj op, float* toMem, uint32_t* toXreg);
+    FpuPipeObj decodeOp(uint32_t instruction);
+    void executeOp(FpuPipeObj& op, float fromMem, int fromXreg, float* toMem, uint32_t* toXreg);
+
 
     //Pipeline operations
     FpuPipeObj pipelineStep(FpuPipeObj nextOp, bool* pipelineFull); //Advance pipeline by one step (called by clock in interface)

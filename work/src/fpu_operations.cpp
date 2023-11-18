@@ -3,112 +3,167 @@
 #include <iostream>
 
 
-FpuPipeObj operation_R4TYPE(RTYPE instr, FpuRf* registerFile){
-    std::feclearexcept(FE_ALL_EXCEPT); //Clear all flags
-    //Get data from registerFile
-    FPNumber data1 = registerFile->read(instr.parts_r4type.rs1);
-    FPNumber data2 = registerFile->read(instr.parts_r4type.rs2);
-    FPNumber data3 = registerFile->read(instr.parts_r4type.rs3);
-
+FpuPipeObj decode_R4TYPE(uint32_t instr) {
+    RTYPE dec_instr = {.instr = instr};
     FpuPipeObj result = {};
-    result.addrFrom = {instr.parts_r4type.rs1, instr.parts_r4type.rs2, instr.parts_r4type.rs3};
-    result.addrTo = {instr.parts_r4type.rd};
-    result.instr_type = it_RTYPE;
+    result.addrFrom = {dec_instr.parts_r4type.rs1, dec_instr.parts_r4type.rs2, dec_instr.parts_r4type.rs3};
+    result.addrTo = {dec_instr.parts_r4type.rd};
+    result.instr = instr; //save instruction
+    result.instr_type = it_R4TYPE;
+    return result;
+}
+
+
+
+void execute_R4TYPE(FpuPipeObj& op, FpuRf* registerFile){
+    std::feclearexcept(FE_ALL_EXCEPT); //Clear all flags
+    RTYPE dec_instr = {.instr = op.instr};
+    //Get data from registerFile
+    FPNumber data1 = registerFile->read(op.addrFrom[0]);
+    FPNumber data2 = registerFile->read(op.addrFrom[1]);
+    FPNumber data3 = registerFile->read(op.addrFrom[2]);
 
     //Compute result -- will be added to pipeline
-    switch (instr.parts_r4type.opcode)
+    switch (dec_instr.parts_r4type.opcode)
     {
     case FMADD_S:
     {
-        result.data.f = data1.f * data2.f + data3.f;
+        op.data.f = data1.f * data2.f + data3.f;
         break;
     }
     case FMSUB_S:
     {
-        result.data.f = data1.f * data2.f - data3.f; 
+        op.data.f = data1.f * data2.f - data3.f; 
         break;
     }
     case FNMSUB_S:
     {    
-        result.data.f = -(data1.f * data2.f) - data3.f; 
+        op.data.f = -(data1.f * data2.f) - data3.f; 
         break;
     }
     case FNMADD_S:
     {    
-        result.data.f = -(data1.f * data2.f) + data3.f; 
+        op.data.f = -(data1.f * data2.f) + data3.f; 
         break;
     }
     default:
-        result.flags = 0b10000; //Invalid operation
+        op.flags = 0b10000; //Invalid operation
         break;
     }
-    result.flags |=  std::fetestexcept(FE_ALL_EXCEPT); //Get flags and add to result.
-    return result;
+    op.flags |=  std::fetestexcept(FE_ALL_EXCEPT); //Get flags and add to result.
+
+    if(registerFile != nullptr) {
+        registerFile->write(op.addrTo, op.data);
+    }
+
 };
 
-FpuPipeObj operation_RTYPE(RTYPE instr, FpuRf* registerFile, int32_t fromXReg){
-    std::feclearexcept(FE_ALL_EXCEPT); //Clear all flags
-    FPNumber data1 = registerFile->read(instr.parts.rs1);
-    FPNumber data2 = registerFile->read(instr.parts.rs2);
-
+FpuPipeObj decode_RTYPE(uint32_t instr) {
+    RTYPE dec_instr = {.instr = instr}; //"Decode" into ITYPE
     FpuPipeObj result = {};
-    result.addrFrom = {instr.parts.rs1, instr.parts.rs2};
-    result.addrTo = {instr.parts.rd};
+    result.addrFrom = {dec_instr.parts.rs1, dec_instr.parts.rs2};
+    result.addrTo = {dec_instr.parts.rd};
     result.instr_type = it_RTYPE; //For decoding in execution step.
-    switch (instr.parts.funct7)
+    result.instr = instr; //Save instruction
+    //Override relevant parameters based on function
+    switch (dec_instr.parts.funct7)
+    {
+        case FSQRT_S:
+        {
+            result.addrFrom = {dec_instr.parts.rs1, 999}; //sqrt only dependent on rs1
+            break;
+        }
+        case FCMP:
+        {
+            result.toXreg = true;
+            break;
+        }
+        case FCVT_W_S:
+        {
+            result.addrFrom = {dec_instr.parts.rs1, 999}; //Overwrite since only one address is used
+            result.toXreg = true;
+            break;
+        }
+        case FCVT_S_W: //FCVT.S.W[U]
+        {
+            result.addrFrom = {dec_instr.parts.rs1, 999}; //Overwrite since only one address is used
+            result.fromXreg = true;
+            break;
+        }
+        case FCLASS_FMV_X_W:
+        {
+            result.addrFrom = {dec_instr.parts.rs1, 999}; //Overwrite since only one address is used
+            result.toXreg = true;
+        }
+        case FMV_W_X:
+        {   
+            result.fromXreg = true;
+            break;
+        }
+    }
+    return result;
+}
+
+// FpuPipeObj FPU::operation(uint32_t instruction, int fromXReg, float fromMem, float* toMem, uint32_t* toXreg, bool* pipelineFull) {
+
+void execute_RTYPE(FpuPipeObj& op, FpuRf* registerFile, int fromXReg, uint32_t* toXreg){
+    std::feclearexcept(FE_ALL_EXCEPT); //Clear all flags
+    RTYPE dec_instr = {.instr = op.instr}; //"Decode" into ITYPE
+    FPNumber data1 = registerFile->read(op.addrFrom[0]);
+    FPNumber data2 = registerFile->read(op.addrFrom[1]);
+    switch (dec_instr.parts.funct7)
     {
     case FADD_S:
     {
-        result.data.f = data1.f + data2.f;
+        op.data.f = data1.f + data2.f;
         break;
     }
     case FSUB_S:
     {
-        result.data.f = data1.f - data2.f;
+        op.data.f = data1.f - data2.f;
         break;
     }
     case FMUL_S:
     {
-        result.data.f = data1.f * data2.f;
+        op.data.f = data1.f * data2.f;
         break;
     }
     case FDIV_S:
     {
-        result.data.f = data1.f / data2.f;
+        op.data.f = data1.f / data2.f;
         break;
     }
     case FSQRT_S:
     {
-        result.addrFrom = {instr.parts.rs1}; //sqrt only dependent on rs1
-        result.data.f = sqrt(data1.f);
+        op.data.f = sqrt(data1.f);
         break;
     }
     case FSGNJ:
     {
-        result.data.parts.exponent = data1.parts.exponent;
-        result.data.parts.mantissa = data1.parts.mantissa;
-        switch (instr.parts.funct3)
+        op.data.parts.exponent = data1.parts.exponent;
+        op.data.parts.mantissa = data1.parts.mantissa;
+        switch (dec_instr.parts.funct3)
         {
         case 0b000: //FSGNJ.S
         {
-            result.data.parts.sign = data2.parts.sign;
+            op.data.parts.sign = data2.parts.sign;
             break;
         }
         case 0b001: //FSGNJN.S
         {
-            result.data.parts.sign = !data2.parts.sign;
+            op.data.parts.sign = !data2.parts.sign;
             break;
         }
         case 0b010: //FSGNJX.S
         {
-            result.data = data1;
-            result.data.parts.sign = data2.parts.sign ^ data1.parts.sign;
+            op.data = data1;
+            op.data.parts.sign = data2.parts.sign ^ data1.parts.sign;
             break;
         }
         default:
         {
-            result.flags = 0b10000; //Invalid operation
-            result.data = data1;
+            op.flags = 0b10000; //Invalid operation
+            op.data = data1;
             break;
         }
         }
@@ -116,28 +171,27 @@ FpuPipeObj operation_RTYPE(RTYPE instr, FpuRf* registerFile, int32_t fromXReg){
     }
     case FCMP:
     {
-        result.toXreg = true;
-        switch (instr.parts.funct3)
+        switch (dec_instr.parts.funct3)
         {
         case 0b010: //FEQ.S //TODO: Destination should be Xreg!
         {
-            data1.f == data2.f ? result.uDataToXreg = 1 : result.uDataToXreg = 0;
+            data1.f == data2.f ? op.uDataToXreg = 1 : op.uDataToXreg = 0;
             break;
         }
         case 0b001: //FLT.s //TODO: Destination should be Xreg!
         {
-            data1.f < data2.f ? result.uDataToXreg = 1 : result.uDataToXreg = 0;
+            data1.f < data2.f ? op.uDataToXreg = 1 : op.uDataToXreg = 0;
             break;
         }
         case 0b000: //FLE.S //TODO: Destination should be Xreg!
         {
-            data1.f <= data2.f ? result.uDataToXreg = 1 : result.uDataToXreg = 0;
+            data1.f <= data2.f ? op.uDataToXreg = 1 : op.uDataToXreg = 0;
             break;
         }
         default:
         {
-            result.uDataToXreg = 0;
-            result.flags = 0b10000; //invalid operation
+            op.uDataToXreg = 0;
+            op.flags = 0b10000; //invalid operation
             break;
         }
         }
@@ -145,60 +199,54 @@ FpuPipeObj operation_RTYPE(RTYPE instr, FpuRf* registerFile, int32_t fromXReg){
     }
     case FCVT_W_S:
     {
-        result.addrFrom = {instr.parts.rs1}; //Overwrite since only one address is used
-        result.toXreg = true;
-        switch (instr.parts.rs2) 
+        switch (dec_instr.parts.rs2) 
         {
         case 0b00000: //FCVT.W.S
         {
-            result.dataToXreg= static_cast<int32_t>(nearbyint(data1.f)); //Use nearbyint instead of round, round does not follow rounding mode set in cfenv
+            op.dataToXreg= static_cast<int32_t>(nearbyint(data1.f)); //Use nearbyint instead of round, round does not follow rounding mode set in cfenv
             break;
         }
         case 0b00001: //FCVT.WU.S
         {
-            result.uDataToXreg = static_cast<uint32_t>(nearbyint(data1.f));
+            op.uDataToXreg = static_cast<uint32_t>(nearbyint(data1.f));
             break;
         }
         default:
         {
             //TODO: what should dataToXreg be?
-            result.dataToXreg = 0;
-            result.flags = 0b10000; //invalid operation
+            op.dataToXreg = 0;
+            op.flags = 0b10000; //invalid operation
         }
         }
         break;
     }    
     case FCVT_S_W: //FCVT.S.W[U]
     {
-        result.addrFrom = {instr.parts.rs1}; //Overwrite since only one address is used
-        result.fromXreg = true;
-        switch (instr.parts.rs2)
+        switch (dec_instr.parts.rs2)
         {
         case 0b00000: //FCVT.S.W
         {
-            result.data.f = static_cast<float>(fromXReg);
+            op.data.f = static_cast<float>(fromXReg);
             break;
         }
         case 0b00001: //FCVT.S.WU
         {
-            result.data.f = static_cast<float>(static_cast<uint32_t>(fromXReg)); //Cast to unsigned first
+            op.data.f = static_cast<float>(static_cast<uint32_t>(fromXReg)); //Cast to unsigned first
             break;
         }
         default:
-            result.flags = 0b10000; //Invalid operation
+            op.flags = 0b10000; //Invalid operation
             break;
         }
         break;
     }
     case FCLASS_FMV_X_W:
     {
-        result.toXreg = true; //write to integer register
-        result.addrFrom = {instr.parts.rs1}; //Overwrite since only one address is used
-        switch (instr.parts.funct3)
+        switch (dec_instr.parts.funct3)
         {
         case 0b000: //FMV_X_W
         {  
-            result.uDataToXreg = data1.bitpattern;
+            op.uDataToXreg = data1.bitpattern;
             break;
         }    
         case 0b001: //FCLASS.S
@@ -208,88 +256,117 @@ FpuPipeObj operation_RTYPE(RTYPE instr, FpuRf* registerFile, int32_t fromXReg){
                 //subnormal number
                 if (data1.f < 0) 
                 {
-                    result.uDataToXreg = 0b0000000100;
+                    op.uDataToXreg = 0b0000000100;
                 } else if (data1.f > 0)
                 {
-                    result.uDataToXreg = 0b0000100000;
+                    op.uDataToXreg = 0b0000100000;
                 } else {
-                    result.flags = 0b10000; //Invalid operation
+                    op.flags = 0b10000; //Invalid operation
                 }
             } else
             {
                 //normal numbers
                 if (data1.f == -INFINITY) //negative inf.
                 {
-                    result.uDataToXreg = 0b0000000001;
+                    op.uDataToXreg = 0b0000000001;
                 } else if (data1.f < 0) //negative normal number
                 {
-                    result.uDataToXreg = 0b0000000010;
+                    op.uDataToXreg = 0b0000000010;
                 } else if (data1.f == -0) //negative zero
                 {
-                    result.uDataToXreg = 0b0000001000;
+                    op.uDataToXreg = 0b0000001000;
                 } else if (data1.f == 0) //positive 0
                 {
-                    result.uDataToXreg = 0b0000010000;
+                    op.uDataToXreg = 0b0000010000;
                 } else if (data1.f > 0) //positive normal number
                 {
-                    result.uDataToXreg = 0b0001000000;
+                    op.uDataToXreg = 0b0001000000;
                 } else if (data1.f == INFINITY) //positive inf
                 {
-                    result.uDataToXreg = 0b0010000000;
+                    op.uDataToXreg = 0b0010000000;
                 } else if (std::isnan(data1.f) && !(data1.parts.mantissa & 0x00400000)) //If leadning mantissa-bit is not set -> sNaN
                 {
-                    result.uDataToXreg = 0b0100000000; //SNaN
+                    op.uDataToXreg = 0b0100000000; //SNaN
                 } else if (std::isnan(data1.f))
                 {
-                    result.uDataToXreg = 0b1000000000; //QNaN
+                    op.uDataToXreg = 0b1000000000; //QNaN
                 } else {
-                    result.uDataToXreg = 0b0000000000; 
-                    result.flags = 0b10000; //Invalid operation
+                    op.uDataToXreg = 0b0000000000; 
+                    op.flags = 0b10000; //Invalid operation
                 };
             }
             break;
         }
         default:
-            result.flags = 0b10000; //Invalid operation
+            op.flags = 0b10000; //Invalid operation
             break;
         }
     }
     case FMV_W_X:
     {   
         //Moves data from X to W(F)
-        result.fromXreg = true;
-        result.data.bitpattern =  fromXReg;
+        op.data.bitpattern =  fromXReg;
         break;
     }
     //TODO: check pseudops 
     default:
-        result.flags = 0b10000; //Invalid operation
+        op.flags = 0b10000; //Invalid operation
         break;
     }
 
-    result.flags |=  std::fetestexcept(FE_ALL_EXCEPT);
-    return result;
+    op.flags |=  std::fetestexcept(FE_ALL_EXCEPT);
+
+    if (op.toXreg)
+    {
+        //Raise out ready flag and write to pointer
+        if (toXreg != nullptr){
+            *toXreg = op.uDataToXreg ^ op.dataToXreg;
+        };
+    } else
+    {
+        if(registerFile != nullptr) {
+            registerFile->write(op.addrTo, op.data);
+        }
+        if (toXreg != nullptr){
+            *toXreg = 0;
+        };
+    }
 };
 
-FpuPipeObj operation_ITYPE(ITYPE instr, FpuRf* registerFile, float fromMem){
-    //Only ITYPE operation implemented is FLW
+FpuPipeObj decode_ITYPE(uint32_t instr) {
+    ITYPE dec_instr = {.instr = instr}; //"Decode" into ITYPE
     FpuPipeObj result = {};
-    result.fromMem = true;
     result.addrFrom = {}; //FLW is atomic
-    result.data.f = fromMem;
-    result.addrTo = instr.parts.rd;
+    result.addrTo = dec_instr.parts.rd;
     result.instr_type = it_ITYPE;
     return result;
 }
 
-FpuPipeObj operation_STYPE(STYPE instr, FpuRf* registerFile){
+void execute_ITYPE(FpuPipeObj& op, FpuRf* registerFile, float fromMem){
+    //Only ITYPE operation implemented is FLW
+    op.data.f = fromMem;
+    if (registerFile != nullptr) {
+        registerFile->write(op.addrTo, op.data);
+    }
+}
+
+FpuPipeObj decode_STYPE(uint32_t instr){
+    STYPE dec_instr = {.instr = instr}; //Decode into STYPE
     FpuPipeObj result = {};
-    result.addrFrom = {instr.parts.rs2};
+    result.addrFrom = {dec_instr.parts.rs2};
     result.addrTo = 0; //destination is memory
     result.toMem = true;
-    result.data = registerFile->read(instr.parts.rs2);
     result.instr_type = it_STYPE;
     return result;
+}
+
+void execute_STYPE(FpuPipeObj& op, FpuRf* registerFile, float* toMem){
+    if (registerFile != nullptr) {
+        op.data = registerFile->read(op.addrFrom.front()); 
+    }
+    if (toMem != nullptr) {
+        *toMem = op.data.f;
+    }
 }
 
 void setRoundingMode(unsigned int rm){ //Sets c++ rounding mode. FCSR is written seperately
