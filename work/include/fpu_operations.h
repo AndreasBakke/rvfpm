@@ -10,7 +10,7 @@
 
 //Enumerate opcodes to functions?
 enum {
-    it_RTYPE, it_R4TYPE, it_ITYPE, it_STYPE
+    it_NONE, it_RTYPE, it_R4TYPE, it_ITYPE, it_STYPE
 } instr_type;
 
 

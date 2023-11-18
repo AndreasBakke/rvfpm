@@ -97,6 +97,12 @@ void FPU::executeOp(FpuPipeObj& op, float fromMem, int fromXreg, float* toMem, u
         }
         default:
             //If no operation is in pipeline: do nothing
+            if (toMem != nullptr) {
+                toMem = 0;
+            }
+            if (toXreg != nullptr) {
+                toXreg = 0;
+            }
             break;
     }
     registerFile.raiseFlags(op.flags);
