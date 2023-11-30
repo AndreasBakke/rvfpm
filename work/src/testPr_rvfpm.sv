@@ -19,13 +19,13 @@ program automatic testPr_rvfpm #(
         init();
         fillRF();
         basic();
-        
+
         repeat(100) testRTYPE();
         testRTYPE(.rd(19)); //Test with specified destination
         @(posedge uin_rvfpm.ck);
         uin_rvfpm.instruction = 0;
         repeat(PIPELINE_STAGES*2) @(posedge uin_rvfpm.ck);
-        repeat(10) @(posedge u_assertions_rvfpm); //Wait a bit
+        repeat(10) @(posedge uin_rvfpm.ck); //Wait a bit
 
 
         repeat(100) testSTYPE();
@@ -33,6 +33,9 @@ program automatic testPr_rvfpm #(
         @(posedge uin_rvfpm.ck);
         uin_rvfpm.instruction = 0;
         repeat(PIPELINE_STAGES*2) @(posedge uin_rvfpm.ck);
+
+        repeat(10) @(posedge uin_rvfpm.ck); //Wait a bit
+        repeat(100) (testRTYPE(.funct7(7'b1110000), .rs2(0), .funct3(0)); @(posedge uin_rvfpm.ck) uin_rvfpm.instruction = 0;); //test FMV.X:W (move to integer). Set instr to 0 to toggle toXReg_valid.
 
         $finish;
     end
@@ -78,16 +81,18 @@ program automatic testPr_rvfpm #(
         uin_rvfpm.data_fromMem = 0;
     endtask
 
-    task testRTYPE(input int funct5 = 0, input int rs2 = $urandom_range(0, NUM_REGS-1), input int rs1 = $urandom_range(0, NUM_REGS-1), input int rd = $urandom_range(0, NUM_REGS-1));
+    task testRTYPE(input int funct7 = 0, input int rs2 = $urandom_range(0, NUM_REGS-1), input int rs1 = $urandom_range(0, NUM_REGS-1), input int funct3 = 0, input int rd = $urandom_range(0, NUM_REGS-1));
         @(posedge uin_rvfpm.ck)
-        uin_rvfpm.instruction[31:28] = funct5;
-        uin_rvfpm.instruction[26:25] = 0; //fmt
+        uin_rvfpm.instruction[31:25] = funct7;
         uin_rvfpm.instruction[24:20] = rs2; //rs2
         uin_rvfpm.instruction[19:15] = rs1; //rs1 (base)
-        uin_rvfpm.instruction[14:12] = 0; //RM
+        uin_rvfpm.instruction[14:12] = funct3; //RM
         uin_rvfpm.instruction[11:7] = rd;  //rd (dest)
         uin_rvfpm.instruction[6:0] = 7'b1010011;  //OPCODE
     endtask
+
+    // task testR4TYPE() 
+    // endtask
 
     task testSTYPE(input int imm = 0, input int rs2 = $urandom_range(0, NUM_REGS-1), input int rs1 = 0, input int offset = 0);
         @(posedge uin_rvfpm.ck)
@@ -98,8 +103,8 @@ program automatic testPr_rvfpm #(
         uin_rvfpm.instruction[11:7] = offset;  //rd
         uin_rvfpm.instruction[6:0] = 7'b0100111;  //OPCODE
         $display(rs2);
-        $display(funct5);
-        $display(rd);
+        @(posedge uin_rvfpm.ck)
+        uin_rvfpm.instruction = 0; //So toMem_valid toggles
     endtask
 
 

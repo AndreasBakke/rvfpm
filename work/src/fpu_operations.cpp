@@ -252,7 +252,7 @@ void execute_RTYPE(FpuPipeObj& op, FpuRf* registerFile, int fromXReg, uint32_t* 
         {
         case 0b000: //FMV_X_W
         {  
-            op.uDataToXreg = data1.bitpattern;
+            op.dataToXreg = data1.f; //TODO: should this be bitpattern, f or uDataToXReg
             break;
         }    
         case 0b001: //FCLASS.S
