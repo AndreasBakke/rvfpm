@@ -112,7 +112,7 @@ FpuPipeObj decode_RTYPE(uint32_t instr) {
 
 // FpuPipeObj FPU::operation(uint32_t instruction, int fromXReg, float fromMem, float* toMem, uint32_t* toXReg, bool* pipelineFull) {
 
-void execute_RTYPE(FpuPipeObj& op, FpuRf* registerFile, int fromXReg, uint32_t* toXReg){
+void execute_RTYPE(FpuPipeObj& op, FpuRf* registerFile, int fromXReg, uint32_t* toXReg, bool* toXreg_valid){
     std::feclearexcept(FE_ALL_EXCEPT); //Clear all flags
     RTYPE dec_instr = {.instr = op.instr}; //"Decode" into ITYPE
     FPNumber data1 = registerFile->read(op.addrFrom[0]);
@@ -179,17 +179,17 @@ void execute_RTYPE(FpuPipeObj& op, FpuRf* registerFile, int fromXReg, uint32_t* 
     {
         switch (dec_instr.parts.funct3)
         {
-        case 0b010: //FEQ.S //TODO: Destination should be Xreg!
+        case 0b010: //FEQ.S
         {
             data1.f == data2.f ? op.uDataToXreg = 1 : op.uDataToXreg = 0;
             break;
         }
-        case 0b001: //FLT.s //TODO: Destination should be Xreg!
+        case 0b001: //FLT.s
         {
             data1.f < data2.f ? op.uDataToXreg = 1 : op.uDataToXreg = 0;
             break;
         }
-        case 0b000: //FLE.S //TODO: Destination should be Xreg!
+        case 0b000: //FLE.S
         {
             data1.f <= data2.f ? op.uDataToXreg = 1 : op.uDataToXreg = 0;
             break;
@@ -290,7 +290,7 @@ void execute_RTYPE(FpuPipeObj& op, FpuRf* registerFile, int fromXReg, uint32_t* 
                 } else if (data1.f == INFINITY) //positive inf
                 {
                     op.uDataToXreg = 0b0010000000;
-                } else if (std::isnan(data1.f) && !(data1.parts.mantissa & 0x00400000)) //If leadning mantissa-bit is not set -> sNaN
+                } else if (std::isnan(data1.f) && !(data1.parts.mantissa & 0x00400000)) //If leading mantissa-bit is not set -> sNaN
                 {
                     op.uDataToXreg = 0b0100000000; //SNaN
                 } else if (std::isnan(data1.f))
@@ -328,14 +328,14 @@ void execute_RTYPE(FpuPipeObj& op, FpuRf* registerFile, int fromXReg, uint32_t* 
         if (toXReg != nullptr){
             *toXReg = op.uDataToXreg ^ op.dataToXreg;
         };
+        if (toXreg_valid != nullptr) {
+            *toXreg_valid = 1;
+        }
     } else
     {
         if(registerFile != nullptr) {
             registerFile->write(op.addrTo, op.data);
         }
-        if (toXReg != nullptr){
-            *toXReg = 0;
-        };
     }
 };
 
@@ -366,12 +366,15 @@ FpuPipeObj decode_STYPE(uint32_t instr){
     return result;
 }
 
-void execute_STYPE(FpuPipeObj& op, FpuRf* registerFile, float* toMem){
+void execute_STYPE(FpuPipeObj& op, FpuRf* registerFile, float* toMem, bool* toMem_valid){
     if (registerFile != nullptr) {
         op.data = registerFile->read(op.addrFrom.front()); 
     }
     if (toMem != nullptr) {
         *toMem = op.data.f;
+    }
+    if (toMem_valid != nullptr) {
+        *toMem_valid = 1; //TODO: check if it is actually valid. TODO: rename ready?
     }
 }
 

@@ -7,3 +7,55 @@
 
 
 //And use the parameters for when to check (like in testPR writing to fromMem)
+
+/*  rvfpm - 2023
+    Andreas S. Bakke
+    
+    Description:
+    Assertions for rvfpm testPr
+*/
+
+module assertions_rvfpm #(
+    parameter NUM_REGS,
+    parameter PIPELINE_STAGES
+)(
+    inTest_rvfpm uin_rvfpm
+);
+
+//-----------------------
+//-- Local error counter
+//-----------------------
+int errorCnt = 0;
+assign uin_rvfpm.errorCntAssertions = errorCnt;
+logic ck;
+logic rst;
+assign ck = uin_rvfpm.ck;
+assign rst = uin_rvfpm.rst;
+
+
+
+//-----------------------
+//-- Pipeline
+//-----------------------
+
+property prop_pipelineStep;
+    @(posedge uin_rvfpm.ck) 
+    disable iff (rst || uin_rvfpm.enable) 
+    (for (int i=0; i<PIPELINE_STAGES; ++i) begin
+        
+    end);
+endproperty;
+
+//-----------------------
+//-- Operations
+//-----------------------
+
+
+//-----------------------
+//-- fcsr
+//-----------------------
+
+
+//-----------------------
+//-- Reset
+//-----------------------

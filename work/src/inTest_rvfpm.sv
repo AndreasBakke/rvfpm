@@ -32,6 +32,8 @@ interface inTest_rvfpm #(
     logic fpu_ready;
     int unsigned instruction;
 
+    shortreal registerFile[TB_NUM_FPU_REGS]; //For verification
+
     //-----------------------
     //-- CORE-V-XIF
     //-----------------------

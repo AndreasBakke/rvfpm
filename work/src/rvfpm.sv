@@ -76,7 +76,6 @@ module rvfpm #(
     logic pipelineFull; //status signal
     shortreal dtm; //data to mem
     int dtx; //data to X-reg
-    shortreal registerFile[NUM_REGS]; //For verification
     //-----------------------
     //-- Initialization
     //-----------------------
@@ -92,10 +91,7 @@ module rvfpm #(
         end
         else if (enable) begin //TODO: if implemented as coprosessor, follow CORE-V-XIF conventions
             fpu_operation(fpu, instruction, 0, 0, data_fromMem, id_out, dtm, dtx, pipelineFull);
-            //Get entire rf for verification
-            for (int i=0; i< NUM_REGS; ++i) begin
-                registerFile[i] = getRFContent(fpu, i);
-            end
+
         end begin
         end
     end

@@ -10,7 +10,6 @@
 
     Operations not tested by BTF:
         FSGNJ
-        FCMP
         FCLASS
         FMV
         (FMSUB, FNMSUB, FNMADD not directly tested, but should have the same behavior as FMADD with varied signs)
@@ -146,14 +145,14 @@ int main(int argc, char** argv) {
             uint32_t r2 = 2; 
             uint32_t r3 = 3; 
             ITYPE instr_load = {.parts= {7, r1, 0b010, 0, 0}};
-            testFPU.operation(instr_load.instr, 0, a, nullptr, nullptr, nullptr);
+            testFPU.operation(instr_load.instr, 0, a, nullptr, nullptr, nullptr, nullptr, nullptr);
             instr_load = {.parts= {7, r2, 0b010, 0, 0}};
-            testFPU.operation(instr_load.instr, 0, b, nullptr, nullptr, nullptr);
+            testFPU.operation(instr_load.instr, 0, b, nullptr, nullptr, nullptr, nullptr, nullptr);
             instr_load = {.parts= {7, r3, 0b010, 0, 0}};
-            testFPU.operation(instr_load.instr, 0, c, nullptr, nullptr, nullptr);
+            testFPU.operation(instr_load.instr, 0, c, nullptr, nullptr, nullptr, nullptr, nullptr);
         
             RTYPE instr_r4type = {.parts_r4type= {FMADD_S, 0, 0b000, r1, r2, 0b00, r3}};
-            FpuPipeObj result = testFPU.operation(instr_r4type.instr, 0, 0, nullptr, nullptr, nullptr);
+            FpuPipeObj result = testFPU.operation(instr_r4type.instr, 0, 0, nullptr, nullptr, nullptr, nullptr, nullptr);
             std::cout << input1 << " " << input2 << " " << input3 << " " << floatToHex(result.data.f) << " " << convFlags(result.flags)  << std::endl;
         }
     } else if (op == "fsqrt" || op == "ui32_to_f32" || op == "i32_to_f32" || op == "f32_to_ui32" || op == "f32_to_i32") { //fsqrt uses only three inputs
@@ -163,31 +162,31 @@ int main(int argc, char** argv) {
             float c = hexToFloat(input3);
             //Load values
             ITYPE instr_load = {.parts= {7, r1, 0b010, 0, 0}};
-            testFPU.operation(instr_load.instr, 0, a, nullptr, nullptr, nullptr);
+            testFPU.operation(instr_load.instr, 0, a, nullptr, nullptr, nullptr, nullptr, nullptr);
             instr_load = {.parts= {7, r2, 0b010, 0, 0}};
-            testFPU.operation(instr_load.instr, 0, b, nullptr, nullptr, nullptr);
+            testFPU.operation(instr_load.instr, 0, b, nullptr, nullptr, nullptr, nullptr, nullptr);
             //Do operation
             RTYPE instr_rtype = {};
             FpuPipeObj result = {};
             if (op == "fsqrt") {
                 instr_rtype = {.parts= {OP_FP, rd, 0b000, r1, 0b00000, FSQRT_S}};
-                result =  testFPU.operation(instr_rtype.instr, 0, 0,nullptr, nullptr, nullptr);
+                result =  testFPU.operation(instr_rtype.instr, 0, 0,nullptr, nullptr, nullptr, nullptr, nullptr);
             }
             else if (op == "ui32_to_f32") {
                 instr_rtype = {.parts= {OP_FP, rd, 0b000, r1, 0b00001, FCVT_S_W}};
-                result =  testFPU.operation(instr_rtype.instr, hexToUnsignedInt(input1), 0, nullptr, nullptr, nullptr);
+                result =  testFPU.operation(instr_rtype.instr, hexToUnsignedInt(input1), 0, nullptr, nullptr, nullptr, nullptr, nullptr);
             }
             else if (op == "i32_to_f32") {
                 instr_rtype = {.parts= {OP_FP, rd, 0b000, r1, 0b00000, FCVT_S_W}};
-                result =  testFPU.operation(instr_rtype.instr, hexToUnsignedInt(input1), 0, nullptr, nullptr, nullptr);
+                result =  testFPU.operation(instr_rtype.instr, hexToUnsignedInt(input1), 0, nullptr, nullptr, nullptr, nullptr, nullptr);
             }
             else if (op == "f32_to_ui32") {
                 instr_rtype = {.parts= {OP_FP, rd, 0b000, r1, 0b00001, FCVT_W_S}};
-                result =  testFPU.operation(instr_rtype.instr, 0, 0, nullptr, &xReg, nullptr);
+                result =  testFPU.operation(instr_rtype.instr, 0, 0, nullptr, &xReg, nullptr, nullptr, nullptr);
             }
             else if (op == "f32_to_i32") {
                 instr_rtype = {.parts= {OP_FP, rd, 0b000, r1, 0b00000, FCVT_W_S}};
-                result =  testFPU.operation(instr_rtype.instr, 0, 0, nullptr, &xReg, nullptr);
+                result =  testFPU.operation(instr_rtype.instr, 0, 0, nullptr, &xReg, nullptr, nullptr, nullptr);
             }
             if (op == "fsqrt" || op == "ui32_to_f32" || op == "i32_to_f32") {
                 std::cout << input1 << " " << floatToHex(result.data.f) << " " << convFlags(result.flags)  << std::endl;
@@ -202,9 +201,9 @@ int main(int argc, char** argv) {
             float c = hexToFloat(input3);
             //Load values
             ITYPE instr_load = {.parts= {7, r1, 0b010, 0, 0}};
-            testFPU.operation(instr_load.instr, 0, a, nullptr, nullptr, nullptr);
+            testFPU.operation(instr_load.instr, 0, a, nullptr, nullptr, nullptr, nullptr, nullptr);
             instr_load = {.parts= {7, r2, 0b010, 0, 0}};
-            testFPU.operation(instr_load.instr, 0, b, nullptr, nullptr, nullptr);
+            testFPU.operation(instr_load.instr, 0, b, nullptr, nullptr, nullptr, nullptr, nullptr);
             //Do operation
             RTYPE instr_rtype;
             if (op == "fadd")
@@ -235,7 +234,7 @@ int main(int argc, char** argv) {
             {
                 instr_rtype = {.parts = {OP_FP, rd, 0b000, r1, r2, FCMP}};
             }
-            FpuPipeObj result =  testFPU.operation(instr_rtype.instr, 0, 0, &mem, &xReg, nullptr);
+            FpuPipeObj result =  testFPU.operation(instr_rtype.instr, 0, 0, &mem, &xReg, nullptr, nullptr, nullptr);
             if (op == "feq" || op == "flt" || op == "fle"){
                 std::cout << input1 << " " << input2 << " " << std::to_string(xReg).front() << " " << convFlags(result.flags)  << std::endl;
             } else {

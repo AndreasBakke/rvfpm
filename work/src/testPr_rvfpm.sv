@@ -1,3 +1,10 @@
+/*  rvfpm - 2023
+    Andreas S. Bakke
+    
+    Description:
+    TestProgram for rvfpm verification
+*/
+
 `timescale 1ns/1ps
 program automatic testPr_rvfpm #(
     parameter NUM_REGS,

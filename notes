@@ -51,10 +51,20 @@ Tanker 10.11:
  FpuPipeObj result = {};
 
 
+Plan siste innspurt:
+- Verifiser fscr
+- Verifiser siste operation
+- assertions
+- Flags (like ToXReg_valid aswell as error flags)!
+- TODOs
 
 
 
-  Ting å tenke på: 
+
+
+
+
+  Ting å tenke på (Dette bør gjøres til master!): 
     1. Første steg bør uansett være decode. - her hentes det informasjon ut om hvilke registere som brukes - dependencies - etc...
     2. Så bør det være avhengig av parametere hvor lenge før execute data må være "klar" / når det loades. Typ: data_load: 1 (klokken før execute), data_load: 2 (bruker begge 2 klokkene før execute)
     3. Når Disse tingene er klart, vet vi alt vi trenger å vite om data-dependencies, og hvilke hazards som kommer til å skje. R-W, etc...

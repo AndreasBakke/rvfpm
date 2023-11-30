@@ -3,6 +3,8 @@
     
     Description:
     rvfpm testbench.
+    Prerequisites: Compile c++ model using make rhelSL (macSL not tested/verified)
+    Then run vsim using -sv_lib bin/lib_rvfpm -novopt work.rvfpm_tb -suppress 12110
 */
 
 `timescale 1ns/1ps
@@ -64,6 +66,18 @@ module rvfpm_tb;
         .toMem_valid(uin_rvfpm.toMem_valid),
 	    .fpu_ready(uin_rvfpm.fpu_ready) 
     );
+    import "DPI-C" function shortreal getRFContent(input chandle fpu_ptr, input int addr);
+
+    always @(posedge uin_rvfpm.ck) begin
+        //Get entire rf for verification
+        for (int i=0; i< TB_NUM_FPU_REGS; ++i) begin
+            uin_rvfpm.registerFile[i] = getRFContent(dut.fpu, i);
+        end
+        //Get entire pipeline for verification
+        // for()
+
+    end
+
 
     //-----------------------
     //-- Assertions
