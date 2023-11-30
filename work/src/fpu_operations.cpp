@@ -252,7 +252,7 @@ void execute_RTYPE(FpuPipeObj& op, FpuRf* registerFile, int fromXReg, uint32_t* 
         {
         case 0b000: //FMV_X_W
         {  
-            op.dataToXreg = data1.f; //TODO: should this be bitpattern, f or uDataToXReg
+            op.dataToXreg = data1.bitpattern;
             break;
         }    
         case 0b001: //FCLASS.S
@@ -310,7 +310,7 @@ void execute_RTYPE(FpuPipeObj& op, FpuRf* registerFile, int fromXReg, uint32_t* 
     }
     case FMV_W_X:
     {   
-        //Moves data from X to W(F)
+        //Moves bitpattern from X to W(F)
         op.data.bitpattern =  fromXReg;
         break;
     }
