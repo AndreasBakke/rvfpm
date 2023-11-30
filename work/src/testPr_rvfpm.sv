@@ -13,7 +13,8 @@ program automatic testPr_rvfpm #(
 (
     inTest_rvfpm uin_rvfpm
 );
-    
+    import "DPI-C" function shortreal randomFloat(); //C++ function for random float generation
+
     initial begin
         $display("--- Starting simulation ---");
         init();
@@ -35,8 +36,10 @@ program automatic testPr_rvfpm #(
         repeat(PIPELINE_STAGES*2) @(posedge uin_rvfpm.ck);
 
         repeat(10) @(posedge uin_rvfpm.ck); //Wait a bit
-        repeat(100) (testRTYPE(.funct7(7'b1110000), .rs2(0), .funct3(0)); @(posedge uin_rvfpm.ck) uin_rvfpm.instruction = 0;); //test FMV.X:W (move to integer). Set instr to 0 to toggle toXReg_valid.
-
+        repeat(100) begin
+           testRTYPE(.funct7(7'b1110000), .rs2(0), .funct3(0)); //test FMV.X:W (move to integer). 
+           @(posedge uin_rvfpm.ck) uin_rvfpm.instruction = 0; //Set instr to 0 to toggle toXReg_valid.
+        end
         $finish;
     end
 
@@ -71,7 +74,7 @@ program automatic testPr_rvfpm #(
             fork
                 begin
                     repeat(PIPELINE_STAGES) @(posedge uin_rvfpm.ck);
-                    uin_rvfpm.data_fromMem = $random; //set to random real at the appropriate time
+                    uin_rvfpm.data_fromMem = randomFloat(); //set to random real at the appropriate time
                 end
             join_none
             @(posedge uin_rvfpm.ck);
@@ -102,7 +105,6 @@ program automatic testPr_rvfpm #(
         uin_rvfpm.instruction[14:12] = 3'b010; //rm (W)
         uin_rvfpm.instruction[11:7] = offset;  //rd
         uin_rvfpm.instruction[6:0] = 7'b0100111;  //OPCODE
-        $display(rs2);
         @(posedge uin_rvfpm.ck)
         uin_rvfpm.instruction = 0; //So toMem_valid toggles
     endtask

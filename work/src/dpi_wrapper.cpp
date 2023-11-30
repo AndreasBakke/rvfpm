@@ -35,4 +35,8 @@ extern "C" {
         FPU* fpu = static_cast<FPU*>(fpu_ptr);
         return  fpu->bd_getData(reg).f;
     }
+
+    float randomFloat() { //Generate random float (not available in SV.)
+        return static_cast<float>(rand())/static_cast<float>(rand()); //Generate random float
+    }
 }
