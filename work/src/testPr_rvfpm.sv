@@ -19,11 +19,21 @@ program automatic testPr_rvfpm #(
         init();
         fillRF();
         basic();
-        repeat(100) testRTYPE(); //TODO: do we need to seed random?
+        
+        repeat(100) testRTYPE();
         testRTYPE(.rd(19)); //Test with specified destination
         @(posedge uin_rvfpm.ck);
         uin_rvfpm.instruction = 0;
         repeat(PIPELINE_STAGES*2) @(posedge uin_rvfpm.ck);
+        repeat(10) @(posedge u_assertions_rvfpm); //Wait a bit
+
+
+        repeat(100) testSTYPE();
+        testSTYPE(.rs2(4)); //Read register 4.
+        @(posedge uin_rvfpm.ck);
+        uin_rvfpm.instruction = 0;
+        repeat(PIPELINE_STAGES*2) @(posedge uin_rvfpm.ck);
+
         $finish;
     end
 
@@ -50,7 +60,7 @@ program automatic testPr_rvfpm #(
         //Fills register file with random value
         uin_rvfpm.instruction[31:20] = 0; //imm
         uin_rvfpm.instruction[19:15] = 0; //rs1 (base)
-        uin_rvfpm.instruction[14:12] = 0; //W
+        uin_rvfpm.instruction[14:12] = 3'b010; //rm (W)
         uin_rvfpm.instruction[11:7] = 0;  //rd (dest)
         uin_rvfpm.instruction[6:0] = 7'b0000111;  //OPCODE
         for (int i=0; i<NUM_REGS; ++i) begin 
@@ -77,10 +87,22 @@ program automatic testPr_rvfpm #(
         uin_rvfpm.instruction[14:12] = 0; //RM
         uin_rvfpm.instruction[11:7] = rd;  //rd (dest)
         uin_rvfpm.instruction[6:0] = 7'b1010011;  //OPCODE
+    endtask
+
+    task testSTYPE(input int imm = 0, input int rs2 = $urandom_range(0, NUM_REGS-1), input int rs1 = 0, input int offset = 0);
+        @(posedge uin_rvfpm.ck)
+        uin_rvfpm.instruction[31:25] = imm;
+        uin_rvfpm.instruction[24:20] = rs2; //rs2 (src)
+        uin_rvfpm.instruction[19:15] = rs1; //rs1 (base)
+        uin_rvfpm.instruction[14:12] = 3'b010; //rm (W)
+        uin_rvfpm.instruction[11:7] = offset;  //rd
+        uin_rvfpm.instruction[6:0] = 7'b0100111;  //OPCODE
         $display(rs2);
         $display(funct5);
         $display(rd);
     endtask
+
+
 
     task basic();
         @(posedge uin_rvfpm.ck);

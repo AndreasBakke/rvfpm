@@ -90,7 +90,7 @@ void FPU::executeOp(FpuPipeObj& op, float fromMem, int fromXReg, float* toMem, u
         *toMem_valid = false;
     }
     if (toXReg_valid != nullptr) {
-        *toMem_valid = false;
+        *toXReg_valid = false;
     }
 
 
