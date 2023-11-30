@@ -36,7 +36,8 @@ extern "C" {
         return  fpu->bd_getData(reg).f;
     }
 
-    float randomFloat() { //Generate random float (not available in SV.)
-        return static_cast<float>(rand())/static_cast<float>(rand()); //Generate random float
+    float randomFloat() { //Generate pseudorandom float (not available in SV.)
+        uint32_t randomInt = random();
+        return *reinterpret_cast<float*>(&randomInt); //Generate random float
     }
 }
