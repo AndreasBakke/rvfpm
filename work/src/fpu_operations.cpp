@@ -329,7 +329,7 @@ void execute_RTYPE(FpuPipeObj& op, FpuRf* registerFile, int fromXReg, uint32_t* 
             *toXReg = op.uDataToXreg ^ op.dataToXreg;
         };
         if (toXReg_valid != nullptr) {
-            *toXReg_valid = 1;
+            *toXReg_valid = true;
         }
     } else
     {
@@ -374,7 +374,7 @@ void execute_STYPE(FpuPipeObj& op, FpuRf* registerFile, float* toMem, bool* toMe
         *toMem = op.data.f;
     }
     if (toMem_valid != nullptr) {
-        *toMem_valid = 1; //TODO: check if it is actually valid. TODO: rename ready?
+        *toMem_valid = true; //TODO: check if it is actually valid. TODO: rename to ready?
     }
 }
 

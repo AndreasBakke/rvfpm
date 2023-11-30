@@ -79,18 +79,18 @@ void FPU::executeOp(FpuPipeObj& op, float fromMem, int fromXReg, float* toMem, u
         }
     #endif
 
-    //Set outputs to zero
+    //Set outputs to zero -> Overwritten in ex.
     if (toMem != nullptr) {
-        toMem = 0;
+        *toMem = 0;
     }
     if (toXReg != nullptr) {
-        toXReg = 0;
+        *toXReg = 0;
     }
     if (toMem_valid != nullptr) {
-        toMem_valid = 0;
+        *toMem_valid = false;
     }
     if (toXReg_valid != nullptr) {
-        toMem_valid = 0;
+        *toMem_valid = false;
     }
 
 
