@@ -28,7 +28,8 @@ module rvfpm_tb;
     int errorCnt; //errorCount
     //Test interface
     inTest_rvfpm #(
-        .X_ID_WIDTH(TB_X_ID_WIDTH)
+        .X_ID_WIDTH(TB_X_ID_WIDTH),
+        .NUM_REGS(TB_NUM_FPU_REGS)
     ) uin_rvfpm ();
 
 

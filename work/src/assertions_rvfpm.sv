@@ -16,8 +16,8 @@
 */
 
 module assertions_rvfpm #(
-    parameter NUM_REGS,
-    parameter PIPELINE_STAGES
+    parameter int NUM_REGS,
+    parameter int PIPELINE_STAGES
 )(
     inTest_rvfpm uin_rvfpm
 );

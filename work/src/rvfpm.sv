@@ -75,7 +75,7 @@ module rvfpm #(
     //-----------------------
     //-- Local parameters
     //-----------------------
-    logic pipelineFull, toMem_valid, toXReg_valid; //status signal
+    logic pipelineFull; //status signal
     shortreal dtm; //data to mem
     int dtx; //data to X-reg
     //-----------------------
