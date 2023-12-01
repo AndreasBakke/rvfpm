@@ -14,7 +14,6 @@ program automatic testPr_rvfpm #(
     inTest_rvfpm uin_rvfpm
 );
     import "DPI-C" function shortreal randomFloat(); //C++ function for random float generation
-
     initial begin
         $display("--- Starting simulation ---");
         init();
@@ -34,10 +33,13 @@ program automatic testPr_rvfpm #(
         @(posedge uin_rvfpm.ck);
         uin_rvfpm.instruction = 0;
         repeat(PIPELINE_STAGES*2) @(posedge uin_rvfpm.ck);
-
         repeat(10) @(posedge uin_rvfpm.ck); //Wait a bit
-        repeat(100) begin
-           testRTYPE(.funct7(7'b1110000), .rs2(0), .funct3(0)); //test FMV.X:W (move to integer). 
+
+        init();
+        fillRF();
+
+        repeat(100) begin //test FMV.X:W (move to integer). 
+           testRTYPE(.funct7(7'b1110000), .rs2(0), .funct3(0)); 
            @(posedge uin_rvfpm.ck) uin_rvfpm.instruction = 0; //Set instr to 0 to toggle toXReg_valid.
         end
         $finish;

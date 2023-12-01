@@ -79,16 +79,15 @@ module rvfpm_tb;
 
     end
 
-
     //-----------------------
     //-- Assertions
     //-----------------------
-    // assertions_rvfpm #(
-    //     .NUM_REGS(TB_NUM_FPU_REGS),
-    //     .PIPELINE_STAGES(TB_PIPELINE_STAGES)
-    // ) u_assertions_rvfpm (
-    //     .uin_rvfpm(uin_rvfpm)
-    // );
+    assertions_rvfpm #(
+        .NUM_REGS(TB_NUM_FPU_REGS),
+        .PIPELINE_STAGES(TB_PIPELINE_STAGES)
+    ) u_assertions_rvfpm (
+        .uin_rvfpm(uin_rvfpm)
+    );
 
     //-----------------------
     //-- Test Program
