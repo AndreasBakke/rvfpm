@@ -45,7 +45,7 @@ sequence seq_FMV_X_W_start;
 endsequence
 
 sequence seq_FMV_X_W_out;
-    ##PIPELINE_STAGES uin_rvfpm.data_toXReg == uin_rvfpm.registerFile[uin_rvfpm.instruction[24:20]];
+    ##PIPELINE_STAGES uin_rvfpm.data_toXReg == $realtobits(uin_rvfpm.registerFile[uin_rvfpm.instruction[24:20]]);
 endsequence
 
 property prop_FMV_X_W;
