@@ -6,7 +6,8 @@
 */
 interface inTest_rvfpm #(
     parameter int X_ID_WIDTH = 4,
-    parameter int NUM_REGS
+    parameter int NUM_REGS = 32,
+    parameter int XLEN = 32
 );
 
     //-----------------------
@@ -23,7 +24,7 @@ interface inTest_rvfpm #(
     //-----------------------
     //-- Xreg
     //-----------------------
-    int data_fromXReg, data_toXReg;
+    logic[XLEN-1:0] data_fromXReg, data_toXReg;
     logic toXReg_valid;
 
     //-----------------------

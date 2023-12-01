@@ -59,11 +59,11 @@ module rvfpm #(
         input chandle fpu_ptr,
         input int unsigned instruction,
         input logic[X_ID_WIDTH-1:0] id,
-        input int fromXReg,
+        input logic[XLEN-1:0] fromXReg,
         input shortreal fromMem,
         output logic[X_ID_WIDTH-1:0] id_out,
         output shortreal toMem,
-        output int toXReg,
+        output logic[XLEN-1:0] toXReg,
         output logic pipelineFull,
         output logic toMem_valid,
         output logic toXReg_valid

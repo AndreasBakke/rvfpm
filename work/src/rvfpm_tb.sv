@@ -29,7 +29,8 @@ module rvfpm_tb;
     //Test interface
     inTest_rvfpm #(
         .X_ID_WIDTH(TB_X_ID_WIDTH),
-        .NUM_REGS(TB_NUM_FPU_REGS)
+        .NUM_REGS(TB_NUM_FPU_REGS),
+        .XLEN(XLEN)
     ) uin_rvfpm ();
 
 

@@ -16,7 +16,7 @@ extern "C" {
         return new FPU(pipelineStages, rfDepth); //Return pointer to FPU
     };
 
-    void fpu_operation(void* fpu_ptr, unsigned int instruction, unsigned int id, int fromXReg, float fromMem, unsigned int* id_out, float* toMem, uint32_t* toXReg, bool* pipelineFull, bool* toMem_valid, bool* toXReg_valid){ //data only passed for operations using int(X)-registers
+    void fpu_operation(void* fpu_ptr, unsigned int instruction, unsigned int id, uint32_t fromXReg, float fromMem, unsigned int* id_out, float* toMem, uint32_t* toXReg, bool* pipelineFull, bool* toMem_valid, bool* toXReg_valid){ //data only passed for operations using int(X)-registers
 	    FPU* fpu = static_cast<FPU*>(fpu_ptr); //from generic pointer to FPU pointer
         fpu->operation(instruction, fromXReg, fromMem, toMem, toXReg, pipelineFull, toMem_valid, toXReg_valid);
     }
