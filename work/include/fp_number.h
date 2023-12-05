@@ -1,3 +1,10 @@
+/*  rvfpm - 2023
+    Andreas S. Bakke
+    
+    Description:
+    Custom floating point types. To be expanded
+*/
+
 #pragma once
 #include <cmath> //Needed for NAN
 #include <limits>

@@ -1,3 +1,9 @@
+/*  rvfpm - 2023
+    Andreas S. Bakke
+    
+    Description:
+    RISC-V Floating Point Unit Model with FP registers, and parameterized number of pipelines
+*/
 #include "fpu_top.h"
 #include <bitset>
 #include <iostream> // Include necessary header files
@@ -61,7 +67,7 @@ FpuPipeObj FPU::decodeOp(uint32_t instruction) {
     return result;
 };
 
-void FPU::executeOp(FpuPipeObj& op, float fromMem, int fromXreg, float* toMem, uint32_t* toXreg) {
+void FPU::executeOp(FpuPipeObj& op, float fromMem, int fromXReg, float* toMem, uint32_t* toXReg, bool* toMem_valid, bool* toXReg_valid) {
     #ifndef NO_ROUNDING  // NO_ROUNDING uses c++ default rounding mode. //TODO: move this to execution
         unsigned int rm = registerFile.readfrm();
         if (rm == 0b111) //0b111 is dynamic rounding, and is handled for the relevant instructions later.
@@ -73,6 +79,21 @@ void FPU::executeOp(FpuPipeObj& op, float fromMem, int fromXreg, float* toMem, u
         }
     #endif
 
+    //Set outputs to zero -> Overwritten in ex.
+    if (toMem != nullptr) {
+        *toMem = 0;
+    }
+    if (toXReg != nullptr) {
+        *toXReg = 0;
+    }
+    if (toMem_valid != nullptr) {
+        *toMem_valid = false;
+    }
+    if (toXReg_valid != nullptr) {
+        *toXReg_valid = false;
+    }
+
+
     switch (op.instr_type)
         {
         case it_ITYPE:
@@ -82,12 +103,12 @@ void FPU::executeOp(FpuPipeObj& op, float fromMem, int fromXreg, float* toMem, u
         }
         case it_STYPE:
         {
-            execute_STYPE(op, &registerFile, toMem);
+            execute_STYPE(op, &registerFile, toMem, toMem_valid);
             break;
         }
         case it_RTYPE:
         {
-            execute_RTYPE(op, &registerFile, fromXreg, toXreg);
+            execute_RTYPE(op, &registerFile, fromXReg, toXReg, toXReg_valid);
             break;
         }
         case it_R4TYPE:
@@ -97,12 +118,6 @@ void FPU::executeOp(FpuPipeObj& op, float fromMem, int fromXreg, float* toMem, u
         }
         default:
             //If no operation is in pipeline: do nothing
-            if (toMem != nullptr) {
-                toMem = 0;
-            }
-            if (toXreg != nullptr) {
-                toXreg = 0;
-            }
             break;
     }
     registerFile.raiseFlags(op.flags);
@@ -135,7 +150,7 @@ FpuPipeObj FPU::pipelineStep(FpuPipeObj nextOp, bool* pipelineFull){
 };
 
 
-FpuPipeObj FPU::operation(uint32_t instruction, int fromXReg, float fromMem, float* toMem, uint32_t* toXreg, bool* pipelineFull) {
+FpuPipeObj FPU::operation(uint32_t instruction, int fromXReg, float fromMem, float* toMem, uint32_t* toXReg, bool* pipelineFull, bool* toMem_valid, bool* toXReg_valid) {
     FpuPipeObj newOp = decodeOp(instruction);
     FpuPipeObj currOp = {};
     if(numPipeStages == 0){ //Execute immediately
@@ -144,7 +159,7 @@ FpuPipeObj FPU::operation(uint32_t instruction, int fromXReg, float fromMem, flo
     { //add to pipeline - check for full pipeline/stalls etc.
         currOp = pipelineStep(newOp, pipelineFull);
     }
-    executeOp(currOp, fromMem, fromXReg, toMem, toXreg);
+    executeOp(currOp, fromMem, fromXReg, toMem, toXReg, toMem_valid, toXReg_valid);
     return currOp; //Only for testing
 }
 

@@ -1,28 +1,22 @@
-// Interface for riscv floating point verification tool
-// TODO: Connect with cpp model. Where to add pipelines?
-// Zfinx?
-// 
-//Idea: We can implement each stage in cpp. Connect the stages in a SV top module. Then add interface?
-//Weird to find a place to parameterize number of cycles delay. Except if we only want to return it to a output?
+/*  rvfpm - 2023
+    Andreas S. Bakke
+    
+    Description:
+    RISC-V Floating Point Unit Model.
+    Implemented in C++ (fpu_top) and interfaced using sv and DPI-C. 
+    Number of pipeline stages are parameterized. Note: Execute (and dependency on data_fromMem and data_fromXreg) is last stage in pipeline
+    Further work: fully parameterized pipeline. More fp types. Standardized interface (CORE-V-XIF)
+*/
 
-
-// It needs to actually function with pipelineing. eg.  8 executions can be pipelined and get correct results after each clock.
-// Not as simple  as  just delaying output.
-
-//Should we just provide fpu_rf.cpp, fpu_instr.cpp, fp_number and handle pipelineing in c++?
-// Or have fpu_topp.cpp and just wrap that for verilog. so that we import a whole fpu?
-// What makes it easiest for expanding with zfinx?
-
-// TODO: extract these definitions to separate parameter file
 
 `define FLEN 32
 `define XLEN 32
 `define NUM_FPU_REGS 32
 
 
-module in_rvfpm #( 
+module rvfpm #( 
     parameter NUM_REGS          = 32,
-
+    parameter XLEN              = `XLEN,
     //Pipeline parameters
     parameter PIPELINE_STAGES   = 4,
     //CORE-V-XIF parameters
@@ -45,14 +39,14 @@ module in_rvfpm #(
     //TODO: expand for other formats to correct num of bits.
     input int unsigned instruction,
     input logic [X_ID_WIDTH-1:0] id,
-    input int data_fromXreg, //Todo: when does this data need to be present in the pipeline?
+    input int data_fromXReg, //Todo: when does this data need to be present in the pipeline?
     input shortreal data_fromMem,
 
     //TODO: if ZFinx - have operands as inputs, and output
 
-    output int data_toXreg,
+    output int data_toXReg,
     output shortreal  data_toMem,
-    output logic toXreg_valid, //valid flags for outputs
+    output logic toXReg_valid, //valid flags for outputs
     output logic toMem_valid,
     output logic id_out,
     output logic fpu_ready //Indicate stalls
@@ -69,8 +63,10 @@ module in_rvfpm #(
         input shortreal fromMem,
         output logic[X_ID_WIDTH-1:0] id_out,
         output shortreal toMem,
-        output int toXreg,
-        output logic pipelineFull
+        output int toXReg,
+        output logic pipelineFull,
+        output logic toMem_valid,
+        output logic toXReg_valid
         );
     import "DPI-C" function void reset_fpu(input chandle fpu_ptr);
     import "DPI-C" function void destroy_fpu(input chandle fpu_ptr);
@@ -82,7 +78,6 @@ module in_rvfpm #(
     logic pipelineFull; //status signal
     shortreal dtm; //data to mem
     int dtx; //data to X-reg
-    shortreal registerFile[NUM_REGS]; //For verification
     //-----------------------
     //-- Initialization
     //-----------------------
@@ -97,11 +92,8 @@ module in_rvfpm #(
             reset_fpu(fpu);
         end
         else if (enable) begin //TODO: if implemented as coprosessor, follow CORE-V-XIF conventions
-            fpu_operation(fpu, instruction, 0, 0, data_fromMem, id_out, dtm, dtx, pipelineFull);
-            //Get entire rf for verification
-            for (int i=0; i< NUM_REGS; ++i) begin
-                registerFile[i] = getRFContent(fpu, i);
-            end
+            fpu_operation(fpu, instruction, 0, 0, data_fromMem, id_out, dtm, dtx, pipelineFull, toMem_valid, toXReg_valid);
+
         end begin
         end
     end
@@ -109,7 +101,7 @@ module in_rvfpm #(
     always_comb begin
         fpu_ready <= pipelineFull;
         data_toMem <= dtm;
-        data_toXreg <= dtx;
+        data_toXReg <= dtx;
     end
 
 

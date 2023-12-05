@@ -1,5 +1,13 @@
-`timescale 1ns/1ps
+/*  rvfpm - 2023
+    Andreas S. Bakke
+    
+    Description:
+    rvfpm testbench.
+    Prerequisites: Compile c++ model using make rhelSL (macSL not tested/verified)
+    Then run vsim using -sv_lib bin/lib_rvfpm -novopt work.rvfpm_tb -suppress 12110
+*/
 
+`timescale 1ns/1ps
 module rvfpm_tb;
     //-----------------------
     //-- Parameters
@@ -8,81 +16,111 @@ module rvfpm_tb;
     parameter TB_FLEN = 32;
     parameter TB_XLEN = 32;
     parameter TB_NUM_FPU_REGS = 32;
-    parameter TB_PIPELINE_STAGES = 4; // Example value
+    parameter TB_PIPELINE_STAGES = 1; // Example value
+    parameter TB_X_ID_WIDTH = 4;
+
+    localparam time ck_period = 40ns;
+
 
     //-----------------------
-    //-- Signals
+    //-- Declarations
     //-----------------------
-    logic ck, rst, enable, fpu_ready, toMem_valid, toXreg_valid;
-    int unsigned instruction;
-    logic [3:0] id, id_out; // Assuming X_ID_WIDTH is 4
-    int data_fromXreg, data_toXreg;
-    shortreal data_fromMem, data_toMem;
+    int errorCnt; //errorCount
+    //Test interface
+    inTest_rvfpm #(
+        .X_ID_WIDTH(TB_X_ID_WIDTH),
+        .NUM_REGS(TB_NUM_FPU_REGS),
+        .XLEN(TB_XLEN)
+    ) uin_rvfpm ();
+
+
+    //-----------------------
+    //-- Clk gen
+    //-----------------------
+    initial begin
+        uin_rvfpm.ck=0;
+        forever begin
+            #(ck_period/2);
+            uin_rvfpm.ck=!uin_rvfpm.ck;
+        end
+    end
 
     //-----------------------
     //-- DUT
     //-----------------------
 
-    in_rvfpm #(
+    rvfpm #(
+        .NUM_REGS(TB_NUM_FPU_REGS),
+        .PIPELINE_STAGES(TB_PIPELINE_STAGES),
+        .XLEN(TB_XLEN)
+    ) dut (
+        .ck(uin_rvfpm.ck),
+        .rst(uin_rvfpm.rst),
+        .enable(uin_rvfpm.enable),
+        .instruction(uin_rvfpm.instruction),
+        .id(uin_rvfpm.id),
+        .id_out(uin_rvfpm.id_out),
+        .data_fromXReg(uin_rvfpm.data_fromXReg),
+        .data_fromMem(uin_rvfpm.data_fromMem),
+        .data_toXReg(uin_rvfpm.data_toXReg),
+        .data_toMem(uin_rvfpm.data_toMem),
+        .toXReg_valid(uin_rvfpm.toXReg_valid),
+        .toMem_valid(uin_rvfpm.toMem_valid),
+	    .fpu_ready(uin_rvfpm.fpu_ready) 
+    );
+    import "DPI-C" function shortreal getRFContent(input chandle fpu_ptr, input int addr);
+
+    always @(posedge uin_rvfpm.ck) begin
+        //Get entire rf for verification
+        for (int i=0; i< TB_NUM_FPU_REGS; ++i) begin
+            uin_rvfpm.registerFile[i] = getRFContent(dut.fpu, i);
+        end
+        //Get entire pipeline for verification
+        // for()
+
+    end
+
+    //-----------------------
+    //-- Assertions
+    //-----------------------
+    assertions_rvfpm #(
         .NUM_REGS(TB_NUM_FPU_REGS),
         .PIPELINE_STAGES(TB_PIPELINE_STAGES)
-        // ... other parameters if needed ...
-    ) dut (
-        .ck(ck),
-        .rst(rst),
-        .enable(enable),
-        .instruction(instruction),
-        .id(id),
-        .id_out(id_out),
-        .data_fromXreg(data_fromXreg),
-        .data_fromMem(data_fromMem),
-        .data_toXreg(data_toXreg),
-        .data_toMem(data_toMem),
-        .toXreg_valid(toXreg_valid),
-        .toMem_valid(toMem_valid),
-	.fpu_ready(fpu_ready) 
+    ) u_assertions_rvfpm (
+        .uin_rvfpm(uin_rvfpm)
     );
 
+    //-----------------------
+    //-- Test Program
+    //-----------------------
+    testPr_rvfpm #(
+        .NUM_REGS(TB_NUM_FPU_REGS),
+        .PIPELINE_STAGES(TB_PIPELINE_STAGES)
+    ) u_testPr(
+        .uin_rvfpm(uin_rvfpm)
+    );
     
-    // Clock generation
-    always begin
-        ck=0; #20;
-        ck=1; #20;
-    end
+    //-----------------------
+    //-- Result
+    //-----------------------
+    assign errorCnt = uin_rvfpm.errorCntAssertions;
 
-    // Initial block for test stimulus
-    initial begin
-        // Initialize signals
-        ck = 0;
-        rst = 1;
-        enable = 0;
-        instruction = 0;
-        data_fromXreg = 0;
-        data_fromMem = 0;
+    final begin
+        printResult();
+    end    
 
-        #50 rst = 0; // Release reset after 30ns
-        #45 enable = 1;
-        #50;
-        data_fromMem = 1.7;
-	    $display("Instruction in SV: %h", instruction);
-        instruction = 32'b0000000_00000_00000_010_00001_0000111; //load from mem into register1;
-        #90;
-        data_fromMem = 11.4;
-        instruction = 32'b0000000_00000_00000_010_00010_0000111;; //load from mem into register2;
-        #200;
 
-        data_fromMem = 0;
-        instruction = 32'b0000000_00010_00001_000_00011_1010011; //Add r1 r2 and store in r3
-        #200;
-        instruction = 32'b0000000_00000_00011_010_00011_0100111; //store r3 value to memory;
-        #40;
-        instruction = 0;
-
-        #1000;
-	$display("Instruction in SV: %h", instruction);
-	$stop;
-    end
-
-    // Additional test scenarios, monitoring, checks, etc.
+    function void printResult;
+        $display("");
+        $display("");
+        $display($time, "ns: ");
+        $display("------------------------------------");
+        $display("------------------------------------");
+        $display("");
+        $display("Simulation finished, errors: $0d", errorCnt);
+        $display("");
+        $display("------------------------------------");
+        $display("------------------------------------");
+    endfunction
 
 endmodule

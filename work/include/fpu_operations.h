@@ -1,3 +1,10 @@
+/*  rvfpm - 2023
+    Andreas S. Bakke
+    
+    Description:
+    Decode and execute operations for fpu.
+    Aditional types and op-code enums defined
+*/
 #pragma once
 #include "fp_number.h"
 #include "fpu_rf.h"
@@ -97,10 +104,10 @@ FpuPipeObj decode_ITYPE(uint32_t instr);
 FpuPipeObj decode_STYPE(uint32_t instr);
 
 //Execute functions
-void execute_RTYPE(FpuPipeObj& op, FpuRf* registerFile, int fromXReg, uint32_t* toXreg);
+void execute_RTYPE(FpuPipeObj& op, FpuRf* registerFile, int fromXReg, uint32_t* toXReg, bool* toXReg_valid);
 void execute_R4TYPE(FpuPipeObj& op, FpuRf* registerFile);
 void execute_ITYPE(FpuPipeObj& op, FpuRf* registerFile, float fromMem);
-void execute_STYPE(FpuPipeObj& op, FpuRf* registerFile, float* toMem);
+void execute_STYPE(FpuPipeObj& op, FpuRf* registerFile, float* toMem, bool* toMem_valid);
 
 
 void setRoundingMode(unsigned int rm);

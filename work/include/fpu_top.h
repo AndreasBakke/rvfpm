@@ -1,3 +1,9 @@
+/*  rvfpm - 2023
+    Andreas S. Bakke
+    
+    Description:
+    RISC-V Floating Point Unit Model with FP registers, and parameterized number of pipelines
+*/
 #include "fpu_rf.h"
 #include "fp_number.h"
 #include "fpu_pipe.h"
@@ -16,9 +22,9 @@ class FPU {
     FPU(int pipelineStages, int rfDepth=32);
     ~FPU();
     void resetFPU();
-    FpuPipeObj operation(uint32_t instruction, int fromXReg, float fromMem, float* toMem, uint32_t* toXreg, bool* pipelineFull); //add toXreg and toMem
+    FpuPipeObj operation(uint32_t instruction, int fromXReg, float fromMem, float* toMem, uint32_t* toXReg, bool* pipelineFull, bool* toMem_valid, bool* toXReg_valid); //add toXReg and toMem
     FpuPipeObj decodeOp(uint32_t instruction);
-    void executeOp(FpuPipeObj& op, float fromMem, int fromXreg, float* toMem, uint32_t* toXreg);
+    void executeOp(FpuPipeObj& op, float fromMem, int fromXReg, float* toMem, uint32_t* toXReg, bool* toMem_valid, bool* toXReg_valid);
 
 
     //Pipeline operations
