@@ -1,6 +1,10 @@
+*
+!/**/
+!*.*
 */bin/rvfpm*
 SoftFloat-3e
 TestFloat-3e.nosync
 fpu_new.v
 .vscode
 .DS_Store
+work/work/
