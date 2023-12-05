@@ -23,6 +23,13 @@ TestFloat: #Compile and test for IEEE754 compliance
 	make TestFloat_all args="-rmin"
 	make TestFloat_all args="-rmax"
 
+testMake: 
+	$(CXX) $(CXXFLAGS) --target=x86_64-pc-linux-gnu -static-libstdc++ -fno-fast-math -O2 -I ./include src/in_TestFloat.cpp src/fpu_top.cpp src/fpu_rf.cpp src/fpu_operations.cpp src/fp_number.cpp  -o bin/rvfpm_testFloat_RHEL -D TESTFLOAT
+	make TestFloat_all_RHEL args="-rnear_even"
+	make TestFloat_all_RHEL args="-rminMag"
+	make TestFloat_all_RHEL args="-rmin"
+	make TestFloat_all_RHEL args="-rmax"
+
 TestFloat_RHEL:
 	$(CXX) $(CXXFLAGS) -static-libstdc++ -fno-fast-math -frounding-math -fsignaling-nans -O2  -I ./include src/in_TestFloat.cpp src/fpu_top.cpp src/fpu_rf.cpp src/fpu_operations.cpp src/fp_number.cpp  -o bin/rvfpm_testFloat_RHEL -D TESTFLOAT 
 	make TestFloat_all_RHEL args="-rnear_even"
@@ -77,6 +84,8 @@ TestFloat_all_RHEL:
 macSL:
 	$(CXX) $(CXXFLAGS) -shared -undefined dynamic_lookup -fno-fast-math -O2 -o bin/lib_rvfpm.dylib -I ./include src/dpi_wrapper.cpp src/fpu_top.cpp src/fpu_rf.cpp src/fpu_operations.cpp src/fp_number.cpp
 
+testSL:
+	$(CXX) $(CXXFLAGS) -arch x86_64 -shared -undefined dynamic_lookup -fno-fast-math -O2 -o bin/lib_rvfpm_2.so -I ./include src/dpi_wrapper.cpp src/fpu_top.cpp src/fpu_rf.cpp src/fpu_operations.cpp src/fp_number.cpp
 rhelSL:
 	$(CXX) $(CXXFLAGS) -shared -fPIC -static-libstdc++ -frounding-math -fsignaling-nans -O2 -o bin/lib_rvfpm.so -I ./include src/dpi_wrapper.cpp src/fpu_top.cpp src/fpu_rf.cpp src/fpu_operations.cpp src/fp_number.cpp
 
