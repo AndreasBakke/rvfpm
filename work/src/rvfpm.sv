@@ -37,18 +37,18 @@ module rvfpm #(
     input logic rst,
     input logic enable,
     //TODO: expand for other formats to correct num of bits.
-    input int unsigned instruction,
+    input logic[31:0] instruction,
     input logic [X_ID_WIDTH-1:0] id,
-    input int data_fromXReg, //Todo: when does this data need to be present in the pipeline?
-    input shortreal data_fromMem,
+    input logic[XLEN-1:0] data_fromXReg, //Todo: when does this data need to be present in the pipeline?
+    input shortreal data_fromMem, //Todo: use logic[FLEN-1:0] instead?
 
     //TODO: if ZFinx - have operands as inputs, and output
 
-    output int data_toXReg,
+    output logic[XLEN-1:0] data_toXReg,
     output shortreal  data_toMem,
     output logic toXReg_valid, //valid flags for outputs
     output logic toMem_valid,
-    output logic id_out,
+    output logic [X_ID_WIDTH-1:0] id_out,
     output logic fpu_ready //Indicate stalls
 );
     //-----------------------
@@ -58,12 +58,12 @@ module rvfpm #(
     import "DPI-C" function void fpu_operation(
         input chandle fpu_ptr,
         input int unsigned instruction,
-        input logic[X_ID_WIDTH-1:0] id,
-        input int fromXReg,
+        input int unsigned id,
+        input int unsigned fromXReg,
         input shortreal fromMem,
-        output logic[X_ID_WIDTH-1:0] id_out,
+        output int unsigned id_out,
         output shortreal toMem,
-        output int toXReg,
+        output int unsigned toXReg,
         output logic pipelineFull,
         output logic toMem_valid,
         output logic toXReg_valid
@@ -76,8 +76,6 @@ module rvfpm #(
     //-- Local parameters
     //-----------------------
     logic pipelineFull; //status signal
-    shortreal dtm; //data to mem
-    int dtx; //data to X-reg
     //-----------------------
     //-- Initialization
     //-----------------------
@@ -87,21 +85,18 @@ module rvfpm #(
     end
 
 
-    always @(posedge ck) begin: la_main
+    always_ff @(posedge ck) begin: la_main
         if (rst) begin
             reset_fpu(fpu);
         end
         else if (enable) begin //TODO: if implemented as coprosessor, follow CORE-V-XIF conventions
-            fpu_operation(fpu, instruction, 0, 0, data_fromMem, id_out, dtm, dtx, pipelineFull, toMem_valid, toXReg_valid);
-
+            fpu_operation(fpu, instruction, id, data_fromXReg, data_fromMem, id_out, data_toMem, data_toXReg, pipelineFull, toMem_valid, toXReg_valid);
         end begin
         end
     end
 
     always_comb begin
-        fpu_ready <= pipelineFull;
-        data_toMem <= dtm;
-        data_toXReg <= dtx;
+        fpu_ready <= !pipelineFull;
     end
 
 

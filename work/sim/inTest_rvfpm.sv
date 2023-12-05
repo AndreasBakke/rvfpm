@@ -32,7 +32,7 @@ interface inTest_rvfpm #(
     //-----------------------
     logic enable;
     logic fpu_ready;
-    int unsigned instruction;
+    logic[31:0] instruction;
 
     shortreal registerFile[NUM_REGS]; //For verification
 

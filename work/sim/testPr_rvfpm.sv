@@ -57,6 +57,7 @@ program automatic testPr_rvfpm #(
     task init();
         reset();
         uin_rvfpm.instruction = 0;
+        uin_rvfpm.id = 0;
         uin_rvfpm.data_fromMem = 0;
         uin_rvfpm.data_fromXReg = 0;
         @(posedge uin_rvfpm.ck);
@@ -70,7 +71,8 @@ program automatic testPr_rvfpm #(
         uin_rvfpm.instruction[14:12] = 3'b010; //rm (W)
         uin_rvfpm.instruction[11:7] = 0;  //rd (dest)
         uin_rvfpm.instruction[6:0] = 7'b0000111;  //OPCODE
-        for (int i=0; i<NUM_REGS; ++i) begin 
+        for (int i=0; i<NUM_REGS; ++i) begin
+            uin_rvfpm.id = $random;
             uin_rvfpm.instruction[11:7] = i; //set register
             fork
                 begin
@@ -87,6 +89,7 @@ program automatic testPr_rvfpm #(
 
     task testRTYPE(input int funct7 = 0, input int rs2 = $urandom_range(0, NUM_REGS-1), input int rs1 = $urandom_range(0, NUM_REGS-1), input int funct3 = 0, input int rd = $urandom_range(0, NUM_REGS-1));
         @(posedge uin_rvfpm.ck)
+        uin_rvfpm.id = $random;
         uin_rvfpm.instruction[31:25] = funct7;
         uin_rvfpm.instruction[24:20] = rs2; //rs2
         uin_rvfpm.instruction[19:15] = rs1; //rs1 (base)
@@ -100,6 +103,7 @@ program automatic testPr_rvfpm #(
 
     task testSTYPE(input int imm = 0, input int rs2 = $urandom_range(0, NUM_REGS-1), input int rs1 = 0, input int offset = 0);
         @(posedge uin_rvfpm.ck)
+        uin_rvfpm.id = $random;
         uin_rvfpm.instruction[31:25] = imm;
         uin_rvfpm.instruction[24:20] = rs2; //rs2 (src)
         uin_rvfpm.instruction[19:15] = rs1; //rs1 (base)
@@ -108,6 +112,7 @@ program automatic testPr_rvfpm #(
         uin_rvfpm.instruction[6:0] = 7'b0100111;  //OPCODE
         @(posedge uin_rvfpm.ck)
         uin_rvfpm.instruction = 0; //So toMem_valid toggles
+        uin_rvfpm.id = 0;
     endtask
 
 

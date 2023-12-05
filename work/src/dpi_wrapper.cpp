@@ -18,7 +18,7 @@ extern "C" {
 
     void fpu_operation(void* fpu_ptr, unsigned int instruction, unsigned int id, uint32_t fromXReg, float fromMem, unsigned int* id_out, float* toMem, uint32_t* toXReg, bool* pipelineFull, bool* toMem_valid, bool* toXReg_valid){ //data only passed for operations using int(X)-registers
 	    FPU* fpu = static_cast<FPU*>(fpu_ptr); //from generic pointer to FPU pointer
-        fpu->operation(instruction, fromXReg, fromMem, toMem, toXReg, pipelineFull, toMem_valid, toXReg_valid);
+        fpu->operation(instruction, id, fromXReg, fromMem, id_out, toMem, toXReg, pipelineFull, toMem_valid, toXReg_valid);
     }
 
     void reset_fpu(void* fpu_ptr){
