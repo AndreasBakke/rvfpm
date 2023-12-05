@@ -38,6 +38,7 @@ extern "C" {
 
     float randomFloat() { //Generate pseudorandom float (not available in SV.)
         uint32_t randomInt = random();
-        return *reinterpret_cast<float*>(&randomInt); //Generate random float
+        int sign = rand()%2;
+        return sign ? *reinterpret_cast<float*>(&randomInt) : - *reinterpret_cast<float*>(&randomInt); //Generate random float
     }
 }

@@ -16,7 +16,7 @@
 
 module rvfpm #( 
     parameter NUM_REGS          = 32,
-
+    parameter XLEN              = `XLEN,
     //Pipeline parameters
     parameter PIPELINE_STAGES   = 4,
     //CORE-V-XIF parameters
@@ -59,11 +59,11 @@ module rvfpm #(
         input chandle fpu_ptr,
         input int unsigned instruction,
         input logic[X_ID_WIDTH-1:0] id,
-        input logic[XLEN-1:0] fromXReg,
+        input int fromXReg,
         input shortreal fromMem,
         output logic[X_ID_WIDTH-1:0] id_out,
         output shortreal toMem,
-        output logic[XLEN-1:0] toXReg,
+        output int toXReg,
         output logic pipelineFull,
         output logic toMem_valid,
         output logic toXReg_valid

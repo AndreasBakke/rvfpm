@@ -30,7 +30,7 @@ module rvfpm_tb;
     inTest_rvfpm #(
         .X_ID_WIDTH(TB_X_ID_WIDTH),
         .NUM_REGS(TB_NUM_FPU_REGS),
-        .XLEN(XLEN)
+        .XLEN(TB_XLEN)
     ) uin_rvfpm ();
 
 
@@ -51,8 +51,8 @@ module rvfpm_tb;
 
     rvfpm #(
         .NUM_REGS(TB_NUM_FPU_REGS),
-        .PIPELINE_STAGES(TB_PIPELINE_STAGES)
-        // ... other parameters if needed ...
+        .PIPELINE_STAGES(TB_PIPELINE_STAGES),
+        .XLEN(TB_XLEN)
     ) dut (
         .ck(uin_rvfpm.ck),
         .rst(uin_rvfpm.rst),
