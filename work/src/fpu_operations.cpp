@@ -56,7 +56,7 @@ void execute_R4TYPE(FpuPipeObj& op, FpuRf* registerFile){
         op.flags = 0b10000; //Invalid operation
         break;
     }
-    op.flags |=  std::fetestexcept(FE_ALL_EXCEPT); //Get flags and add to result.
+    op.flags |= getFlags(); //Get flags and add to result.
 
     if(registerFile != nullptr) {
         registerFile->write(op.addrTo, op.data);
@@ -320,7 +320,7 @@ void execute_RTYPE(FpuPipeObj& op, FpuRf* registerFile, int fromXReg, unsigned i
         break;
     }
 
-    op.flags |=  std::fetestexcept(FE_ALL_EXCEPT);
+    op.flags |=  getFlags();
 
     if (op.toXReg)
     {
@@ -434,4 +434,14 @@ void setRoundingMode(unsigned int rm){ //Sets c++ rounding mode. FCSR is written
 //Helper function
 bool isSubnormal(FPNumber num) {
         return num.parts.exponent == 0 && num.parts.mantissa != 0;
+}
+
+unsigned int getFlags() {
+    unsigned int flags = 0;
+    flags |= std::fetestexcept(FE_INVALID) ? 1 : 0;
+    flags |= std::fetestexcept(FE_DIVBYZERO) ? (1 << 1) : 0;
+    flags |= std::fetestexcept(FE_OVERFLOW) ? (1 << 2) : 0;
+    flags |= std::fetestexcept(FE_UNDERFLOW) ? (1 << 3) : 0;
+    flags |= std::fetestexcept(FE_INEXACT) ? (1 << 4) : 0;
+    return flags;
 }
