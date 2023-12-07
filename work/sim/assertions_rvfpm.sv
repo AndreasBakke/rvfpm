@@ -62,7 +62,9 @@ as_rvfpm_FMV_X_W: assert property (prop_FMV_X_W)
     else begin $error("Data to XReg not matching data in registerFile"); errorCnt++; 
     $display($bitstoshortreal(uin_rvfpm.data_toXReg));
     $display(uin_rvfpm.registerFile[$past(uin_rvfpm.instruction[19:15])]);
+    $display(uin_rvfpm.registerFile[(uin_rvfpm.instruction[19:15])]);
     $display($bitstoshortreal(uin_rvfpm.data_toXReg) === uin_rvfpm.registerFile[$past(uin_rvfpm.instruction[19:15])]);
+    $display("Works at time=%0d", $time);
 
 
 

@@ -1,6 +1,7 @@
 *
 !/**/
 !*.*
+!testfloat_*
 */bin/rvfpm*
 SoftFloat-3e
 TestFloat-3e.nosync

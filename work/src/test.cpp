@@ -18,7 +18,6 @@ static int numTests = 10000;
 //Initialize
 
 //NOTE: Not a test for compliance - just to verify that changes to the fpu doesn't affect anything
-//TODO: Add testing with variable number of pipelines
 
 int main() {
     srand(time(NULL)); //Seed randomNAN, NAN
@@ -96,7 +95,7 @@ void resetRegisters(FPU& fpu, std::vector<float>& clone){
         float w_data =  static_cast<float>(rand())/static_cast<float>(rand()); //Generate random float
         clone[i] = w_data;
         ITYPE instr_load = {.parts= {7, i, 0b010, 0, 0}};
-        fpu.operation(instr_load.instr, 0, w_data, nullptr, nullptr, nullptr, nullptr, nullptr);
+        fpu.operation(instr_load.instr, 0, 0, w_data, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr);
     }
 }
 
@@ -107,7 +106,7 @@ void verifyReset(FPU& fpu, std::vector<float>& clone){
     for (unsigned int i = 0; i < rfDepth; i++)
     {
         STYPE instr_read = {.parts= {39, 0, 0b010, 0, i, 0}};
-        FpuPipeObj res = fpu.operation(instr_read.instr, 0, 0, &toMem, nullptr, nullptr, &toMem_valid, nullptr);
+        FpuPipeObj res = fpu.operation(instr_read.instr, 0, 0, 0, nullptr, &toMem, nullptr, nullptr, &toMem_valid, nullptr);
         if (toMem != clone[i])
         {
             cout << "Read does not match write at addr: " + to_string(i) <<endl;
@@ -117,9 +116,6 @@ void verifyReset(FPU& fpu, std::vector<float>& clone){
     }
 }
 
-//TODO: should I use test functions instead of writing a huge main()? Probably yes
-
-// Can also write helper functions for setting registers between tests (add a backdoor to FpuRf?)
 
 void testR4TYPE(FPU& fpu, std::vector<float>& clone) {
     for (int i = 0; i < numTests; i++) //do numTests random tests
@@ -134,9 +130,9 @@ void testR4TYPE(FPU& fpu, std::vector<float>& clone) {
 
         //Store operands in case of errors
         STYPE instr_read_1 = {.parts= {39, 0, 0b010, 0, r1, 0}};
-        float d1 = fpu.operation(instr_read_1.instr, 0, 0, nullptr, nullptr, nullptr, nullptr, nullptr).data.f;
+        float d1 = fpu.operation(instr_read_1.instr, 0, 0, 0, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr).data.f;
         STYPE instr_read_2 = {.parts= {39, 0, 0b010, 0, r2, 0}};
-        float d2 = fpu.operation(instr_read_2.instr, 0, 0, nullptr, nullptr, nullptr, nullptr, nullptr).data.f;
+        float d2 = fpu.operation(instr_read_2.instr, 0, 0, 0, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr).data.f;
 
         RTYPE instr_r4type;
         switch (type) 
@@ -166,13 +162,13 @@ void testR4TYPE(FPU& fpu, std::vector<float>& clone) {
             break;
         }
         }
-        fpu.operation(instr_r4type.instr, 0, 0, nullptr, nullptr, nullptr, nullptr, nullptr); //do operation
+        fpu.operation(instr_r4type.instr, 0, 0, 0, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr); //do operation
 
         //Read and compare
         STYPE instr_read = {.parts= {39, 0, 0b010, 0, rd, 0}};
-        float res = fpu.operation(instr_read.instr, 0, 0, nullptr, nullptr, nullptr, nullptr, nullptr).data.f;
+        float res = fpu.operation(instr_read.instr, 0, 0, 0, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr).data.f;
         
-        if (res != clone[rd] && !(isnan(res)&& isnan(clone[rd]))) //TODO: Find a better way to check for NANS /sNAN vs QNaN
+        if (res != clone[rd] && !(isnan(res)&& isnan(clone[rd])))
         {
             cout << "ui:" + to_string(static_cast<uint32_t>(res)) <<endl;
             cout << endl << "iteration: " + to_string(i) <<endl;
@@ -199,9 +195,9 @@ void testRTYPE(FPU& fpu, std::vector<float>& clone) {
 
         //Store operands in case of errors
         STYPE instr_read_1 = {.parts= {39, 0, 0b010, 0, r1, 0}};
-        float d1 = fpu.operation(instr_read_1.instr, 0, 0, nullptr, nullptr, nullptr, nullptr, nullptr).data.f;
+        float d1 = fpu.operation(instr_read_1.instr, 0, 0, 0, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr).data.f;
         STYPE instr_read_2 = {.parts= {39, 0, 0b010, 0, r2, 0}};
-        float d2 = fpu.operation(instr_read_2.instr, 0, 0, nullptr, nullptr, nullptr, nullptr, nullptr).data.f;
+        float d2 = fpu.operation(instr_read_2.instr, 0, 0, 0, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr).data.f;
 
         RTYPE instr_rtype;
         switch (type)
@@ -295,10 +291,10 @@ void testRTYPE(FPU& fpu, std::vector<float>& clone) {
         //TODO: check remaining ops
         };
 
-        fpu.operation(instr_rtype.instr, 0, 0, nullptr, nullptr, nullptr, nullptr, nullptr); //do operation
+        fpu.operation(instr_rtype.instr, 0, 0, 0, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr); //do operation
         //Read and compare
         STYPE instr_read = {.parts= {39, 0, 0b010, 0, rd, 0}};
-        float res = fpu.operation(instr_read.instr, 0, 0, nullptr, nullptr, nullptr, nullptr, nullptr).data.f;
+        float res = fpu.operation(instr_read.instr, 0, 0, 0, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr).data.f;
         if (res != clone[rd] && !(isnan(res)&& isnan(clone[rd])))
         {
             cout << "ui:" + to_string(static_cast<uint32_t>(res)) <<endl;
