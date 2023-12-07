@@ -219,7 +219,6 @@ void execute_RTYPE(FpuPipeObj& op, FpuRf* registerFile, int fromXReg, unsigned i
         }
         default:
         {
-            //TODO: what should dataToXreg be?
             op.dataToXreg = 0;
             op.flags = 0b10000; //invalid operation
         }
@@ -314,7 +313,7 @@ void execute_RTYPE(FpuPipeObj& op, FpuRf* registerFile, int fromXReg, unsigned i
         op.data.bitpattern =  fromXReg;
         break;
     }
-    //TODO: check pseudops 
+    //TODO: check pseudops like read/write to fcsr
     default:
         op.flags = 0b10000; //Invalid operation
         break;

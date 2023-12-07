@@ -19,7 +19,7 @@ FPU::FPU (int pipelineStages, int rfDepth) : registerFile(rfDepth), numPipeStage
     // for (auto &pipe : pipeline) { 
     //     pipe = {}; //Initialize to empty operations
     // }
-    pipeline =  deque<FpuPipeObj>(numPipeStages, FpuPipeObj({}));
+    pipeline =  deque<FpuPipeObj>(numPipeStages, FpuPipeObj({})); //TODO: move pipeline to its own class
 };
 
 FPU::~FPU(){
@@ -69,7 +69,7 @@ FpuPipeObj FPU::decodeOp(uint32_t instruction, unsigned int id) {
 };
 
 void FPU::executeOp(FpuPipeObj& op, float fromMem, int fromXReg, unsigned int* id_out, float* toMem, uint32_t* toXReg, bool* toMem_valid, bool* toXReg_valid) {
-    #ifndef NO_ROUNDING  // NO_ROUNDING uses c++ default rounding mode. //TODO: move this to execution
+    #ifndef NO_ROUNDING  // NO_ROUNDING uses c++ default rounding mode.
         unsigned int rm = registerFile.readfrm();
         if (rm == 0b111) //0b111 is dynamic rounding, and is handled for the relevant instructions later.
         {
@@ -184,3 +184,7 @@ void FPU::bd_setRoundingMode(unsigned int rm){
 std::vector<float> FPU::bd_getRF(){
     return registerFile.getRf();
 };
+
+unsigned int FPU::bd_getPipeStageId(int stage) {
+    return pipeline.at(stage).id;
+}

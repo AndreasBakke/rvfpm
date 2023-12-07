@@ -18,7 +18,6 @@ static int numTests = 10000;
 //Initialize
 
 //NOTE: Not a test for compliance - just to verify that changes to the fpu doesn't affect anything
-//TODO: Add testing with variable number of pipelines
 
 int main() {
     srand(time(NULL)); //Seed randomNAN, NAN
@@ -117,9 +116,6 @@ void verifyReset(FPU& fpu, std::vector<float>& clone){
     }
 }
 
-//TODO: should I use test functions instead of writing a huge main()? Probably yes
-
-// Can also write helper functions for setting registers between tests (add a backdoor to FpuRf?)
 
 void testR4TYPE(FPU& fpu, std::vector<float>& clone) {
     for (int i = 0; i < numTests; i++) //do numTests random tests
@@ -172,7 +168,7 @@ void testR4TYPE(FPU& fpu, std::vector<float>& clone) {
         STYPE instr_read = {.parts= {39, 0, 0b010, 0, rd, 0}};
         float res = fpu.operation(instr_read.instr, 0, 0, 0, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr).data.f;
         
-        if (res != clone[rd] && !(isnan(res)&& isnan(clone[rd]))) //TODO: Find a better way to check for NANS /sNAN vs QNaN
+        if (res != clone[rd] && !(isnan(res)&& isnan(clone[rd])))
         {
             cout << "ui:" + to_string(static_cast<uint32_t>(res)) <<endl;
             cout << endl << "iteration: " + to_string(i) <<endl;

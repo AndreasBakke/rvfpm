@@ -36,5 +36,6 @@ class FPU {
     FPNumber bd_getData(uint32_t addr);
     void bd_setRoundingMode(unsigned int rm);
     std::vector<float> bd_getRF();
+    unsigned int bd_getPipeStageId(int stage);
 
 };

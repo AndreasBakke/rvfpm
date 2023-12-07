@@ -16,7 +16,7 @@ module rvfpm_tb;
     parameter TB_FLEN = 32;
     parameter TB_XLEN = 32;
     parameter TB_NUM_FPU_REGS = 32;
-    parameter TB_PIPELINE_STAGES = 1; // Example value
+    parameter TB_PIPELINE_STAGES = 4; // Example value
     parameter TB_X_ID_WIDTH = 4;
 
     localparam time ck_period = 40ns;
@@ -30,6 +30,7 @@ module rvfpm_tb;
     inTest_rvfpm #(
         .X_ID_WIDTH(TB_X_ID_WIDTH),
         .NUM_REGS(TB_NUM_FPU_REGS),
+        .PIPELINE_STAGES(TB_PIPELINE_STAGES),
         .XLEN(TB_XLEN)
     ) uin_rvfpm ();
 
@@ -69,14 +70,17 @@ module rvfpm_tb;
 	    .fpu_ready(uin_rvfpm.fpu_ready) 
     );
     import "DPI-C" function shortreal getRFContent(input chandle fpu_ptr, input int addr);
+    import "DPI-C" function int unsigned getPipeStageId(input chandle fpu_ptr, input int stage);
 
     always @(posedge uin_rvfpm.ck) begin
         //Get entire rf for verification
-        for (int i=0; i< TB_NUM_FPU_REGS; ++i) begin
+        for (int i=0; i < TB_NUM_FPU_REGS; ++i) begin
             uin_rvfpm.registerFile[i] = getRFContent(dut.fpu, i);
         end
         //Get entire pipeline for verification
-        // for()
+        for (int i=0; i < TB_PIPELINE_STAGES; ++i) begin
+            uin_rvfpm.pipelineIds[i] = getPipeStageId(dut.fpu, i);
+        end
 
     end
 

@@ -7,6 +7,7 @@
 interface inTest_rvfpm #(
     parameter int X_ID_WIDTH = 4,
     parameter int NUM_REGS = 32,
+    parameter int PIPELINE_STAGES = 4,
     parameter int XLEN = 32
 );
 
@@ -35,6 +36,7 @@ interface inTest_rvfpm #(
     logic[31:0] instruction;
 
     shortreal registerFile[NUM_REGS]; //For verification
+    int unsigned pipelineIds[PIPELINE_STAGES];
 
     //-----------------------
     //-- CORE-V-XIF

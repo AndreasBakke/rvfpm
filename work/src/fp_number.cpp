@@ -1,6 +1,5 @@
 #include "fp_number.h"
 
-//TODO: Is it bad to use different data-types for the different precisions?
 
 #if defined(EXT_Q)
    
