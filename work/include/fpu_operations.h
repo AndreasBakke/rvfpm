@@ -113,3 +113,4 @@ void execute_STYPE(FpuPipeObj& op, FpuRf* registerFile, unsigned int* id_out, fl
 void setRoundingMode(unsigned int rm);
 
 bool isSubnormal(FPNumber num);
+unsigned int getFlags();
