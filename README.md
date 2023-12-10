@@ -1,16 +1,14 @@
 # riscv-fpm
 
-Compiled, tested and verified for macOS - Apple clang version 15.0
+Compiled and tested for compliance using Apple Arm - Apple clang version 15.0
+
+Compiled, tested for compliance and simulated using x86_64 - GCC 12.2.0
+
 For other OS. Update flags to the compiler in work/Makefile.
 
-Library paths might also need to be updated.
-export LD_LIBRARY_PATH=/cad/gnu/gcc/12.2.0/dependencies_lib
-^Set path to libmpfr.so.6
-
-make TestFloat
 
 
+To test for IEEE754 compliance run make TestFloat from work/
+- Results is written to work/tests/<target>/rm-<rounding mode>/<test>.txt
 
-run:
-make rhelSL
- vsim -sv_lib bin/lib_rvfpm -novopt work.rvfpm_tb -suppress 12110
+For functional verification run make sim_full from work/

@@ -3,7 +3,7 @@
     
     Description:
     rvfpm testbench.
-    Prerequisites: Compile c++ model using make rhelSL (macSL not tested/verified)
+    Prerequisites: Compile c++ model using make sharedLib (macSL not tested/verified)
     Then run vsim using -sv_lib bin/lib_rvfpm -novopt work.rvfpm_tb -suppress 12110
 */
 

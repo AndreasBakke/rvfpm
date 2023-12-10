@@ -22,6 +22,7 @@ test_no_rounding:  #run using args="-D EXT_D/Q" to test with D/Q
 	./bin/rvfpm_test
 
 TestFloat: #Compile and test for IEEE754 compliance
+	make clean
 	$(CXX) $(CXXFLAGS) -I ./include src/in_TestFloat.cpp src/fpu_top.cpp src/fpu_rf.cpp src/fpu_operations.cpp src/fp_number.cpp  -o bin/rvfpm_testFloat -D TESTFLOAT
 	make -i TestFloat_all args="-rnear_even"
 	make -i TestFloat_all args="-rminMag"
