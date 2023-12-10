@@ -3,7 +3,7 @@ CXXFLAGS := -std=c++11 -fno-fast-math
 LD_LIBRARY_PATH=/cad/gnu/gcc/12.2.0/dependencies_lib
 
 COMPILER := $(shell g++ --version)
-ifeq (,$(findstring Clang,$(COMPILER)))
+ifneq (,$(findstring clang,$(COMPILER)))
 	CXXFlags = $CXXFLAGS
 	TF_BIN = "arm"
 else
