@@ -5,11 +5,11 @@ LD_LIBRARY_PATH=/cad/gnu/gcc/12.2.0/dependencies_lib
 COMPILER := $(shell g++ --version)
 ifneq (,$(findstring clang,$(COMPILER)))
 	CXXFLAGS := $(CXXFLAGS)
-	TF_BIN = "arm"
+	TF_BIN = arm
 	TININESS = -tininessbefore
 else
 	CXXFLAGS := $(CXXFLAGS) -frounding-math -fsignaling-nans -ffloat-store  -static-libstdc++
-	TF_BIN = "x86"
+	TF_BIN = x86
 	TININESS = -tininessafter
 endif
 
