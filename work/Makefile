@@ -32,7 +32,7 @@ testMake:
 
 TestFloat_RHEL:
 	make clean
-	$(CXX) $(CXXFLAGS) -frounding-math -fsignaling-nans -ffloat-store -mfpmath=sse -msse2 -O2 -fno-fast-math -static-libstdc++  -I ./include src/in_TestFloat.cpp src/fpu_top.cpp src/fpu_rf.cpp src/fpu_operations.cpp src/fp_number.cpp  -o bin/rvfpm_testFloat_RHEL -D TESTFLOAT 
+	$(CXX) $(CXXFLAGS) -frounding-math -fsignaling-nans -ffloat-store -fno-fast-math -static-libstdc++  -I ./include src/in_TestFloat.cpp src/fpu_top.cpp src/fpu_rf.cpp src/fpu_operations.cpp src/fp_number.cpp  -o bin/rvfpm_testFloat_RHEL -D TESTFLOAT 
 	make -i TestFloat_all_RHEL args="-rnear_even"
 	make -i TestFloat_all_RHEL args="-rminMag"
 	make -i TestFloat_all_RHEL args="-rmin"
