@@ -30,7 +30,7 @@ TestFloat: #Compile and test for IEEE754 compliance
 
 TestFloat_all:
 	mkdir -p tests/$(TF_BIN)/rm$(args)
-	chmod a+x,g+x ./bin/testfloat_gen_$(TF_BIN)
+	chmod a+x,g+x ./bin/testfloat_ver_$(TF_BIN)
 	chmod a+x,g+x ./bin/testfloat_gen_$(TF_BIN)
 	./bin/testfloat_gen_$(TF_BIN) f32_add 	| ./bin/rvfpm_testFloat fadd  $(args) 		| ./bin/testfloat_ver_$(TF_BIN) $(args)	f32_add						-errors 0 > tests/$(TF_BIN)/rm$(args)/f32_add.txt 2>&1
 	./bin/testfloat_gen_$(TF_BIN) f32_sub 	| ./bin/rvfpm_testFloat fsub  $(args) 		| ./bin/testfloat_ver_$(TF_BIN) $(args)	f32_sub						-errors 0 > tests/$(TF_BIN)/rm$(args)/f32_sub.txt 2>&1
