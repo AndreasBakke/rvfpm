@@ -34,22 +34,22 @@ void execute_R4TYPE(FpuPipeObj& op, FpuRf* registerFile){
     {
     case FMADD_S:
     {
-        op.data.f = data1.f * data2.f + data3.f;
+        op.data.f = fma(data1.f, data2.f, data3.f);
         break;
     }
     case FMSUB_S:
     {
-        op.data.f = data1.f * data2.f - data3.f; 
+        op.data.f = fma(data1.f, data2.f, -data3.f); 
         break;
     }
     case FNMSUB_S:
     {    
-        op.data.f = -(data1.f * data2.f) - data3.f; 
+        op.data.f = fma(data1.f, -data2.f, -data3.f); 
         break;
     }
     case FNMADD_S:
     {    
-        op.data.f = -(data1.f * data2.f) + data3.f; 
+        op.data.f = fma(data1.f, -data2.f, data3.f); 
         break;
     }
     default:
@@ -214,7 +214,20 @@ void execute_RTYPE(FpuPipeObj& op, FpuRf* registerFile, int fromXReg, unsigned i
         }
         case 0b00001: //FCVT.WU.S
         {
-            op.uDataToXreg = static_cast<uint32_t>(nearbyint(data1.f));
+            //ADD ifdef x86_64 for this implementation
+            if (std::isnan(data1.f) && !(data1.parts.mantissa & 0x00400000)) {  // Check for sNaN
+                op.uDataToXreg = 0xFFFFFFFF;
+                op.flags |= 0b00001;
+            } else if (nearbyint(data1.f) < 0.0f || nearbyint(data1.f) > UINT32_MAX) {  // Check for out-of-range values
+                //Last fail: +9F.000000  => 00000000 .....  expected FFFFFFFF v.... for near and max = 1^(2^32) - > Not captured by ^. But if we use >=, it captures too many for min-rounding
+                op.uDataToXreg = 0xFFFFFFFF;
+                op.flags |= 0b00001;
+            } else {
+                // Convert if within range
+                op.uDataToXreg = static_cast<unsigned int>(nearbyint(data1.f));
+            }
+            //And arm64_apple for this one (If the above doesn't work for apple)
+            // op.uDataToXreg = static_cast<uint32_t>(nearbyint(data1.f));
             break;
         }
         default:

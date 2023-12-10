@@ -9,3 +9,4 @@ fpu_new.v
 .vscode
 .DS_Store
 work/work/
+work/tests/*/*
