@@ -181,6 +181,17 @@ void FPU::bd_setRoundingMode(unsigned int rm){
     registerFile.setfrm(rm);
 };
 
+void FPU::bd_setFcsr(uint32_t data) {
+    registerFile.write_fcsr(data);
+}
+
+uint32_t FPU::bd_getFcsr() {
+    return registerFile.read_fcsr().v;
+}
+
+
+
+
 std::vector<float> FPU::bd_getRF(){
     return registerFile.getRf();
 };

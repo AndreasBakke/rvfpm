@@ -5,26 +5,26 @@ LD_LIBRARY_PATH=/cad/gnu/gcc/12.2.0/dependencies_lib
 #TODO: for everything except test - do not link. Linking to be done later when interface has been completed.
 
 test:  #run using args="-D EXT_D/Q" to test with D/Q
-	$(CXX) $(CXXFLAGS) -fno-fast-math -O2 -I ./include src/test.cpp src/fpu_top.cpp src/fpu_rf.cpp src/fpu_operations.cpp src/fp_number.cpp  -o bin/rvfpm_test $(args) 
+	$(CXX) $(CXXFLAGS) -fno-fast-math -I ./include src/test.cpp src/fpu_top.cpp src/fpu_rf.cpp src/fpu_operations.cpp src/fp_number.cpp  -o bin/rvfpm_test $(args) 
 	./bin/rvfpm_test
 
 test_no_rounding:  #run using args="-D EXT_D/Q" to test with D/Q
-	$(CXX) $(CXXFLAGS) -fno-fast-math -O2 -I ./include src/test.cpp src/fpu_top.cpp src/fpu_rf.cpp src/fpu_operations.cpp src/fp_number.cpp  -o bin/rvfpm_test -D NO_ROUNDING
+	$(CXX) $(CXXFLAGS) -fno-fast-math -I ./include src/test.cpp src/fpu_top.cpp src/fpu_rf.cpp src/fpu_operations.cpp src/fp_number.cpp  -o bin/rvfpm_test -D NO_ROUNDING
 	./bin/rvfpm_test
 
 test_RHEL:  #run using args="-D EXT_D/Q" to test with D/Q
-	$(CXX) $(CXXFLAGS)   -fno-fast-math -frounding-math -fsignaling-nans -O2  -I ./include src/test.cpp src/fpu_top.cpp src/fpu_rf.cpp src/fpu_operations.cpp src/fp_number.cpp  -o bin/rvfpm_test_RHEL $(args) 
+	$(CXX) $(CXXFLAGS)   -fno-fast-math -frounding-math -fsignaling-nans  -I ./include src/test.cpp src/fpu_top.cpp src/fpu_rf.cpp src/fpu_operations.cpp src/fp_number.cpp  -o bin/rvfpm_test_RHEL $(args) 
 	./bin/rvfpm_test_RHEL
 
 TestFloat: #Compile and test for IEEE754 compliance
-	$(CXX) $(CXXFLAGS) -fno-fast-math -O2 -I ./include src/in_TestFloat.cpp src/fpu_top.cpp src/fpu_rf.cpp src/fpu_operations.cpp src/fp_number.cpp  -o bin/rvfpm_testFloat -D TESTFLOAT
+	$(CXX) $(CXXFLAGS) -fno-fast-math -I ./include src/in_TestFloat.cpp src/fpu_top.cpp src/fpu_rf.cpp src/fpu_operations.cpp src/fp_number.cpp  -o bin/rvfpm_testFloat -D TESTFLOAT
 	make -i TestFloat_all args="-rnear_even"
 	make -i TestFloat_all args="-rminMag"
 	make -i TestFloat_all args="-rmin"
 	make -i TestFloat_all args="-rmax"
 
 testMake: 
-	$(CXX) $(CXXFLAGS) --target=x86_64-pc-linux-gnu -static-libstdc++ -fno-fast-math -O2 -I ./include src/in_TestFloat.cpp src/fpu_top.cpp src/fpu_rf.cpp src/fpu_operations.cpp src/fp_number.cpp  -o bin/rvfpm_testFloat_RHEL -D TESTFLOAT
+	$(CXX) $(CXXFLAGS) --target=x86_64-pc-linux-gnu -static-libstdc++ -fno-fast-math -I ./include src/in_TestFloat.cpp src/fpu_top.cpp src/fpu_rf.cpp src/fpu_operations.cpp src/fp_number.cpp  -o bin/rvfpm_testFloat_RHEL -D TESTFLOAT
 	make TestFloat_all_RHEL args="-rnear_even"
 	make TestFloat_all_RHEL args="-rminMag"
 	make TestFloat_all_RHEL args="-rmin"
@@ -83,12 +83,12 @@ TestFloat_all_RHEL:
 	./bin/testfloat_gen_x86 f32_to_i32  | ./bin/rvfpm_testFloat_RHEL f32_to_i32   $(args) | ./bin/testfloat_ver_x86 $(args)	f32_to_i32	-errors 0 > tests/rm$(args)/f32_fti.txt 2>&1
 
 macSL:
-	$(CXX) $(CXXFLAGS) -shared -undefined dynamic_lookup -fno-fast-math -O2 -o bin/lib_rvfpm.dylib -I ./include src/dpi_wrapper.cpp src/fpu_top.cpp src/fpu_rf.cpp src/fpu_operations.cpp src/fp_number.cpp
+	$(CXX) $(CXXFLAGS) -shared -undefined dynamic_lookup -fno-fast-math -o bin/lib_rvfpm.dylib -I ./include src/dpi_wrapper.cpp src/fpu_top.cpp src/fpu_rf.cpp src/fpu_operations.cpp src/fp_number.cpp
 
 testSL:
-	$(CXX) $(CXXFLAGS) -arch x86_64 -shared -undefined dynamic_lookup -fno-fast-math -O2 -o bin/lib_rvfpm_2.so -I ./include src/dpi_wrapper.cpp src/fpu_top.cpp src/fpu_rf.cpp src/fpu_operations.cpp src/fp_number.cpp
+	$(CXX) $(CXXFLAGS) -arch x86_64 -shared -undefined dynamic_lookup -fno-fast-math -o bin/lib_rvfpm_2.so -I ./include src/dpi_wrapper.cpp src/fpu_top.cpp src/fpu_rf.cpp src/fpu_operations.cpp src/fp_number.cpp
 rhelSL:
-	$(CXX) $(CXXFLAGS) -shared -fPIC -frounding-math -fsignaling-nans -ffloat-store -mfpmath=sse -msse2 -O2 -fno-fast-math -static-libstdc++  -o bin/lib_rvfpm.so -I ./include src/dpi_wrapper.cpp src/fpu_top.cpp src/fpu_rf.cpp src/fpu_operations.cpp src/fp_number.cpp
+	$(CXX) $(CXXFLAGS) -shared -fPIC -frounding-math -fsignaling-nans -ffloat-store -fno-fast-math -static-libstdc++  -o bin/lib_rvfpm.so -I ./include src/dpi_wrapper.cpp src/fpu_top.cpp src/fpu_rf.cpp src/fpu_operations.cpp src/fp_number.cpp
 
 sim_full:
 	make clean
