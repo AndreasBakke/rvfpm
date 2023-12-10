@@ -35,6 +35,8 @@ class FPU {
     //Backdoor functions
     FPNumber bd_getData(uint32_t addr);
     void bd_setRoundingMode(unsigned int rm);
+    void bd_setFcsr(uint32_t data);
+    uint32_t bd_getFcsr();
     std::vector<float> bd_getRF();
     unsigned int bd_getPipeStageId(int stage);
 
