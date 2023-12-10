@@ -5,11 +5,10 @@
     Wrapper to test for IEEE754 complaince using Berkley TestFloat.
 
     Run:
-    make TestFloat (macOS).
-    make TestFloatRHEL (RHEL8) (Not tested & Verified)
+    make TestFloat.
 
     Operations not tested by BTF:
-        FSGNJ
+        FSGNJ - sign bit modified directly
         FCLASS
         FMV
         (FMSUB, FNMSUB, FNMADD not directly tested, but should have the same behavior as FMADD with varied signs)
