@@ -14,7 +14,7 @@ program automatic testPr_rvfpm #(
 (
     inTest_rvfpm uin_rvfpm
 );
-    import "DPI-C" function shortreal randomFloat(); //C++ function for random float generation
+    import "DPI-C" function int unsigned randomFloat(); //C++ function for random float generation
     initial begin
         $display("--- Starting simulation ---");
         init();
@@ -50,37 +50,48 @@ program automatic testPr_rvfpm #(
         @(posedge uin_rvfpm.ck);
         uin_rvfpm.instruction = 0;
         repeat(PIPELINE_STAGES*2) @(posedge uin_rvfpm.ck);
-        doRTYPE(.funct7(7'b0010000), .rs1(1), .rs2(2), .rd(3), .funct3(000)); //FSGNJ.S
-        doRTYPE(.funct7(7'b0010000), .rs1(1), .rs2(2), .rd(3), .funct3(001)); //FSGNJN.S
-        doRTYPE(.funct7(7'b0010000), .rs1(1), .rs2(2), .rd(3), .funct3(010)); //FSGNJX.S
-        uin_rvfpm.instruction = 0;
-        repeat(PIPELINE_STAGES*2)@(posedge uin_rvfpm.ck);
-        doRTYPE(.funct7(7'b0010000), .rs1(4), .rs2(5), .rd(6), .funct3(000)); //FSGNJ.S
-        doRTYPE(.funct7(7'b0010000), .rs1(4), .rs2(5), .rd(6), .funct3(001)); //FSGNJN.S
-        doRTYPE(.funct7(7'b0010000), .rs1(4), .rs2(5), .rd(6), .funct3(010)); //FSGNJX.S
-        uin_rvfpm.instruction = 0;
-        repeat(PIPELINE_STAGES*2) @(posedge uin_rvfpm.ck);
-
+        
         //Classify
-        doITYPE(.rd(0), .data($bitstoshortreal(32'b11111111100000000000000000000000))); //-inf
-        doITYPE(.rd(1), .data(-1.4125)); //Negative normal
-        doITYPE(.rd(2), .data($bitstoshortreal(32'b10000000000001000010000100000000))); //Negative subnormal
-        doITYPE(.rd(3), .data($bitstoshortreal(32'b10000000000000000000000000000000))); //-0
+        doITYPE(.rd(0), .data(32'b11111111100000000000000000000000)); //-inf
+        doITYPE(.rd(1), .data($shortrealtobits(-1.4125))); //Negative normal
+        doITYPE(.rd(2), .data(32'b10000000000001000010000100000000)); //Negative subnormal
+        doITYPE(.rd(3), .data(32'b10000000000000000000000000000000)); //-0
         doITYPE(.rd(4), .data(0)); //positive 0
-        doITYPE(.rd(5), .data($bitstoshortreal(32'b00000000000001000010000100000000))); //Positive subnormal
-        doITYPE(.rd(6), .data(1.4125)); //positive normal
-        doITYPE(.rd(7), .data($bitstoshortreal(32'b01111111100000000000000000000000))); //inf
-        doITYPE(.rd(8), .data($bitstoshortreal(32'b01111111101000000000000000000000))); //Signaling NaN
-        doITYPE(.rd(9), .data($bitstoshortreal(32'b01111111110000000000000000000000))); //qNaN
+        doITYPE(.rd(5), .data(32'b00000000000001000010000100000000)); //Positive subnormal
+        doITYPE(.rd(6), .data($shortrealtobits(1.4125))); //positive normal (12.125)
+        doITYPE(.rd(7), .data(32'b01111111100000000000000000000000)); //inf
+        doITYPE(.rd(8), .data(32'b01111111101000000000000000000000)); //Signaling NaN
+        doITYPE(.rd(9), .data(32'b01111111110000000000000000000000)); //qNaN
         for (int i=0; i<10; ++i) begin
             doRTYPE(.funct7(7'b1110000), .rs1(i), .rs2(0), .rd(0), .funct3(001)); //Class
         end
         @(posedge uin_rvfpm.ck);
         uin_rvfpm.instruction = 0;
+        repeat(PIPELINE_STAGES*2) @(posedge uin_rvfpm.ck);
+
+        //Sign testing
+        // + and  +
+        doRTYPE(.funct7(7'b0010000), .rs1(5), .rs2(5), .rd(10), .funct3(000)); //FSGNJ.S (get from +)
+        doRTYPE(.funct7(7'b0010000), .rs1(5), .rs2(5), .rd(10), .funct3(001)); //FSGNJN.S (get negated +)
+        doRTYPE(.funct7(7'b0010000), .rs1(5), .rs2(5), .rd(10), .funct3(010)); //FSGNJX.S (0 xor 0)
+        // + and -
+        doRTYPE(.funct7(7'b0010000), .rs1(5), .rs2(1), .rd(11), .funct3(000)); //FSGNJ.S (get from -)
+        doRTYPE(.funct7(7'b0010000), .rs1(5), .rs2(1), .rd(11), .funct3(001)); //FSGNJN.S (get negated-)
+        doRTYPE(.funct7(7'b0010000), .rs1(5), .rs2(1), .rd(11), .funct3(010)); //FSGNJX.S (0 xor 1)
+        // - and -
+        doRTYPE(.funct7(7'b0010000), .rs1(1), .rs2(1), .rd(12), .funct3(000)); //FSGNJ.S (get from -)
+        doRTYPE(.funct7(7'b0010000), .rs1(1), .rs2(1), .rd(12), .funct3(001)); //FSGNJN.S (get negated-)
+        doRTYPE(.funct7(7'b0010000), .rs1(1), .rs2(1), .rd(12), .funct3(010)); //FSGNJX.S (1 xor 1)
+        // - and +
+        doRTYPE(.funct7(7'b0010000), .rs1(1), .rs2(5), .rd(13), .funct3(000)); //FSGNJ.S (get from -)
+        doRTYPE(.funct7(7'b0010000), .rs1(1), .rs2(5), .rd(13), .funct3(001)); //FSGNJN.S (get negated-)
+        doRTYPE(.funct7(7'b0010000), .rs1(1), .rs2(5), .rd(13), .funct3(010)); //FSGNJX.S (0 xor 1)
+        @(posedge uin_rvfpm.ck)
+        uin_rvfpm.instruction = 0;
         uin_rvfpm.id=0;
         repeat(PIPELINE_STAGES*2) @(posedge uin_rvfpm.ck);
 
-    end
+end
 
 
     task reset();
@@ -139,7 +150,7 @@ program automatic testPr_rvfpm #(
         uin_rvfpm.instruction = 0; //So toMem_valid toggles
     endtask
 
-    task doITYPE(input int imm = 0, input int rs1 = 0, input int funct3 = 0, input int rd = $urandom_range(0, NUM_REGS-1), input shortreal data = randomFloat()); //Default: Store random value into random register
+    task doITYPE(input int imm = 0, input int rs1 = 0, input int funct3 = 0, input int rd = $urandom_range(0, NUM_REGS-1), input int unsigned data = randomFloat()); //Default: Store random value into random register
         @(posedge uin_rvfpm.ck)
         setId();
         uin_rvfpm.instruction[31:20] = imm; //imm

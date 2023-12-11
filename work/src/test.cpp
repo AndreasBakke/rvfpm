@@ -101,7 +101,7 @@ void resetRegisters(FPU& fpu, std::vector<float>& clone){
 
 void verifyReset(FPU& fpu, std::vector<float>& clone){
     //Helper function to verify register reset between tests
-    float toMem;
+    uint32_t toMem;
     bool toMem_valid;
     for (unsigned int i = 0; i < rfDepth; i++)
     {

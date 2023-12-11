@@ -8,7 +8,9 @@ interface inTest_rvfpm #(
     parameter int X_ID_WIDTH = 4,
     parameter int NUM_REGS = 32,
     parameter int PIPELINE_STAGES = 4,
-    parameter int XLEN = 32
+    parameter int XLEN = 32,
+    parameter int FLEN = 32
+
 );
 
     //-----------------------
@@ -19,7 +21,7 @@ interface inTest_rvfpm #(
     //-----------------------
     //-- Memory
     //-----------------------
-    shortreal data_fromMem, data_toMem;
+    logic[FLEN-1:0] data_fromMem, data_toMem;
     logic toMem_valid;
 
     //-----------------------
@@ -35,7 +37,7 @@ interface inTest_rvfpm #(
     logic fpu_ready;
     logic[31:0] instruction;
 
-    shortreal registerFile[NUM_REGS]; //For verification
+    logic[0:NUM_REGS-1][FLEN-1:0] registerFile; //For verification
     int unsigned pipelineIds[PIPELINE_STAGES];
 
     //-----------------------

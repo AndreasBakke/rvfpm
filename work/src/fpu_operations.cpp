@@ -110,8 +110,6 @@ FpuPipeObj decode_RTYPE(uint32_t instr) {
     return result;
 }
 
-// FpuPipeObj FPU::operation(uint32_t instruction, int fromXReg, float fromMem, float* toMem, uint32_t* toXReg, bool* pipelineFull) {
-
 void execute_RTYPE(FpuPipeObj& op, FpuRf* registerFile, int fromXReg, unsigned int* id_out, uint32_t* toXReg, bool* toXReg_valid){
     std::feclearexcept(FE_ALL_EXCEPT); //Clear all flags
     RTYPE dec_instr = {.instr = op.instr}; //"Decode" into ITYPE
@@ -366,9 +364,9 @@ FpuPipeObj decode_ITYPE(uint32_t instr) {
     return result;
 }
 
-void execute_ITYPE(FpuPipeObj& op, FpuRf* registerFile, float fromMem){
+void execute_ITYPE(FpuPipeObj& op, FpuRf* registerFile, unsigned int fromMem){
     //Only ITYPE operation implemented is FLW
-    op.data.f = fromMem;
+    op.data.bitpattern = fromMem;
     if (registerFile != nullptr) {
         registerFile->write(op.addrTo, op.data);
     }
@@ -384,12 +382,12 @@ FpuPipeObj decode_STYPE(uint32_t instr){
     return result;
 }
 
-void execute_STYPE(FpuPipeObj& op, FpuRf* registerFile, unsigned int* id_out, float* toMem, bool* toMem_valid){
+void execute_STYPE(FpuPipeObj& op, FpuRf* registerFile, unsigned int* id_out, uint32_t* toMem, bool* toMem_valid){
     if (registerFile != nullptr) {
         op.data = registerFile->read(op.addrFrom.front()); 
     }
     if (toMem != nullptr) {
-        *toMem = op.data.f;
+        *toMem = op.data.bitpattern;
     }
     if (toMem_valid != nullptr) {
         *toMem_valid = true; //TODO: check if it is actually valid. TODO: rename to ready?
