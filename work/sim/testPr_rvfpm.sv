@@ -71,21 +71,21 @@ program automatic testPr_rvfpm #(
 
         //Sign testing
         // + and  +
-        doRTYPE(.funct7(7'b0010000), .rs1(5), .rs2(5), .rd(10), .funct3(000)); //FSGNJ.S (get from +)
-        doRTYPE(.funct7(7'b0010000), .rs1(5), .rs2(5), .rd(10), .funct3(001)); //FSGNJN.S (get negated +)
-        doRTYPE(.funct7(7'b0010000), .rs1(5), .rs2(5), .rd(10), .funct3(010)); //FSGNJX.S (0 xor 0)
+        doRTYPE(.funct7(7'b0010000), .rs1(6), .rs2(6), .rd(10), .funct3(000)); //FSGNJ.S (get from +)
+        doRTYPE(.funct7(7'b0010000), .rs1(6), .rs2(6), .rd(10), .funct3(001)); //FSGNJN.S (get negated +)
+        doRTYPE(.funct7(7'b0010000), .rs1(6), .rs2(6), .rd(10), .funct3(010)); //FSGNJX.S (0 xor 0)
         // + and -
-        doRTYPE(.funct7(7'b0010000), .rs1(5), .rs2(1), .rd(11), .funct3(000)); //FSGNJ.S (get from -)
-        doRTYPE(.funct7(7'b0010000), .rs1(5), .rs2(1), .rd(11), .funct3(001)); //FSGNJN.S (get negated-)
-        doRTYPE(.funct7(7'b0010000), .rs1(5), .rs2(1), .rd(11), .funct3(010)); //FSGNJX.S (0 xor 1)
+        doRTYPE(.funct7(7'b0010000), .rs1(6), .rs2(1), .rd(11), .funct3(000)); //FSGNJ.S (get from -)
+        doRTYPE(.funct7(7'b0010000), .rs1(6), .rs2(1), .rd(11), .funct3(001)); //FSGNJN.S (get negated-)
+        doRTYPE(.funct7(7'b0010000), .rs1(6), .rs2(1), .rd(11), .funct3(010)); //FSGNJX.S (0 xor 1)
         // - and -
         doRTYPE(.funct7(7'b0010000), .rs1(1), .rs2(1), .rd(12), .funct3(000)); //FSGNJ.S (get from -)
         doRTYPE(.funct7(7'b0010000), .rs1(1), .rs2(1), .rd(12), .funct3(001)); //FSGNJN.S (get negated-)
         doRTYPE(.funct7(7'b0010000), .rs1(1), .rs2(1), .rd(12), .funct3(010)); //FSGNJX.S (1 xor 1)
         // - and +
-        doRTYPE(.funct7(7'b0010000), .rs1(1), .rs2(5), .rd(13), .funct3(000)); //FSGNJ.S (get from -)
-        doRTYPE(.funct7(7'b0010000), .rs1(1), .rs2(5), .rd(13), .funct3(001)); //FSGNJN.S (get negated-)
-        doRTYPE(.funct7(7'b0010000), .rs1(1), .rs2(5), .rd(13), .funct3(010)); //FSGNJX.S (0 xor 1)
+        doRTYPE(.funct7(7'b0010000), .rs1(1), .rs2(6), .rd(13), .funct3(000)); //FSGNJ.S (get from -)
+        doRTYPE(.funct7(7'b0010000), .rs1(1), .rs2(6), .rd(13), .funct3(001)); //FSGNJN.S (get negated-)
+        doRTYPE(.funct7(7'b0010000), .rs1(1), .rs2(6), .rd(13), .funct3(010)); //FSGNJX.S (0 xor 1)
         @(posedge uin_rvfpm.ck)
         uin_rvfpm.instruction = 0;
         uin_rvfpm.id=0;
