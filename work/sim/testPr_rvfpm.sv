@@ -8,7 +8,8 @@
 `timescale 1ns/1ps
 program automatic testPr_rvfpm #(
     parameter NUM_REGS,
-    parameter PIPELINE_STAGES
+    parameter PIPELINE_STAGES,
+    parameter X_ID_WIDTH 
 )
 (
     inTest_rvfpm uin_rvfpm
@@ -20,16 +21,17 @@ program automatic testPr_rvfpm #(
         fillRF();
         basic();
 
-        repeat(100) doRTASK();
-        doRTASK(.rd(19)); //Test with specified destination
+        repeat(100) doRTYPE();
+        doRTYPE(.rd(19)); //Test with specified destination
         @(posedge uin_rvfpm.ck);
         uin_rvfpm.instruction = 0;
+
         repeat(PIPELINE_STAGES*2) @(posedge uin_rvfpm.ck);
         repeat(10) @(posedge uin_rvfpm.ck); //Wait a bit
 
 
-        repeat(100) testSTYPE();
-        testSTYPE(.rs2(4)); //Read register 4.
+        repeat(100) doSTYPE();
+        doSTYPE(.rs2(4)); //Read register 4.
         @(posedge uin_rvfpm.ck);
         uin_rvfpm.instruction = 0;
         repeat(PIPELINE_STAGES*2) @(posedge uin_rvfpm.ck);
@@ -39,17 +41,44 @@ program automatic testPr_rvfpm #(
         fillRF();
 
         repeat(100) begin //test FMV.X:W (move to integer). 
-           doRTASK(.funct7(7'b1110000), .rs2(0), .funct3(0)); 
+           doRTYPE(.funct7(7'b1110000), .rs2(0), .funct3(0)); 
            @(posedge uin_rvfpm.ck) uin_rvfpm.instruction = 0; //Set instr to 0 to toggle toXReg_valid.
         end
-        uin_rvfpm.id = 0;
+
         repeat(10) @(posedge uin_rvfpm.ck);
-        doRTASK(.funct7(7'b0000100), .rs1(3), .rs2(2), .rd(4));
+        doRTYPE(.funct7(7'b0000100), .rs1(3), .rs2(2), .rd(4));
         @(posedge uin_rvfpm.ck);
         uin_rvfpm.instruction = 0;
-        uin_rvfpm.id = 0;
-        repeat(PIPELINE_STAGES*3) @(posedge uin_rvfpm.ck);
+        repeat(PIPELINE_STAGES*2) @(posedge uin_rvfpm.ck);
+        doRTYPE(.funct7(7'b0010000), .rs1(1), .rs2(2), .rd(3), .funct3(000)); //FSGNJ.S
+        doRTYPE(.funct7(7'b0010000), .rs1(1), .rs2(2), .rd(3), .funct3(001)); //FSGNJN.S
+        doRTYPE(.funct7(7'b0010000), .rs1(1), .rs2(2), .rd(3), .funct3(010)); //FSGNJX.S
+        uin_rvfpm.instruction = 0;
+        repeat(PIPELINE_STAGES*2)@(posedge uin_rvfpm.ck);
+        doRTYPE(.funct7(7'b0010000), .rs1(4), .rs2(5), .rd(6), .funct3(000)); //FSGNJ.S
+        doRTYPE(.funct7(7'b0010000), .rs1(4), .rs2(5), .rd(6), .funct3(001)); //FSGNJN.S
+        doRTYPE(.funct7(7'b0010000), .rs1(4), .rs2(5), .rd(6), .funct3(010)); //FSGNJX.S
+        uin_rvfpm.instruction = 0;
+        repeat(PIPELINE_STAGES*2) @(posedge uin_rvfpm.ck);
 
+        //Classify
+        doITYPE(.rd(0), .data($bitstoshortreal(32'b11111111100000000000000000000000))); //-inf
+        doITYPE(.rd(1), .data(-1.4125)); //Negative normal
+        doITYPE(.rd(2), .data($bitstoshortreal(32'b10000000000001000010000100000000))); //Negative subnormal
+        doITYPE(.rd(3), .data($bitstoshortreal(32'b10000000000000000000000000000000))); //-0
+        doITYPE(.rd(4), .data(0)); //positive 0
+        doITYPE(.rd(5), .data($bitstoshortreal(32'b00000000000001000010000100000000))); //Positive subnormal
+        doITYPE(.rd(6), .data(1.4125)); //positive normal
+        doITYPE(.rd(7), .data($bitstoshortreal(32'b01111111100000000000000000000000))); //inf
+        doITYPE(.rd(8), .data($bitstoshortreal(32'b01111111101000000000000000000000))); //Signaling NaN
+        doITYPE(.rd(9), .data($bitstoshortreal(32'b01111111110000000000000000000000))); //qNaN
+        for (int i=0; i<10; ++i) begin
+            doRTYPE(.funct7(7'b1110000), .rs1(i), .rs2(0), .rd(0), .funct3(001)); //Class
+        end
+        @(posedge uin_rvfpm.ck);
+        uin_rvfpm.instruction = 0;
+        uin_rvfpm.id=0;
+        repeat(PIPELINE_STAGES*2) @(posedge uin_rvfpm.ck);
 
     end
 
@@ -75,30 +104,17 @@ program automatic testPr_rvfpm #(
 
     task fillRF();
         //Fills register file with random value
-        uin_rvfpm.instruction[31:20] = 0; //imm
-        uin_rvfpm.instruction[19:15] = 0; //rs1 (base)
-        uin_rvfpm.instruction[14:12] = 3'b010; //rm (W)
-        uin_rvfpm.instruction[11:7] = 0;  //rd (dest)
-        uin_rvfpm.instruction[6:0] = 7'b0000111;  //OPCODE
         for (int i=0; i<NUM_REGS; ++i) begin
-            uin_rvfpm.id = $random;
-            uin_rvfpm.instruction[11:7] = i; //set register
-            fork
-                begin
-                    repeat(PIPELINE_STAGES) @(posedge uin_rvfpm.ck);
-                    uin_rvfpm.data_fromMem = randomFloat(); //set to random real at the appropriate time
-                end
-            join_none
-            @(posedge uin_rvfpm.ck);
+            doITYPE(.rd(i));
         end
         uin_rvfpm.instruction = 0;
         repeat(PIPELINE_STAGES) @(posedge uin_rvfpm.ck); //wait for all operations to finish
         uin_rvfpm.data_fromMem = 0;
     endtask
 
-    task doRTASK(input int funct7 = 0, input int rs2 = $urandom_range(0, NUM_REGS-1), input int rs1 = $urandom_range(0, NUM_REGS-1), input int funct3 = 0, input int rd = $urandom_range(0, NUM_REGS-1));
+    task doRTYPE(input int funct7 = 0, input int rs2 = $urandom_range(0, NUM_REGS-1), input int rs1 = $urandom_range(0, NUM_REGS-1), input int funct3 = 0, input int rd = $urandom_range(0, NUM_REGS-1));
         @(posedge uin_rvfpm.ck)
-        uin_rvfpm.id = $random;
+        setId();
         uin_rvfpm.instruction[31:25] = funct7;
         uin_rvfpm.instruction[24:20] = rs2; //rs2
         uin_rvfpm.instruction[19:15] = rs1; //rs1 (base)
@@ -110,9 +126,9 @@ program automatic testPr_rvfpm #(
     // task testR4TYPE() 
     // endtask
 
-    task testSTYPE(input int imm = 0, input int rs2 = $urandom_range(0, NUM_REGS-1), input int rs1 = 0, input int offset = 0);
+    task doSTYPE(input int imm = 0, input int rs2 = $urandom_range(0, NUM_REGS-1), input int rs1 = 0, input int offset = 0); //Default get value from random register
         @(posedge uin_rvfpm.ck)
-        uin_rvfpm.id = $random;
+        setId();
         uin_rvfpm.instruction[31:25] = imm;
         uin_rvfpm.instruction[24:20] = rs2; //rs2 (src)
         uin_rvfpm.instruction[19:15] = rs1; //rs1 (base)
@@ -121,10 +137,27 @@ program automatic testPr_rvfpm #(
         uin_rvfpm.instruction[6:0] = 7'b0100111;  //OPCODE
         @(posedge uin_rvfpm.ck)
         uin_rvfpm.instruction = 0; //So toMem_valid toggles
-        uin_rvfpm.id = 0;
     endtask
 
+    task doITYPE(input int imm = 0, input int rs1 = 0, input int funct3 = 0, input int rd = $urandom_range(0, NUM_REGS-1), input shortreal data = randomFloat()); //Default: Store random value into random register
+        @(posedge uin_rvfpm.ck)
+        setId();
+        uin_rvfpm.instruction[31:20] = imm; //imm
+        uin_rvfpm.instruction[19:15] = rs1; //rs1 (base)
+        uin_rvfpm.instruction[14:12] = 3'b010; //rm (W)
+        uin_rvfpm.instruction[11:7] = rd;  //rd (dest)
+        uin_rvfpm.instruction[6:0] = 7'b0000111;  //OPCODE
+        fork
+            begin
+                repeat(PIPELINE_STAGES) @(posedge uin_rvfpm.ck);
+                uin_rvfpm.data_fromMem = data; //set data at appropriate time
+            end
+        join_none
+        @(posedge uin_rvfpm.ck)
+        uin_rvfpm.instruction = 0;
+    endtask
 
+    
 
     task basic();
         @(posedge uin_rvfpm.ck);
@@ -158,5 +191,9 @@ program automatic testPr_rvfpm #(
             end
         join_none
     endtask
+
+    task setId();
+        uin_rvfpm.id = (uin_rvfpm.id +1) % 2**X_ID_WIDTH;
+    endtask;
 
 endprogram

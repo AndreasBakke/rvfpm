@@ -7,7 +7,7 @@
 #include "fpu_operations.h"
 #include <cfenv> //To get flags
 #include <iostream>
-
+#include <limits>
 
 FpuPipeObj decode_R4TYPE(uint32_t instr) {
     RTYPE dec_instr = {.instr = instr};
@@ -290,24 +290,27 @@ void execute_RTYPE(FpuPipeObj& op, FpuRf* registerFile, int fromXReg, unsigned i
                 } else if (data1.f < 0) //negative normal number
                 {
                     op.uDataToXreg = 0b0000000010;
-                } else if (data1.f == -0) //negative zero
+                } else if (data1.f == 0 && data1.parts.sign == 1) //negative zero
                 {
                     op.uDataToXreg = 0b0000001000;
-                } else if (data1.f == 0) //positive 0
+                } else if (data1.f == 0 && data1.parts.sign == 0) //positive 0
                 {
                     op.uDataToXreg = 0b0000010000;
-                } else if (data1.f > 0) //positive normal number
-                {
-                    op.uDataToXreg = 0b0001000000;
+                
                 } else if (data1.f == INFINITY) //positive inf
                 {
                     op.uDataToXreg = 0b0010000000;
-                } else if (std::isnan(data1.f) && !(data1.parts.mantissa & 0x00400000)) //If leading mantissa-bit is not set -> sNaN
+                } else if (std::isnan(data1.f) && !(data1.bitpattern & 0x00400000)) //If leading mantissa-bit is not set -> sNaN //TODO: rewrite the check so it works
                 {
                     op.uDataToXreg = 0b0100000000; //SNaN
                 } else if (std::isnan(data1.f))
                 {
+                    std::cout << std::hex << data1.bitpattern << std::endl;
+                    std::cout << (data1.bitpattern & 0x00400000) << std::endl;
                     op.uDataToXreg = 0b1000000000; //QNaN
+                } else if (data1.f > 0) //positive normal number
+                {
+                    op.uDataToXreg = 0b0001000000;
                 } else {
                     op.uDataToXreg = 0b0000000000; 
                     op.flags = 0b10000; //Invalid operation

@@ -17,7 +17,7 @@ module rvfpm_tb;
     parameter TB_XLEN = 32;
     parameter TB_NUM_FPU_REGS = 32;
     parameter TB_PIPELINE_STAGES = 4; // Example value
-    parameter TB_X_ID_WIDTH = 4;
+    parameter TB_X_ID_WIDTH = 8;
 
     localparam time ck_period = 40ns;
 
@@ -53,6 +53,7 @@ module rvfpm_tb;
     rvfpm #(
         .NUM_REGS(TB_NUM_FPU_REGS),
         .PIPELINE_STAGES(TB_PIPELINE_STAGES),
+        .X_ID_WIDTH(TB_X_ID_WIDTH),
         .XLEN(TB_XLEN)
     ) dut (
         .ck(uin_rvfpm.ck),
@@ -99,7 +100,8 @@ module rvfpm_tb;
     //-----------------------
     testPr_rvfpm #(
         .NUM_REGS(TB_NUM_FPU_REGS),
-        .PIPELINE_STAGES(TB_PIPELINE_STAGES)
+        .PIPELINE_STAGES(TB_PIPELINE_STAGES),
+        .X_ID_WIDTH(TB_X_ID_WIDTH)
     ) u_testPr(
         .uin_rvfpm(uin_rvfpm)
     );
