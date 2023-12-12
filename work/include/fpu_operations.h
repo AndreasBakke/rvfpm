@@ -106,8 +106,8 @@ FpuPipeObj decode_STYPE(uint32_t instr);
 //Execute functions
 void execute_RTYPE(FpuPipeObj& op, FpuRf* registerFile, int fromXReg, unsigned int* id_out, uint32_t* toXReg, bool* toXReg_valid);
 void execute_R4TYPE(FpuPipeObj& op, FpuRf* registerFile);
-void execute_ITYPE(FpuPipeObj& op, FpuRf* registerFile, float fromMem);
-void execute_STYPE(FpuPipeObj& op, FpuRf* registerFile, unsigned int* id_out, float* toMem, bool* toMem_valid);
+void execute_ITYPE(FpuPipeObj& op, FpuRf* registerFile, unsigned int fromMem);
+void execute_STYPE(FpuPipeObj& op, FpuRf* registerFile, unsigned int* id_out, uint32_t* toMem, bool* toMem_valid);
 
 
 void setRoundingMode(unsigned int rm);

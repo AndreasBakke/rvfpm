@@ -22,9 +22,9 @@ class FPU {
     FPU(int pipelineStages, int rfDepth=32);
     ~FPU();
     void resetFPU();
-    FpuPipeObj operation(uint32_t instruction, unsigned int id, int fromXReg, float fromMem, unsigned int* id_out, float* toMem, uint32_t* toXReg, bool* pipelineFull, bool* toMem_valid, bool* toXReg_valid); //add toXReg and toMem
+    FpuPipeObj operation(uint32_t instruction, unsigned int id, int fromXReg, unsigned int fromMem, unsigned int* id_out, uint32_t* toMem, uint32_t* toXReg, bool* pipelineFull, bool* toMem_valid, bool* toXReg_valid); //add toXReg and toMem
     FpuPipeObj decodeOp(uint32_t instruction, unsigned int id);
-    void executeOp(FpuPipeObj& op, float fromMem, int fromXReg, unsigned int* id_out, float* toMem, uint32_t* toXReg, bool* toMem_valid, bool* toXReg_valid);
+    void executeOp(FpuPipeObj& op, unsigned int fromMem, int fromXReg, unsigned int* id_out, uint32_t* toMem, uint32_t* toXReg, bool* toMem_valid, bool* toXReg_valid);
 
 
     //Pipeline operations

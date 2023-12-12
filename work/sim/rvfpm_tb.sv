@@ -70,7 +70,7 @@ module rvfpm_tb;
         .toMem_valid(uin_rvfpm.toMem_valid),
 	    .fpu_ready(uin_rvfpm.fpu_ready) 
     );
-    import "DPI-C" function shortreal getRFContent(input chandle fpu_ptr, input int addr);
+    import "DPI-C" function int unsigned getRFContent(input chandle fpu_ptr, input int addr);
     import "DPI-C" function int unsigned getPipeStageId(input chandle fpu_ptr, input int stage);
 
     always @(posedge uin_rvfpm.ck) begin

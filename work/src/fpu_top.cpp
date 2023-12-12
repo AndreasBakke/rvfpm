@@ -68,7 +68,7 @@ FpuPipeObj FPU::decodeOp(uint32_t instruction, unsigned int id) {
     return result;
 };
 
-void FPU::executeOp(FpuPipeObj& op, float fromMem, int fromXReg, unsigned int* id_out, float* toMem, uint32_t* toXReg, bool* toMem_valid, bool* toXReg_valid) {
+void FPU::executeOp(FpuPipeObj& op, unsigned int fromMem, int fromXReg, unsigned int* id_out, uint32_t* toMem, uint32_t* toXReg, bool* toMem_valid, bool* toXReg_valid) {
     #ifndef NO_ROUNDING  // NO_ROUNDING uses c++ default rounding mode.
         unsigned int rm = registerFile.readfrm();
         if (rm == 0b111) //0b111 is dynamic rounding, and is handled for the relevant instructions later.
@@ -154,7 +154,7 @@ FpuPipeObj FPU::pipelineStep(FpuPipeObj nextOp, bool* pipelineFull){
 };
 
 
-FpuPipeObj FPU::operation(uint32_t instruction, unsigned int id, int fromXReg, float fromMem, unsigned int* id_out, float* toMem, uint32_t* toXReg, bool* pipelineFull, bool* toMem_valid, bool* toXReg_valid) {
+FpuPipeObj FPU::operation(uint32_t instruction, unsigned int id, int fromXReg, unsigned int fromMem, unsigned int* id_out, uint32_t* toMem, uint32_t* toXReg, bool* pipelineFull, bool* toMem_valid, bool* toXReg_valid) {
     FpuPipeObj newOp = decodeOp(instruction, id);
     FpuPipeObj currOp = {};
     if(numPipeStages == 0){ //Execute immediately

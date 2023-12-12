@@ -112,7 +112,7 @@ FPU testFPU(0, rfDepth); //0 pipeline stages -> instant execution
 
 int main(int argc, char** argv) {
     std::string op, rm, input1, input2, input3, input4, flags;
-    float mem;
+    unsigned int mem;
     uint32_t xReg;
     //Use first 4 registers
     uint32_t r1 = 0;
@@ -138,9 +138,9 @@ int main(int argc, char** argv) {
     if (op == "fmadd") //Fmadd has an extra input compared to other
     {
         while (std::cin >> input1 >> input2 >> input3 >> input4 >> flags) {
-            float a = hexToFloat(input1);
-            float b = hexToFloat(input2);
-            float c = hexToFloat(input3);
+            unsigned int a = hexToUnsignedInt(input1);
+            unsigned int b = hexToUnsignedInt(input2);
+            unsigned int c = hexToUnsignedInt(input3);
             uint32_t r1 = 1;
             uint32_t r2 = 2; 
             uint32_t r3 = 3; 
@@ -157,9 +157,9 @@ int main(int argc, char** argv) {
         }
     } else if (op == "fsqrt" || op == "ui32_to_f32" || op == "i32_to_f32" || op == "f32_to_ui32" || op == "f32_to_i32") { //fsqrt uses only three inputs
         while (std::cin >> input1 >> input2 >> flags) {
-            float a = hexToFloat(input1);
-            float b = hexToFloat(input2);
-            float c = hexToFloat(input3);
+            unsigned int a = hexToUnsignedInt(input1);
+            unsigned int b = hexToUnsignedInt(input2);
+            unsigned int c = hexToUnsignedInt(input3);
             //Load values
             ITYPE instr_load = {.parts= {7, r1, 0b010, 0, 0}};
             testFPU.operation(instr_load.instr, 0, 0, a, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr);
@@ -196,9 +196,9 @@ int main(int argc, char** argv) {
         }
     } else {
         while (std::cin >> input1 >> input2 >> input3 >> flags) {
-            float a = hexToFloat(input1);
-            float b = hexToFloat(input2);
-            float c = hexToFloat(input3);
+            unsigned int a = hexToUnsignedInt(input1);
+            unsigned int b = hexToUnsignedInt(input2);
+            unsigned int c = hexToUnsignedInt(input3);
             //Load values
             ITYPE instr_load = {.parts= {7, r1, 0b010, 0, 0}};
             testFPU.operation(instr_load.instr, 0, 0, a, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr);

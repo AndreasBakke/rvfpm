@@ -40,12 +40,12 @@ module rvfpm #(
     input logic[31:0] instruction,
     input logic [X_ID_WIDTH-1:0] id,
     input logic[XLEN-1:0] data_fromXReg, //Todo: when does this data need to be present in the pipeline?
-    input shortreal data_fromMem, //Todo: use logic[FLEN-1:0] instead?
+    input int unsigned data_fromMem, //Todo: use logic[FLEN-1:0] instead?
 
     //TODO: if ZFinx - have operands as inputs, and output
 
     output logic[XLEN-1:0] data_toXReg,
-    output shortreal  data_toMem,
+    output int unsigned  data_toMem,
     output logic toXReg_valid, //valid flags for outputs
     output logic toMem_valid,
     output logic [X_ID_WIDTH-1:0] id_out,
@@ -60,9 +60,9 @@ module rvfpm #(
         input int unsigned instruction,
         input int unsigned id,
         input int unsigned fromXReg,
-        input shortreal fromMem,
+        input int unsigned fromMem,
         output int unsigned id_out,
-        output shortreal toMem,
+        output int unsigned toMem,
         output int unsigned toXReg,
         output logic pipelineFull,
         output logic toMem_valid,
@@ -70,7 +70,7 @@ module rvfpm #(
         );
     import "DPI-C" function void reset_fpu(input chandle fpu_ptr);
     import "DPI-C" function void destroy_fpu(input chandle fpu_ptr);
-    import "DPI-C" function shortreal getRFContent(input chandle fpu_ptr, input int addr);
+    import "DPI-C" function int unsigned getRFContent(input chandle fpu_ptr, input int addr);
 
     //-----------------------
     //-- Local parameters
