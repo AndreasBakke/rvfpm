@@ -89,6 +89,7 @@ enum RTYPE_funct7 {
     FMUL_S              = 8,
     FDIV_S              = 12,
     FSGNJ               = 16,
+    FMIN_MAX            = 20,
     FSQRT_S             = 44,
     FCMP                = 80,
     FCVT_W_S            = 96,

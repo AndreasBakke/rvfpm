@@ -160,7 +160,6 @@ void execute_RTYPE(FpuPipeObj& op, FpuRf* registerFile, int fromXReg, unsigned i
         }
         case 0b010: //FSGNJX.S
         {
-            op.data = data1;
             op.data.parts.sign = data2.parts.sign ^ data1.parts.sign;
             break;
         }
@@ -172,6 +171,28 @@ void execute_RTYPE(FpuPipeObj& op, FpuRf* registerFile, int fromXReg, unsigned i
         }
         }
         break;
+    }
+    case FMIN_MAX:
+    {
+        switch (dec_instr.parts.funct3)
+        {
+        case 0b000: //FMIN
+        {
+            op.data.f = std::min(data1.f, data2.f);
+            break;
+        }
+        case 0b001: //FMAX
+        {
+            op.data.f = std::max(data1.f, data2.f);
+            break;
+        }
+        default:
+        {
+        op.flags = 0b10000; //Invalid operation
+        op.data = data1;
+        break;
+        }
+        }
     }
     case FCMP:
     {
@@ -303,8 +324,6 @@ void execute_RTYPE(FpuPipeObj& op, FpuRf* registerFile, int fromXReg, unsigned i
                     op.uDataToXreg = 0b0100000000; //SNaN
                 } else if (std::isnan(data1.f))
                 {
-                    std::cout << std::hex << data1.bitpattern << std::endl;
-                    std::cout << (data1.bitpattern & 0x00400000) << std::endl;
                     op.uDataToXreg = 0b1000000000; //QNaN
                 } else if (data1.f > 0) //positive normal number
                 {
