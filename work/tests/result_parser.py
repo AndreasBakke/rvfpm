@@ -1,8 +1,16 @@
+####################################################################
+#     rvfpm - 2023
+#     Andreas S. Bakke
+#    
+#     Description:
+#     Script for parsing results from the Berkeley TestFloat suite. 
+#     Only works if called from work/
+######################################################################
 import sys
 import os
 import re
 results = {}
-
+architecture = ""
 total_errors = 0
 
 def get_results(arch):
@@ -15,6 +23,7 @@ def get_results(arch):
             except Exception as e:
                 print(f"Error reading {filename}: {e}")
     summarize_tests(results)
+
 def extract_errors(path):
     with open(path, 'r', encoding='utf-8') as file:
         tests_performed = 0
@@ -45,6 +54,7 @@ def summarize_tests(results):
                 total_tests_failed += int(results[rm][test]["errors"])
             else:
                 instructions_passed +=1
+    writeSummary(results, total_tests_performed, total_tests_failed)
     print("\n\n##################################")
     print("######### TEST COMPLETED #########")
     print("##################################")
@@ -61,13 +71,51 @@ def summarize_tests(results):
             for test in failed_tests[rm]:
                 print(f"       {test}: Tests performed = {int(failed_tests[rm][test]['tests_performed']):,}, tests failed = {int(failed_tests[rm][test]['errors']):,}")
 
-        print(f"\n For details, refer to the individual tests in: tests/{architecture}/<rounding mode>/<test>.txt\n")
+        print(f"\n For details, refer to summary in tests/summary_{architecture}.txt or the individual tests in: tests/{architecture}/<rounding mode>/<test>.txt\n")
     print("########################################")
     print("########################################")
 
+def writeSummary(results, total_tests_performed, total_tests_failed):
+    file_path = "./tests/summary_" + architecture + ".txt"
+    try: 
+        with open(file_path, 'w+', encoding='utf-8') as file:
+            writeHeader(file, total_tests_performed, total_tests_failed)
+    except Exception as e:
+        print(f"Failed to create file or header. Error: {e}")
+        return
+
+    for rm in results:
+        try: 
+            with open(file_path, 'a', encoding='utf-8') as file:
+                    header = "#### ROUNDING MODE: " + rm + " ####"
+                    sep = "#"*len(header)
+                    file.write(f"\n{sep}\n")
+                    file.write(header)
+                    file.write(f"\n{sep}\n")
+
+        except Exception as e:
+            print(f"Failed to write rounding mode to file. Error: {e}")
+        for test in results[rm]:
+            try:
+                with open(file_path, 'a', encoding='utf-8') as file:
+                    file.write(f"   {test}: Tests performed = {int(results[rm][test]['tests_performed']):,}, tests failed = {int(results[rm][test]['errors']):,}\n")
+
+            except Exception as e:
+                print(f"Failed to write test-result to file. Error: {e}")
+
+def writeHeader(file, total_tests_performed, total_tests_failed):
+    file.write("#####################################\n")
+    file.write("######### TESTFLOAT SUMMARY #########\n")
+    file.write("#####################################\n\n")
+    file.write(f"TESTS PERFORMED: {total_tests_performed:,}\n")
+    file.write(f"TESTS FAILED: {total_tests_failed:,}\n\n")
+    file.write("#####################################\n")
+    file.write("############# ALL TESTS #############\n")
+    file.write("#####################################\n")
 
 
-architecture = ""
+    
+
 
 if __name__ == "__main__":
     for arg in sys.argv:
