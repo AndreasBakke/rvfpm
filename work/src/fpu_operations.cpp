@@ -233,20 +233,16 @@ void execute_RTYPE(FpuPipeObj& op, FpuRf* registerFile, int fromXReg, unsigned i
         }
         case 0b00001: //FCVT.WU.S
         {
-            //ADD ifdef x86_64 for this implementation
             if (std::isnan(data1.f) && !(data1.parts.mantissa & 0x00400000)) {  // Check for sNaN
                 op.uDataToXreg = 0xFFFFFFFF;
                 op.flags |= 0b00001;
             } else if (nearbyint(data1.f) < 0.0f || nearbyint(data1.f) > UINT32_MAX) {  // Check for out-of-range values
-                //Last fail: +9F.000000  => 00000000 .....  expected FFFFFFFF v.... for near and max = 1^(2^32) - > Not captured by ^. But if we use >=, it captures too many for min-rounding
                 op.uDataToXreg = 0xFFFFFFFF;
                 op.flags |= 0b00001;
             } else {
                 // Convert if within range
                 op.uDataToXreg = static_cast<unsigned int>(nearbyint(data1.f));
             }
-            //And arm64_apple for this one (If the above doesn't work for apple)
-            // op.uDataToXreg = static_cast<uint32_t>(nearbyint(data1.f));
             break;
         }
         default:
@@ -319,7 +315,7 @@ void execute_RTYPE(FpuPipeObj& op, FpuRf* registerFile, int fromXReg, unsigned i
                 } else if (data1.f == INFINITY) //positive inf
                 {
                     op.uDataToXreg = 0b0010000000;
-                } else if (std::isnan(data1.f) && !(data1.bitpattern & 0x00400000)) //If leading mantissa-bit is not set -> sNaN //TODO: rewrite the check so it works
+                } else if (std::isnan(data1.f) && !(data1.bitpattern & 0x00400000)) //If leading mantissa-bit is not set -> sNaN
                 {
                     op.uDataToXreg = 0b0100000000; //SNaN
                 } else if (std::isnan(data1.f))
