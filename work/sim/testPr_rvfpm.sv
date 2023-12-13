@@ -41,36 +41,46 @@ program automatic testPr_rvfpm #(
 
         init();
         fillRF();
-
         repeat(NUM_TESTS) begin //test FMV.X:W (move to integer). 
            doRTYPE(.funct7(7'b1110000), .rs2(0), .funct3(0)); 
            @(posedge uin_rvfpm.ck) uin_rvfpm.instruction = 0; //Set instr to 0 to toggle toXReg_valid.
         end
+        init();
+        fillRF();
         repeat(NUM_TESTS) begin //test FMV.W:X (move from integer). 
             doRTYPE(.funct7(7'b1111000), .rs2(0), .funct3(0));
             fork
                 begin
                     repeat(PIPELINE_STAGES) @(posedge uin_rvfpm.ck);
-                    uin_rvfpm.data_fromMem = randomFloat(); //set data at appropriate time
+                    uin_rvfpm.data_fromXReg = randomFloat(); //set data at appropriate time
                 end
             join_none 
         end
         uin_rvfpm.data_fromXReg = 0;
-
+        init();
+        fillRF();
         repeat(NUM_TESTS) begin //test NUM_TESTS number of min-operations using random registers
             doRTYPE(.funct7(7'b0010100), .funct3(0)); 
         end
-
+        init();
+        fillRF();
         repeat(NUM_TESTS) begin //test NUM_TESTS number of max-operations using random registers
             doRTYPE(.funct7(7'b0010100), .funct3(3'b001)); 
         end
+        init();
+        fillRF();
 
         repeat(NUM_TESTS) begin //test NUM_TESTS number of FSGNJ-operations using random registers
             doRTYPE(.funct7(7'b0010000), .funct3(3'b000)); 
         end
+        init();
+        fillRF();
         repeat(NUM_TESTS) begin //test NUM_TESTS number of FSGNJN-operations using random registers
             doRTYPE(.funct7(7'b0010000), .funct3(3'b001)); 
         end
+        init();
+        fillRF();
+
         repeat(NUM_TESTS) begin //test NUM_TESTS number of FSGNJX-operations using random registers
             doRTYPE(.funct7(7'b0010000), .funct3(3'b010)); 
         end
