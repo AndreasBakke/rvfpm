@@ -225,4 +225,4 @@ as_rvfpm_FSGNJX: assert property (prop_FSGNJX)
 
 // as_rvfpm_rst: assert property(prop_rst_registers)
 //     else begin $error("Reset not reset"); errorCnt++;end
-// endmodule
+endmodule
