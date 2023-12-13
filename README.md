@@ -29,6 +29,6 @@ Currently only supports the F-Extension.
 
 Compiled and tested for compliance using Apple Arm - Apple clang version 15.0
 
-Compiled, tested for compliance and simulated using x86_64 - GCC 12.2.0
+Compiled, tested for compliance and simulated using x86_64 - GCC 12.2.0 and QuestaSim 2020
 
 For other architectures, adapt flags in work/Makefile
