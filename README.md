@@ -23,6 +23,7 @@ To test for IEEE754 compliance run make TestFloat from work/
 
 ### Functional verification
 For functional verification run make sim_full from work/
+- Verification has been done using QuestaSim, adapt the Makefile in work/ if another toolset is used.
 
 ## Status
 Currently only supports the F-Extension.
