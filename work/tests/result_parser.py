@@ -21,7 +21,7 @@ def get_results(arch):
             try:
                 results[test_dir][file[:-4]] = extract_errors(file_path)
             except Exception as e:
-                print(f"Error reading {filename}: {e}")
+                print(f"Error reading {file_path}: {e}")
     summarize_tests(results)
 
 def extract_errors(path):
