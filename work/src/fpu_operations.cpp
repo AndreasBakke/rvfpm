@@ -34,26 +34,38 @@ void execute_R4TYPE(FpuPipeObj& op, FpuRf* registerFile){
     {
     case FMADD_S:
     {
-        op.data.f = fma(data1.f, data2.f, data3.f);
+        op.data.f = fmaf(data1.f, data2.f, data3.f);
+        if((data1.f == INFINITY && data2.f == 0) || (data1.f == 0 && data2.f == INFINITY) || (data1.f == -INFINITY && data2.f == 0) || (data1.f == 0 && data2.f == -INFINITY)) { //Required by RISC-V ISA, but not IEEE 754
+            std::feraiseexcept(FE_INVALID); //raise invalid
+        }
         break;
     }
     case FMSUB_S:
     {
-        op.data.f = fma(data1.f, data2.f, -data3.f); 
+        op.data.f = fmaf(data1.f, data2.f, -data3.f);
+        if((data1.f == INFINITY && data2.f == 0) || (data1.f == 0 && data2.f == INFINITY) || (data1.f == -INFINITY && data2.f == 0) || (data1.f == 0 && data2.f == -INFINITY)) { //Required by RISC-V ISA, but not IEEE 754
+            std::feraiseexcept(FE_INVALID); //raise invalid
+        }
         break;
     }
     case FNMSUB_S:
     {    
-        op.data.f = fma(data1.f, -data2.f, -data3.f); 
+        op.data.f = fmaf(data1.f, -data2.f, data3.f); //Counterintuitively named wrt FMADD/FMSUB
+        if((data1.f == INFINITY && data2.f == 0) || (data1.f == 0 && data2.f == INFINITY) || (data1.f == -INFINITY && data2.f == 0) || (data1.f == 0 && data2.f == -INFINITY)) { //Required by RISC-V ISA, but not IEEE 754
+            std::feraiseexcept(FE_INVALID); //raise invalid
+        }
         break;
     }
     case FNMADD_S:
     {    
-        op.data.f = fma(data1.f, -data2.f, data3.f); 
+        op.data.f = fmaf(data1.f, -data2.f, -data3.f);
+        if((data1.f == INFINITY && data2.f == 0) || (data1.f == 0 && data2.f == INFINITY) || (data1.f == -INFINITY && data2.f == 0) || (data1.f == 0 && data2.f == -INFINITY)) { //Required by RISC-V ISA, but not IEEE 754
+            std::feraiseexcept(FE_INVALID); //raise invalid
+        }
         break;
     }
     default:
-        op.flags = 0b10000; //Invalid operation
+        std::feraiseexcept(FE_INVALID); //Invalid operation
         break;
     }
     op.flags |= getFlags(); //Get flags and add to result.
@@ -165,7 +177,7 @@ void execute_RTYPE(FpuPipeObj& op, FpuRf* registerFile, int fromXReg, unsigned i
         }
         default:
         {
-            op.flags = 0b10000; //Invalid operation
+            std::feraiseexcept(FE_INVALID); //raise invalid
             op.data = data1;
             break;
         }
@@ -188,7 +200,7 @@ void execute_RTYPE(FpuPipeObj& op, FpuRf* registerFile, int fromXReg, unsigned i
         }
         default:
         {
-        op.flags = 0b10000; //Invalid operation
+        std::feraiseexcept(FE_INVALID); //raise invalid
         op.data = data1;
         break;
         }
@@ -216,7 +228,7 @@ void execute_RTYPE(FpuPipeObj& op, FpuRf* registerFile, int fromXReg, unsigned i
         default:
         {
             op.uDataToXreg = 0;
-            op.flags = 0b10000; //invalid operation
+            std::feraiseexcept(FE_INVALID); //raise invalid
             break;
         }
         }
@@ -248,7 +260,7 @@ void execute_RTYPE(FpuPipeObj& op, FpuRf* registerFile, int fromXReg, unsigned i
         default:
         {
             op.dataToXreg = 0;
-            op.flags = 0b10000; //invalid operation
+            std::feraiseexcept(FE_INVALID); //raise invalid
         }
         }
         break;
@@ -268,7 +280,7 @@ void execute_RTYPE(FpuPipeObj& op, FpuRf* registerFile, int fromXReg, unsigned i
             break;
         }
         default:
-            op.flags = 0b10000; //Invalid operation
+            std::feraiseexcept(FE_INVALID); //raise invalid
             break;
         }
         break;
@@ -294,7 +306,7 @@ void execute_RTYPE(FpuPipeObj& op, FpuRf* registerFile, int fromXReg, unsigned i
                 {
                     op.uDataToXreg = 0b0000100000;
                 } else {
-                    op.flags = 0b10000; //Invalid operation
+                    std::feraiseexcept(FE_INVALID); //raise invalid
                 }
             } else
             {
@@ -326,13 +338,13 @@ void execute_RTYPE(FpuPipeObj& op, FpuRf* registerFile, int fromXReg, unsigned i
                     op.uDataToXreg = 0b0001000000;
                 } else {
                     op.uDataToXreg = 0b0000000000; 
-                    op.flags = 0b10000; //Invalid operation
+                    std::feraiseexcept(FE_INVALID); //raise invalid
                 };
             }
             break;
         }
         default:
-            op.flags = 0b10000; //Invalid operation
+            std::feraiseexcept(FE_INVALID); //raise invalid
             break;
         }
     }
@@ -344,7 +356,7 @@ void execute_RTYPE(FpuPipeObj& op, FpuRf* registerFile, int fromXReg, unsigned i
     }
     //TODO: check pseudops like read/write to fcsr
     default:
-        op.flags = 0b10000; //Invalid operation
+        std::feraiseexcept(FE_INVALID); //raise invalid
         break;
     }
 

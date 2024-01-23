@@ -55,9 +55,9 @@ def summarize_tests(results):
             else:
                 instructions_passed +=1
     writeSummary(results, total_tests_performed, total_tests_failed)
-    print("\n\n##################################")
-    print("######### TEST COMPLETED #########")
-    print("##################################")
+    print("\n\n########################################")
+    print("############ TEST COMPLETED ############")
+    print("########################################")
     print(f"TESTS PERFORMED: {total_tests_performed:,}")
     print(f"TESTS FAILED: {total_tests_failed:,}\n\n")
 

@@ -135,9 +135,10 @@ int main(int argc, char** argv) {
         testFPU.bd_setRoundingMode(0b000);
     }
 
-    if (op == "fmadd") //Fmadd has an extra input compared to other
+    if (op == "fmadd" || op == "fmsub" || op == "fnmsub" || op == "fnmadd") //Fused operations has an extra input compared to others
     {
         while (std::cin >> input1 >> input2 >> input3 >> input4 >> flags) {
+            //TODO: flip operands and results for the other fused operations and write makefiles with op
             unsigned int a = hexToUnsignedInt(input1);
             unsigned int b = hexToUnsignedInt(input2);
             unsigned int c = hexToUnsignedInt(input3);
