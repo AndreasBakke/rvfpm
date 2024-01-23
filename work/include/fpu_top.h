@@ -5,17 +5,14 @@
     RISC-V Floating Point Unit Model with FP registers, and parameterized number of pipelines
 */
 #include "fpu_rf.h"
-#include "fp_number.h"
-#include "fpu_pipe.h"
+#include "fpu_pipeline.h"
 #include "fpu_operations.h"
-#include <cstdint>
-#include <deque> //Double ended queue
+
 
 class FPU {
   private:
+    FpuPipeline pipeline;
     FpuRf registerFile;
-    std::deque<FpuPipeObj> pipeline;
-    int numPipeStages;
     
 
   public:
@@ -25,12 +22,6 @@ class FPU {
     FpuPipeObj operation(uint32_t instruction, unsigned int id, int fromXReg, unsigned int fromMem, unsigned int* id_out, uint32_t* toMem, uint32_t* toXReg, bool* pipelineFull, bool* toMem_valid, bool* toXReg_valid); //add toXReg and toMem
     FpuPipeObj decodeOp(uint32_t instruction, unsigned int id);
     void executeOp(FpuPipeObj& op, unsigned int fromMem, int fromXReg, unsigned int* id_out, uint32_t* toMem, uint32_t* toXReg, bool* toMem_valid, bool* toXReg_valid);
-
-
-    //Pipeline operations
-    FpuPipeObj pipelineStep(FpuPipeObj nextOp, bool* pipelineFull); //Advance pipeline by one step (called by clock in interface)
-    int pipelineFlush(); //Flush pipeline
-
 
     //Backdoor functions
     FPNumber bd_getData(uint32_t addr);

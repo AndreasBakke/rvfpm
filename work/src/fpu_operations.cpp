@@ -5,9 +5,7 @@
     Decode and execute operations for fpu.
 */
 #include "fpu_operations.h"
-#include <cfenv> //To get flags
-#include <iostream>
-#include <limits>
+
 
 FpuPipeObj decode_R4TYPE(uint32_t instr) {
     RTYPE dec_instr = {.instr = instr};

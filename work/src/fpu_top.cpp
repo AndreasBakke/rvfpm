@@ -5,21 +5,13 @@
     RISC-V Floating Point Unit Model with FP registers, and parameterized number of pipelines
 */
 #include "fpu_top.h"
-#include <bitset>
-#include <iostream> // Include necessary header files
-using namespace std; // Use the standard namespace
 
-
-FPU::FPU (int pipelineStages, int rfDepth) : registerFile(rfDepth), numPipeStages(pipelineStages) {
+FPU::FPU (int pipelineStages, int rfDepth) : pipeline(pipelineStages), registerFile(rfDepth) {
     #ifndef ZFINX
-    
+        // registerFile(rfDepth)
     #else
         //Todo: Expand to support ZFINX
     #endif
-    // for (auto &pipe : pipeline) { 
-    //     pipe = {}; //Initialize to empty operations
-    // }
-    pipeline =  deque<FpuPipeObj>(numPipeStages, FpuPipeObj({})); //TODO: move pipeline to its own class
 };
 
 FPU::~FPU(){
@@ -30,7 +22,7 @@ void FPU::resetFPU(){
     #ifndef ZFINX
         registerFile.resetFpuRf();
     #endif
-    pipelineFlush();
+    pipeline.flush();
 };
 
 
@@ -132,46 +124,21 @@ void FPU::executeOp(FpuPipeObj& op, unsigned int fromMem, int fromXReg, unsigned
 
 
 
-FpuPipeObj FPU::pipelineStep(FpuPipeObj nextOp, bool* pipelineFull){
-    FpuPipeObj op = {};
-    op = pipeline.front();
-    pipeline.pop_front();
-
-    // if (!nextOp.isEmpty()) {
-    pipeline.push_back(nextOp);
-    if (0) { //TODO:pipeline.size = stages doesn't work. BUT, only applicable once stalls/multi cycle execution is added
-            //Check for full pipeline
-        if (pipelineFull != nullptr){
-            *pipelineFull = true;
-        }
-    } else {
-        if (pipelineFull != nullptr){
-            *pipelineFull = false;
-        }
-    }
-    // }
-    return op;
-};
-
 
 FpuPipeObj FPU::operation(uint32_t instruction, unsigned int id, int fromXReg, unsigned int fromMem, unsigned int* id_out, uint32_t* toMem, uint32_t* toXReg, bool* pipelineFull, bool* toMem_valid, bool* toXReg_valid) {
     FpuPipeObj newOp = decodeOp(instruction, id);
     FpuPipeObj currOp = {};
-    if(numPipeStages == 0){ //Execute immediately
+    if(pipeline.getNumStages() == 0){ //Execute immediately
         currOp = newOp;
     } else 
     { //add to pipeline - check for full pipeline/stalls etc.
-        currOp = pipelineStep(newOp, pipelineFull);
+        currOp = pipeline.step(newOp, pipelineFull);
     }
     executeOp(currOp, fromMem, fromXReg, id_out, toMem, toXReg, toMem_valid, toXReg_valid);
     return currOp; //Only for testing
 }
 
 
-int FPU::pipelineFlush(){
-    pipeline =  deque<FpuPipeObj>(numPipeStages, FpuPipeObj({}));
-    return 1;
-};
 
 //Backdoor functions
 FPNumber FPU::bd_getData(uint32_t addr){
@@ -197,5 +164,5 @@ std::vector<float> FPU::bd_getRF(){
 };
 
 unsigned int FPU::bd_getPipeStageId(int stage) {
-    return pipeline.at(stage).id;
+    return pipeline.getId(stage);
 }

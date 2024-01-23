@@ -13,6 +13,7 @@ else
 	TININESS = -tininessafter
 endif
 
+
 test:  #run using args="-D EXT_D/Q" to test with D/Q
 	$(CXX) $(CXXFLAGS) -fno-fast-math -I ./include src/test.cpp src/fpu_top.cpp src/fpu_rf.cpp src/fpu_operations.cpp src/fp_number.cpp  -o bin/rvfpm_test $(args) 
 	./bin/rvfpm_test
@@ -23,7 +24,7 @@ test_no_rounding:  #run using args="-D EXT_D/Q" to test with D/Q
 
 TestFloat: #Compile and test for IEEE754 compliance
 	make clean
-	$(CXX) $(CXXFLAGS) -I ./include src/in_TestFloat.cpp src/fpu_top.cpp src/fpu_rf.cpp src/fpu_operations.cpp src/fp_number.cpp  -o bin/rvfpm_testFloat -D TESTFLOAT
+	$(CXX) $(CXXFLAGS) -I ./include src/in_TestFloat.cpp src/fpu_top.cpp src/fpu_pipeline.cpp src/fpu_rf.cpp src/fpu_operations.cpp src/fp_number.cpp  -o bin/rvfpm_testFloat -D TESTFLOAT
 	chmod a+x,g+x ./bin/testfloat_ver_$(ARCH)
 	chmod a+x,g+x ./bin/testfloat_gen_$(ARCH)
 	make -i TestFloat_all args="-rnear_even"
@@ -48,23 +49,9 @@ TestFloat_all:
 	./bin/testfloat_gen_$(ARCH) f32_to_ui32 | ./bin/rvfpm_testFloat f32_to_ui32  $(args) | ./bin/testfloat_ver_$(ARCH) $(args)	f32_to_ui32 				-errors 0 > tests/$(ARCH)/rm$(args)/f32_ftui.txt 2>&1
 	./bin/testfloat_gen_$(ARCH) f32_to_i32  | ./bin/rvfpm_testFloat f32_to_i32   $(args) | ./bin/testfloat_ver_$(ARCH) $(args)	f32_to_i32					-errors 0 > tests/$(ARCH)/rm$(args)/f32_fti.txt 2>&1
 
-TestFloat_all_l2: #NOTE: Takes WAY too long for mulAdd function
-	mkdir -p tests/$(ARCH)_l2/rm$(args)
-	ifeq ($(ARCH), arm)
-		TININESS := -tininessbefore
-	endif
-	./bin/testfloat_gen_$(ARCH) f32_add 	-level 2 | ./bin/rvfpm_testFloat fadd  $(args) | ./bin/testfloat_ver_$(ARCH) $(args)  	f32_add
-	./bin/testfloat_gen_$(ARCH) f32_sub 	-level 2 | ./bin/rvfpm_testFloat fsub  $(args) | ./bin/testfloat_ver_$(ARCH) $(args)		f32_sub
-	./bin/testfloat_gen_$(ARCH) f32_mul 	-level 2 | ./bin/rvfpm_testFloat fmul  $(args) | ./bin/testfloat_ver_$(ARCH) $(args)		f32_mul $(TININESS)
-	./bin/testfloat_gen_$(ARCH) f32_div 	-level 2 | ./bin/rvfpm_testFloat fdiv  $(args) | ./bin/testfloat_ver_$(ARCH) $(args)		f32_div
-	./bin/testfloat_gen_$(ARCH) f32_sqrt 	-level 2 | ./bin/rvfpm_testFloat fsqrt $(args) | ./bin/testfloat_ver_$(ARCH) $(args)		f32_sqrt
-	./bin/testfloat_gen_$(ARCH) f32_eq  	-level 2 | ./bin/rvfpm_testFloat feq   $(args) | ./bin/testfloat_ver_$(ARCH) $(args)		f32_eq
-	./bin/testfloat_gen_$(ARCH) f32_lt  	-level 2 | ./bin/rvfpm_testFloat flt   $(args) | ./bin/testfloat_ver_$(ARCH) $(args)		f32_lt
-	./bin/testfloat_gen_$(ARCH) f32_le  	-level 2 | ./bin/rvfpm_testFloat fle   $(args) | ./bin/testfloat_ver_$(ARCH) $(args)		f32_le
-	./bin/testfloat_gen_$(ARCH) f32_mulAdd 	-level 2 | ./bin/rvfpm_testFloat fmadd $(args) | ./bin/testfloat_ver_$(ARCH) $(args)  	f32_mulAdd $(TININESS)
 
 sharedLib: #Only tested for x86_64
-	$(CXX) $(CXXFLAGS) -shared -fPIC -o bin/lib_rvfpm.so -I ./include src/dpi_wrapper.cpp src/fpu_top.cpp src/fpu_rf.cpp src/fpu_operations.cpp src/fp_number.cpp
+	$(CXX) $(CXXFLAGS) -shared -fPIC -o bin/lib_rvfpm.so -I ./include src/dpi_wrapper.cpp src/fpu_top.cpp src/fpu_pipeline.cpp src/fpu_rf.cpp src/fpu_operations.cpp src/fp_number.cpp
 
 sim_full:
 	make clean

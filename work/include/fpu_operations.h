@@ -11,6 +11,7 @@
 #include "fpu_pipe.h"
 #include <cstdint>
 #include <cfenv> 
+#include <limits>
 
 #pragma STDC FENV_ACCESS ON //To set roundingmode
 
