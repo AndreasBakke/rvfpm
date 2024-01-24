@@ -1,6 +1,6 @@
-/*  rvfpm - 2023
+/*  rvfpm - 2024
     Andreas S. Bakke
-    
+
     Description:
     rvfpm testbench.
     Prerequisites: Compile c++ model using make sharedLib (macSL not tested/verified)
@@ -68,7 +68,7 @@ module rvfpm_tb;
         .data_toMem(uin_rvfpm.data_toMem),
         .toXReg_valid(uin_rvfpm.toXReg_valid),
         .toMem_valid(uin_rvfpm.toMem_valid),
-	    .fpu_ready(uin_rvfpm.fpu_ready) 
+	    .fpu_ready(uin_rvfpm.fpu_ready)
     );
     import "DPI-C" function int unsigned getRFContent(input chandle fpu_ptr, input int addr);
     import "DPI-C" function int unsigned getPipeStageId(input chandle fpu_ptr, input int stage);
@@ -105,7 +105,7 @@ module rvfpm_tb;
     ) u_testPr(
         .uin_rvfpm(uin_rvfpm)
     );
-    
+
     //-----------------------
     //-- Result
     //-----------------------
@@ -113,7 +113,7 @@ module rvfpm_tb;
 
     final begin
         printResult();
-    end    
+    end
 
 
     function void printResult;

@@ -1,6 +1,6 @@
-/*  rvfpm - 2023
+/*  rvfpm - 2024
     Andreas S. Bakke
-    
+
     Description:
     TestProgram for rvfpm verification
 */
@@ -9,7 +9,7 @@
 program automatic testPr_rvfpm #(
     parameter NUM_REGS,
     parameter PIPELINE_STAGES,
-    parameter X_ID_WIDTH 
+    parameter X_ID_WIDTH
 )
 (
     inTest_rvfpm uin_rvfpm
@@ -41,48 +41,48 @@ program automatic testPr_rvfpm #(
 
         init();
         fillRF();
-        repeat(NUM_TESTS) begin //test FMV.X:W (move to integer). 
-           doRTYPE(.funct7(7'b1110000), .rs2(0), .funct3(0)); 
+        repeat(NUM_TESTS) begin //test FMV.X:W (move to integer).
+           doRTYPE(.funct7(7'b1110000), .rs2(0), .funct3(0));
            @(posedge uin_rvfpm.ck) uin_rvfpm.instruction = 0; //Set instr to 0 to toggle toXReg_valid.
         end
         init();
         fillRF();
-        repeat(NUM_TESTS) begin //test FMV.W:X (move from integer). 
+        repeat(NUM_TESTS) begin //test FMV.W:X (move from integer).
             doRTYPE(.funct7(7'b1111000), .rs2(0), .funct3(0));
             fork
                 begin
                     repeat(PIPELINE_STAGES) @(posedge uin_rvfpm.ck);
                     uin_rvfpm.data_fromXReg = randomFloat(); //set data at appropriate time
                 end
-            join_none 
+            join_none
         end
         uin_rvfpm.data_fromXReg = 0;
         init();
         fillRF();
         repeat(NUM_TESTS) begin //test NUM_TESTS number of min-operations using random registers
-            doRTYPE(.funct7(7'b0010100), .funct3(0)); 
+            doRTYPE(.funct7(7'b0010100), .funct3(0));
         end
         init();
         fillRF();
         repeat(NUM_TESTS) begin //test NUM_TESTS number of max-operations using random registers
-            doRTYPE(.funct7(7'b0010100), .funct3(3'b001)); 
+            doRTYPE(.funct7(7'b0010100), .funct3(3'b001));
         end
         init();
         fillRF();
 
         repeat(NUM_TESTS) begin //test NUM_TESTS number of FSGNJ-operations using random registers
-            doRTYPE(.funct7(7'b0010000), .funct3(3'b000)); 
+            doRTYPE(.funct7(7'b0010000), .funct3(3'b000));
         end
         init();
         fillRF();
         repeat(NUM_TESTS) begin //test NUM_TESTS number of FSGNJN-operations using random registers
-            doRTYPE(.funct7(7'b0010000), .funct3(3'b001)); 
+            doRTYPE(.funct7(7'b0010000), .funct3(3'b001));
         end
         init();
         fillRF();
 
         repeat(NUM_TESTS) begin //test NUM_TESTS number of FSGNJX-operations using random registers
-            doRTYPE(.funct7(7'b0010000), .funct3(3'b010)); 
+            doRTYPE(.funct7(7'b0010000), .funct3(3'b010));
         end
 
         repeat(10) @(posedge uin_rvfpm.ck);
@@ -90,7 +90,7 @@ program automatic testPr_rvfpm #(
         @(posedge uin_rvfpm.ck);
         uin_rvfpm.instruction = 0;
         repeat(PIPELINE_STAGES*2) @(posedge uin_rvfpm.ck);
-        
+
         //Classify
         doITYPE(.rd(0), .data(32'b11111111100000000000000000000000)); //-inf
         doITYPE(.rd(1), .data($shortrealtobits(-1.4125))); //Negative normal
@@ -174,7 +174,7 @@ end
         uin_rvfpm.instruction[6:0] = 7'b1010011;  //OPCODE
     endtask
 
-    // task testR4TYPE() 
+    // task testR4TYPE()
     // endtask
 
     task doSTYPE(input int imm = 0, input int rs2 = $urandom_range(0, NUM_REGS-1), input int rs1 = 0, input int offset = 0); //Default get value from random register
@@ -207,7 +207,7 @@ end
         @(posedge uin_rvfpm.ck)
         uin_rvfpm.instruction = 0;
     endtask
-    
+
     task setId();
         uin_rvfpm.id = (uin_rvfpm.id +1) % 2**X_ID_WIDTH;
     endtask;

@@ -1,6 +1,6 @@
-/*  rvfpm - 2023
+/*  rvfpm - 2024
     Andreas S. Bakke
-    
+
     Description:
     Signal interface for rvfpm_tb
 */

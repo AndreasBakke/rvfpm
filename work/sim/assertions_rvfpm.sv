@@ -1,7 +1,7 @@
 
-/*  rvfpm - 2023
+/*  rvfpm - 2024
     Andreas S. Bakke
-    
+
     Description:
     Assertions for rvfpm testPr
 */
@@ -34,10 +34,10 @@ let getRow(r, addr) = r[addr]; //To pass register and address separatly (for usi
 //-----------------------
 
 //property prop_pipelineStep;
-//    @(posedge ck) 
-//    disable iff (rst || uin_rvfpm.enable) 
+//    @(posedge ck)
+//    disable iff (rst || uin_rvfpm.enable)
 //    (for (int i=0; i<PIPELINE_STAGES; ++i) begin
-//        
+//
 //    end);
 //endproperty;
 
