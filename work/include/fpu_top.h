@@ -1,6 +1,6 @@
 /*  rvfpm - 2023
     Andreas S. Bakke
-    
+
     Description:
     RISC-V Floating Point Unit Model with FP registers, and parameterized number of pipelines
 */
@@ -13,7 +13,6 @@ class FPU {
   private:
     FpuPipeline pipeline;
     FpuRf registerFile;
-    
 
   public:
     FPU(int pipelineStages, int rfDepth=32);

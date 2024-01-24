@@ -15,7 +15,7 @@ endif
 
 
 test:  #run using args="-D EXT_D/Q" to test with D/Q
-	$(CXX) $(CXXFLAGS) -fno-fast-math -I ./include src/test.cpp src/fpu_top.cpp src/fpu_rf.cpp src/fpu_operations.cpp src/fp_number.cpp  -o bin/rvfpm_test $(args) 
+	$(CXX) $(CXXFLAGS) -fno-fast-math -I ./include src/test.cpp src/fpu_top.cpp src/fpu_rf.cpp src/fpu_operations.cpp src/fp_number.cpp  -o bin/rvfpm_test $(args)
 	./bin/rvfpm_test
 
 test_no_rounding:  #run using args="-D EXT_D/Q" to test with D/Q
@@ -37,7 +37,7 @@ TestFloat_all:
 	mkdir -p tests/$(ARCH)/rm$(args)
 	./bin/testfloat_gen_$(ARCH) f32_add 	| ./bin/rvfpm_testFloat fadd  $(args) 		| ./bin/testfloat_ver_$(ARCH) $(args)	f32_add						-errors 0 > tests/$(ARCH)/rm$(args)/f32_add.txt 2>&1
 	./bin/testfloat_gen_$(ARCH) f32_sub 	| ./bin/rvfpm_testFloat fsub  $(args) 		| ./bin/testfloat_ver_$(ARCH) $(args)	f32_sub						-errors 0 > tests/$(ARCH)/rm$(args)/f32_sub.txt 2>&1
-	./bin/testfloat_gen_$(ARCH) f32_mul 	| ./bin/rvfpm_testFloat fmul  $(args) 		| ./bin/testfloat_ver_$(ARCH) $(args)	f32_mul $(TININESS)			-errors 0 > tests/$(ARCH)/rm$(args)/f32_mul.txt 2>&1 
+	./bin/testfloat_gen_$(ARCH) f32_mul 	| ./bin/rvfpm_testFloat fmul  $(args) 		| ./bin/testfloat_ver_$(ARCH) $(args)	f32_mul $(TININESS)			-errors 0 > tests/$(ARCH)/rm$(args)/f32_mul.txt 2>&1
 	./bin/testfloat_gen_$(ARCH) f32_div 	| ./bin/rvfpm_testFloat fdiv  $(args) 		| ./bin/testfloat_ver_$(ARCH) $(args)	f32_div						-errors 0 > tests/$(ARCH)/rm$(args)/f32_div.txt 2>&1
 	./bin/testfloat_gen_$(ARCH) f32_sqrt 	| ./bin/rvfpm_testFloat fsqrt $(args) 		| ./bin/testfloat_ver_$(ARCH) $(args)	f32_sqrt					-errors 0 > tests/$(ARCH)/rm$(args)/f32_sqrt.txt 2>&1
 	./bin/testfloat_gen_$(ARCH) f32_eq  	| ./bin/rvfpm_testFloat feq   $(args) 		| ./bin/testfloat_ver_$(ARCH) $(args)	f32_eq						-errors 0 > tests/$(ARCH)/rm$(args)/f32_eq.txt 2>&1
@@ -57,10 +57,10 @@ sim_full:
 	make clean
 	make sharedLib
 	vlog -work work /work/anb7/prosjektoppgave/rvfpm/work/src/rvfpm.sv
-	vlog -work work /work/anb7/prosjektoppgave/rvfpm/work/sim/inTest_rvfpm.sv 
-	vlog -work work /work/anb7/prosjektoppgave/rvfpm/work/sim/assertions_rvfpm.sv 
-	vlog -work work /work/anb7/prosjektoppgave/rvfpm/work/sim/testPr_rvfpm.sv 
-	vlog -work work /work/anb7/prosjektoppgave/rvfpm/work/sim/rvfpm_tb.sv 
+	vlog -work work /work/anb7/prosjektoppgave/rvfpm/work/sim/inTest_rvfpm.sv
+	vlog -work work /work/anb7/prosjektoppgave/rvfpm/work/sim/assertions_rvfpm.sv
+	vlog -work work /work/anb7/prosjektoppgave/rvfpm/work/sim/testPr_rvfpm.sv
+	vlog -work work /work/anb7/prosjektoppgave/rvfpm/work/sim/rvfpm_tb.sv
 	vsim -sv_lib bin/lib_rvfpm -novopt work.rvfpm_tb -suppress 12110
 
 clean:
