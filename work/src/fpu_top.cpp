@@ -6,7 +6,7 @@
 */
 #include "fpu_top.h"
 
-FPU::FPU (int pipelineStages, int rfDepth) : pipeline(pipelineStages), registerFile(rfDepth) {
+FPU::FPU (int pipelineStages, int queueDepth, int rfDepth) : pipeline(pipelineStages, queueDepth), registerFile(rfDepth) {
   #ifndef ZFINX
     // registerFile(rfDepth)
   #else

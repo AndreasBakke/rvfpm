@@ -12,13 +12,32 @@ module rvfpm_tb;
     //-----------------------
     //-- Parameters
     //-----------------------
+    //System parameters
+    parameter TB_COPROC            = 1; //Set to 1 to function as coprocessor; will act as a HW unit if not
+    parameter TB_FORWARDING        = 0; //Set to 1 to enable forwarding; not implemented
+    parameter TB_OUT_OF_ORDER      = 0; //Set to 1 to enable out of order execution, not implemented
+    parameter TB_X_ID_WIDTH        =  8;  // Width of ID field.
 
+    //RF parameters
     parameter TB_FLEN = 32;
     parameter TB_XLEN = 32;
     parameter TB_NUM_FPU_REGS = 32;
-    parameter TB_PIPELINE_STAGES = 4; // Example value
-    parameter TB_X_ID_WIDTH = 8;
 
+    //Pipeline parameters
+    parameter TB_PIPELINE_STAGES = 4; // Example value
+    parameter TB_QUEUE_DEPTH = 0; // Example value
+
+    //eXtension interface parameters
+    `ifdef COPROC
+        parameter TB_X_NUM_RS               =  2;  // Number of register file read ports that can be used by the eXtension interface
+        parameter TB_X_MEM_WIDTH            =  32; // Memory access width for loads/stores via the eXtension interface
+        parameter TB_X_RFR_WIDTH            =  TB_FLEN; // Register file read access width for the eXtension interface
+        parameter TB_X_RFW_WIDTH            =  TB_FLEN; // Register file write access width for the eXtension interface
+        parameter logic [31:0] TB_X_MISA    =  '0; // MISA extensions implemented on the eXtension interface
+        parameter logic [ 1:0] TB_X_ECS_XS  =  '0;  // Default value for mstatus.XS
+    `endif
+
+    //Clock
     localparam time ck_period = 40ns;
 
 
@@ -35,6 +54,20 @@ module rvfpm_tb;
     ) uin_rvfpm ();
 
 
+    //eXtension interface
+    `ifdef COPROC
+        in_xif #(
+            .XLEN(TB_XLEN),
+            .FLEN(TB_FLEN),
+            .X_NUM_RS(TB_X_NUM_RS),
+            .X_ID_WIDTH(TB_X_ID_WIDTH),
+            .X_MEM_WIDTH(TB_X_MEM_WIDTH),
+            .X_RFR_WIDTH(TB_X_RFR_WIDTH),
+            .X_RFW_WIDTH(TB_X_RFW_WIDTH),
+            .X_MISA(TB_X_MISA),
+            .X_ECS_XS(TB_X_ECS_XS)
+        ) uin_xif ();
+    `endif
     //-----------------------
     //-- Clk gen
     //-----------------------
@@ -51,24 +84,40 @@ module rvfpm_tb;
     //-----------------------
 
     rvfpm #(
+        .COPROC(TB_COPROC),
+        .FORWARDING(TB_FORWARDING),
+        .OUT_OF_ORDER(TB_OUT_OF_ORDER),
+
+
         .NUM_REGS(TB_NUM_FPU_REGS),
         .PIPELINE_STAGES(TB_PIPELINE_STAGES),
+        .QUEUE_DEPTH(TB_QUEUE_DEPTH),
         .X_ID_WIDTH(TB_X_ID_WIDTH),
         .XLEN(TB_XLEN)
     ) dut (
         .ck(uin_rvfpm.ck),
         .rst(uin_rvfpm.rst),
         .enable(uin_rvfpm.enable),
-        .instruction(uin_rvfpm.instruction),
-        .id(uin_rvfpm.id),
-        .id_out(uin_rvfpm.id_out),
-        .data_fromXReg(uin_rvfpm.data_fromXReg),
-        .data_fromMem(uin_rvfpm.data_fromMem),
-        .data_toXReg(uin_rvfpm.data_toXReg),
-        .data_toMem(uin_rvfpm.data_toMem),
-        .toXReg_valid(uin_rvfpm.toXReg_valid),
-        .toMem_valid(uin_rvfpm.toMem_valid),
-	    .fpu_ready(uin_rvfpm.fpu_ready)
+
+        `ifndef COPROC
+            .instruction(uin_rvfpm.instruction),
+            .id(uin_rvfpm.id),
+            .id_out(uin_rvfpm.id_out),
+            .data_fromXReg(uin_rvfpm.data_fromXReg),
+            .data_fromMem(uin_rvfpm.data_fromMem),
+            .data_toXReg(uin_rvfpm.data_toXReg),
+            .data_toMem(uin_rvfpm.data_toMem),
+            .toXReg_valid(uin_rvfpm.toXReg_valid),
+            .toMem_valid(uin_rvfpm.toMem_valid),
+            .fpu_ready(uin_rvfpm.fpu_ready)
+        `else
+            .xif_compressed_if(uin_xif.coproc_compressed),
+            .xif_issue_if(uin_xif.coproc_issue),
+            .xif_commit_if(uin_xif.coproc_commit),
+            .xif_mem_if(uin_xif.coproc_mem),
+            .xif_mem_result_if(uin_xif.coproc_mem_result),
+            .xif_result_if(uin_xif.coproc_result)
+        `endif
     );
     import "DPI-C" function int unsigned getRFContent(input chandle fpu_ptr, input int addr);
     import "DPI-C" function int unsigned getPipeStageId(input chandle fpu_ptr, input int stage);
@@ -114,7 +163,6 @@ module rvfpm_tb;
     final begin
         printResult();
     end
-
 
     function void printResult;
         $display("");

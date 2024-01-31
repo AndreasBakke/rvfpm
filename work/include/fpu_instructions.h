@@ -2,8 +2,9 @@
   Andreas S. Bakke
 
   Description:
-  Instructions for fpu.
+  Instruction enumerators and types for fpu.
 */
+#pragma once
 
 enum {
   it_NONE, it_RTYPE, it_R4TYPE, it_ITYPE, it_STYPE

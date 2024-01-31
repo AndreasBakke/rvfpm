@@ -8,21 +8,19 @@
 #include "fpu_pipeline.h"
 
 
-FpuPipeline::FpuPipeline(int pipelineStages) : NUM_PIPELINE_STAGES(pipelineStages), pipeline(pipelineStages){
+FpuPipeline::FpuPipeline(int pipelineStages, int queueDepth = 0) : NUM_PIPELINE_STAGES(pipelineStages), QUEUE_DEPTH(queueDepth), pipeline(pipelineStages), operationQueue(queueDepth) {
   pipeline = std::deque<FpuPipeObj>(NUM_PIPELINE_STAGES, FpuPipeObj({}));//Initialize empty pipeline
+  operationQueue = std::deque<FpuPipeObj>(QUEUE_DEPTH, FpuPipeObj({}));//Initialize empty queue
 }
 
 FpuPipeline::~FpuPipeline() {
-
 }
 
 FpuPipeObj FpuPipeline::step(FpuPipeObj nextOp, bool* pipelineFull){
   FpuPipeObj op = {};
   op = pipeline.front();
   pipeline.pop_front();
-
-  // if (!nextOp.isEmpty()) {
-  pipeline.push_back(nextOp);
+  pipeline.push_back(nextOp); //Use first in queue instead. Only if not stalled
   if (0) { //TODO:pipeline.size = stages doesn't work. BUT, only applicable once stalls/multi cycle execution is added
       //Check for full pipeline
     if (pipelineFull != nullptr){
@@ -33,7 +31,6 @@ FpuPipeObj FpuPipeline::step(FpuPipeObj nextOp, bool* pipelineFull){
       *pipelineFull = false;
     }
   }
-  // }
   return op;
 };
 
@@ -48,5 +45,5 @@ int FpuPipeline::getNumStages(){
 
 unsigned int FpuPipeline::getId(int stage) {
   return pipeline.at(stage).id;
-}
+};
 

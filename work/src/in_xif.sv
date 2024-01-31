@@ -1,7 +1,7 @@
-/*  
+/*
   rvfpm - 2023
   Andreas S. Bakke
-  
+
   Description:
   CORE-V-XIF interface
   Adapted from https://github.com/openhwgroup/cv32e40x/blob/master/rtl/cv32e40x_if_xif.sv
@@ -26,9 +26,9 @@
 */
 
 
-interface if_xif
+interface in_xif
 #(
-  parameter int XLEN = 32, 
+  parameter int XLEN = 32,
   parameter int FLEN = 32,
   parameter int unsigned X_NUM_RS        =  2,  // Number of register file read ports that can be used by the eXtension interface
   parameter int unsigned X_ID_WIDTH      =  4,  // Width of ID field.
@@ -244,4 +244,4 @@ interface if_xif
     input  result
   );
 
-endinterface : if_xif
+endinterface : in_xif
