@@ -7,6 +7,67 @@
 #include "fpu_execute.h"
 
 
+
+void executeOp(FpuPipeObj& op, FpuRf* registerFile) {
+  #ifndef NO_ROUNDING  // NO_ROUNDING uses c++ default rounding mode.
+    unsigned int rm = registerFile->readfrm();
+    if (rm == 0b111) //0b111 is dynamic rounding, and is handled for the relevant instructions later.
+    {
+      RTYPE rm_instr = {.instr = op.instr}; //Decode into RTYPE to extract rm (same field for R4Type)
+      setRoundingMode(rm_instr.parts.funct3);
+    } else {
+      setRoundingMode(rm);
+    }
+  #endif
+
+  //Set outputs to zero -> Overwritten in ex.
+  // if (toMem != nullptr) {
+  //   *toMem = 0;
+  // }
+  // if (toXReg != nullptr) {
+  //   *toXReg = 0;
+  // }
+  // if (toMem_valid != nullptr) {
+  //   *toMem_valid = false;
+  // }
+  // if (toXReg_valid != nullptr) {
+  //   *toXReg_valid = false;
+  // }
+  // if (id_out != nullptr) {
+  //   *id_out = 0;
+  // }
+
+
+  switch (op.instr_type)
+    {
+    case it_ITYPE:
+    {
+      // execute_ITYPE(op, registerFile, fromMem);
+      break;
+    }
+    case it_STYPE:
+    {
+      // execute_STYPE(op, registerFile, id_out, toMem, toMem_valid);
+      break;
+    }
+    case it_RTYPE:
+    {
+      execute_RTYPE(op, registerFile);//, fromXReg, id_out, toXReg, toXReg_valid);
+      break;
+    }
+    case it_R4TYPE:
+    {
+      execute_R4TYPE(op, registerFile);
+      break;
+    }
+    default:
+      //If no operation is in pipeline: do nothing
+      break;
+  }
+  registerFile->raiseFlags(op.flags);
+  op.remaining_ex_cycles -=1; //decrement by 1
+}
+
 void execute_R4TYPE(FpuPipeObj& op, FpuRf* registerFile){
   std::feclearexcept(FE_ALL_EXCEPT); //Clear all flags
   RTYPE dec_instr = {.instr = op.instr};
@@ -57,14 +118,14 @@ void execute_R4TYPE(FpuPipeObj& op, FpuRf* registerFile){
   op.flags |= getFlags(); //Get flags and add to result.
 
   if(registerFile != nullptr) {
-    registerFile->write(op.addrTo, op.data);
+    registerFile->write(op.addrTo, op.data); //This might need to be moved to WriteBack stage
   }
 
 };
 
 
 
-void execute_RTYPE(FpuPipeObj& op, FpuRf* registerFile, int fromXReg, unsigned int* id_out, uint32_t* toXReg, bool* toXReg_valid){
+void execute_RTYPE(FpuPipeObj& op, FpuRf* registerFile){ //, int fromXReg, unsigned int* id_out, uint32_t* toXReg, bool* toXReg_valid){
   std::feclearexcept(FE_ALL_EXCEPT); //Clear all flags
   RTYPE dec_instr = {.instr = op.instr}; //"Decode" into ITYPE
   FPNumber data1 = registerFile->read(op.addrFrom[0]);
@@ -213,12 +274,12 @@ void execute_RTYPE(FpuPipeObj& op, FpuRf* registerFile, int fromXReg, unsigned i
     {
     case 0b00000: //FCVT.S.W
     {
-      op.data.f = static_cast<float>(fromXReg);
+      // op.data.f = static_cast<float>(fromXReg); //Needs to be requested from cpu?
       break;
     }
     case 0b00001: //FCVT.S.WU
     {
-      op.data.f = static_cast<float>(static_cast<uint32_t>(fromXReg)); //Cast to unsigned first
+      // op.data.f = static_cast<float>(static_cast<uint32_t>(fromXReg)); //Cast to unsigned first - needs to be requested from cpu
       break;
     }
     default:
@@ -293,7 +354,7 @@ void execute_RTYPE(FpuPipeObj& op, FpuRf* registerFile, int fromXReg, unsigned i
   case FMV_W_X:
   {
     //Moves bitpattern from X to W(F)
-    op.data.bitpattern =  fromXReg;
+    // op.data.bitpattern =  fromXReg; //Needs to be requested
     break;
   }
   //TODO: check pseudops like read/write to fcsr
@@ -307,20 +368,20 @@ void execute_RTYPE(FpuPipeObj& op, FpuRf* registerFile, int fromXReg, unsigned i
   if (op.toXReg)
   {
     //Raise out ready flag and write to pointer
-    if (toXReg != nullptr){
-      *toXReg = op.uDataToXreg ^ op.dataToXreg;
-    };
-    if (toXReg_valid != nullptr) {
-      *toXReg_valid = true;
-    }
-    if (id_out != nullptr) {
-      *id_out = op.id;
-    }
+    // if (toXReg != nullptr){
+    //   *toXReg = op.uDataToXreg ^ op.dataToXreg;
+    // };
+    // if (toXReg_valid != nullptr) {
+    //   *toXReg_valid = true;
+    // }
+    // if (id_out != nullptr) {
+    //   *id_out = op.id;
+    // }
   } else
   {
-    if(registerFile != nullptr) {
-      registerFile->write(op.addrTo, op.data);
-    }
+    // if(registerFile != nullptr) {
+    //   // registerFile->write(op.addrTo, op.data); //might need to be moved to writeback stage
+    // }
   }
 };
 
@@ -329,7 +390,7 @@ void execute_ITYPE(FpuPipeObj& op, FpuRf* registerFile, unsigned int fromMem){
   //Only ITYPE operation implemented is FLW
   op.data.bitpattern = fromMem;
   if (registerFile != nullptr) {
-    registerFile->write(op.addrTo, op.data);
+    registerFile->write(op.addrTo, op.data); //TODO: This might need to be moved elsewhere depending on pipeline structure (this might be a wait for memory stage)
   }
 }
 
@@ -340,7 +401,7 @@ void execute_STYPE(FpuPipeObj& op, FpuRf* registerFile, unsigned int* id_out, ui
     op.data = registerFile->read(op.addrFrom.front());
   }
   if (toMem != nullptr) {
-    *toMem = op.data.bitpattern;
+    *toMem = op.data.bitpattern; //Will need to be requested through interface
   }
   if (toMem_valid != nullptr) {
     *toMem_valid = true; //TODO: check if it is actually valid. TODO: rename to ready?

@@ -16,14 +16,14 @@ extern "C" {
     return new FPU(pipelineStages, rfDepth); //Return pointer to FPU
   };
 
-  void fpu_operation(void* fpu_ptr, uint32_t instruction, unsigned int id, uint32_t fromXReg, unsigned int fromMem, unsigned int* id_out, uint32_t* toMem, uint32_t* toXReg, bool* pipelineFull, bool* toMem_valid, bool* toXReg_valid){ //data only passed for operations using int(X)-registers
-	  FPU* fpu = static_cast<FPU*>(fpu_ptr); //from generic pointer to FPU pointer
-    fpu->operation(instruction, id, fromXReg, fromMem, id_out, toMem, toXReg, pipelineFull, toMem_valid, toXReg_valid);
-  }
-
   void reset_fpu(void* fpu_ptr){
     FPU* fpu = static_cast<FPU*>(fpu_ptr); //from generic pointer to FPU pointer
     fpu->resetFPU();
+  };
+
+  void clock_event(void* fpu_ptr){
+    FPU* fpu = static_cast<FPU*>(fpu_ptr); //from generic pointer to FPU pointer
+    fpu->clockEvent();
   };
 
   void destroy_fpu(void* fpu_ptr) {

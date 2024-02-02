@@ -14,6 +14,7 @@
 #include <cfenv>
 #include <limits>
 
+FpuPipeObj decodeOp(uint32_t instruction, unsigned int id);
 
 FpuPipeObj decode_RTYPE(uint32_t instr);
 FpuPipeObj decode_R4TYPE(uint32_t instr);

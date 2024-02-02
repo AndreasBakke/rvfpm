@@ -7,6 +7,43 @@
 
 #include "fpu_decode.h"
 
+
+
+FpuPipeObj decodeOp(uint32_t instruction, unsigned int id) { //Add more fields if needed by eXtension interface
+  //Get result of operation
+  unsigned int opcode = instruction & 127 ; //Get first 7 bit
+  FpuPipeObj result = {};
+  switch (opcode)
+  {
+  case FLW:
+    result = decode_ITYPE(instruction);
+    break;
+  case FSW:
+    result = decode_STYPE(instruction);
+    break;
+  case FMADD_S:
+    result = decode_R4TYPE(instruction);
+    break;
+  case FMSUB_S:
+    result = decode_R4TYPE(instruction);
+    break;
+  case FNMSUB_S:
+    result = decode_R4TYPE(instruction);
+    break;
+  case FNMADD_S:
+    result = decode_R4TYPE(instruction);
+    break;
+  case OP_FP:
+    result = decode_RTYPE(instruction);
+    break;
+  default:
+    break;
+  }
+  result.id = id;
+  return result;
+};
+
+
 FpuPipeObj decode_R4TYPE(uint32_t instr) {
   RTYPE dec_instr = {.instr = instr};
   FpuPipeObj result = {};

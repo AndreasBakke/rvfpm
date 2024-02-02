@@ -12,13 +12,14 @@
 `define FLEN 32
 `define XLEN 32
 `define NUM_FPU_REGS 32
+`define COPROC 0
 
 
 module rvfpm #(
   parameter NUM_REGS          = 32,
   parameter XLEN              = `XLEN,
   //System parameters
-  parameter COPROC            = 0, //Set to 1 to function as coprocessor, will act as a HW accelerator if not
+  parameter COPROC            = `COPROC, //Set to 1 to function as coprocessor, will act as a HW unit if not
   //Pipeline parameters
   parameter PIPELINE_STAGES   = 4,
   parameter QUEUE_DEPTH       = 0, //Size of operation queue
@@ -43,49 +44,33 @@ module rvfpm #(
   input logic rst,
   input logic enable,
 
-  //For HW accelerator use
-  `ifndef COPROC
-    input logic[31:0] instruction,
-    input logic [X_ID_WIDTH-1:0] id,
-    output logic [X_ID_WIDTH-1:0] id_out,
+  input logic[31:0] instruction,
+  input logic [X_ID_WIDTH-1:0] id,
+  output logic [X_ID_WIDTH-1:0] id_out,
 
-    input logic[XLEN-1:0] data_fromXReg, //Todo: when does this data need to be present in the pipeline?
-    input int unsigned data_fromMem, //Todo: use logic[FLEN-1:0] instead?
-    output logic[XLEN-1:0] data_toXReg,
-    output int unsigned  data_toMem,
-    output logic toXReg_valid, //valid flags for outputs
-    output logic toMem_valid,
-    output logic fpu_ready //0 if not accepting instructions
+  input logic[XLEN-1:0] data_fromXReg,
+  input int unsigned data_fromMem,
+  output logic[XLEN-1:0] data_toXReg,
+  output int unsigned  data_toMem,
+  output logic toXReg_valid, //valid flags for outputs
+  output logic toMem_valid,
+  output logic fpu_ready, //0 if not accepting instructions
 
-  //eXtension interface for coprocessor
-  `else
-    in_xif.coproc_compressed xif_compressed_if,
-    in_xif.coproc_issue xif_issue_if,
-    in_xif.coproc_commit xif_commit_if,
-    in_xif.coproc_mem  xif_mem_if,
-    in_xif.coproc_mem_result xif_mem_result_if,
-    in_xif.coproc_result xif_result_if
-  `endif
+//eXtension interface for coprocessor
+  in_xif.coproc_compressed xif_compressed_if,
+  in_xif.coproc_issue xif_issue_if,
+  in_xif.coproc_commit xif_commit_if,
+  in_xif.coproc_mem  xif_mem_if,
+  in_xif.coproc_mem_result xif_mem_result_if,
+  in_xif.coproc_result xif_result_if
 
 );
   //-----------------------
   //-- DPI-C Imports
   //-----------------------
   import "DPI-C" function chandle create_fpu_model(input int pipelineStages, input int queueStages, input int rfDepth);
-  import "DPI-C" function void fpu_operation(
-    input chandle fpu_ptr,
-    input int unsigned instruction,
-    input int unsigned id,
-    input int unsigned fromXReg,
-    input int unsigned fromMem,
-    output int unsigned id_out,
-    output int unsigned toMem,
-    output int unsigned toXReg,
-    output logic pipelineFull,
-    output logic toMem_valid,
-    output logic toXReg_valid
-    );
   import "DPI-C" function void reset_fpu(input chandle fpu_ptr);
+  import "DPI-C" function void clock_event(input chandle fpu_ptr);
   import "DPI-C" function void destroy_fpu(input chandle fpu_ptr);
   import "DPI-C" function int unsigned getRFContent(input chandle fpu_ptr, input int addr);
 
@@ -106,10 +91,14 @@ module rvfpm #(
     if (rst) begin
       reset_fpu(fpu);
     end
-    else if (enable) begin //TODO: if implemented as coprosessor, follow CORE-V-XIF conventions
-      //TODO:
-      //Call clocked functions, and seperate fpu_operation into something else. We need to accept instructions.
-      fpu_operation(fpu, instruction, id, data_fromXReg, data_fromMem, id_out, data_toMem, data_toXReg, pipelineFull, toMem_valid, toXReg_valid);
+    else if (enable) begin
+      //Call clocked functions
+      clock_event(fpu);
+
+      //Something if accepted instruction.
+      //  - fpu_addInstruction(...);
+      //Read signals /can this be assigned directly from fpu?
+      // fpu_operation(fpu, instruction, id, data_fromXReg, data_fromMem, id_out, data_toMem, data_toXReg, pipelineFull, toMem_valid, toXReg_valid);
     end begin
     end
   end

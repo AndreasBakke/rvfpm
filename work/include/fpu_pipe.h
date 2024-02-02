@@ -14,8 +14,8 @@
 struct FpuPipeObj {
   uint32_t instr; //Save instruction
   unsigned int id;  //from Core-V-XIF standard
-  std::vector<uint32_t> addrFrom; //For hazards
-  uint32_t addrTo;  //For Hazards
+  std::vector<uint32_t> addrFrom;
+  uint32_t addrTo;
   FPNumber data;
   int instr_type;
   unsigned int flags : 5;
@@ -25,6 +25,8 @@ struct FpuPipeObj {
   bool fromMem = 0;
   uint32_t uDataToXreg = 0; //unsigned DataToXreg
   int32_t dataToXreg = 0;
+
+  unsigned int remaining_ex_cycles: 1; //1 cycle for execution as standard
 
   bool isEmpty() const {
     return addrFrom.empty() &&

@@ -7,7 +7,10 @@
 
 #pragma once
 #include "fpu_pipe.h"
+#include "fpu_rf.h"
 #include "fpu_instructions.h"
+#include "fpu_decode.h"
+#include "fpu_execute.h"
 #include <deque> //Double ended queue
 
 class FpuPipeline {
@@ -16,13 +19,22 @@ class FpuPipeline {
     int QUEUE_DEPTH;
     std::deque<FpuPipeObj> pipeline;
     std::deque<FpuPipeObj> operationQueue;
+    FpuRf* registerFilePtr;
+
+    FpuPipeObj waitingOp; //Next in line to pipeline
+    bool pipelineFull;
+    bool stalled; //or something like this
 
 
   public:
-    FpuPipeline(int pipelineStages, int queueDepth);
+    FpuPipeline(int pipelineStages, int queueDepth, FpuRf* rf_pointer);
     ~FpuPipeline();
-    FpuPipeObj step(FpuPipeObj nextOp, bool* pipelineFull); //Advance pipeline by one step (called by clock in interface)
+    FpuPipeObj step(); //Advance pipeline by one step (called by clock in interface)
+
+    void addOpToQueue(FpuPipeObj op);
+    void setWaitingOp(FpuPipeObj op);
     void flush();
     int getNumStages();
+    int getQueueDepth();
     unsigned int getId(int stage);
 };

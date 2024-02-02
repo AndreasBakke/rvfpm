@@ -8,32 +8,75 @@
 #include "fpu_pipeline.h"
 
 
-FpuPipeline::FpuPipeline(int pipelineStages, int queueDepth = 0) : NUM_PIPELINE_STAGES(pipelineStages), QUEUE_DEPTH(queueDepth), pipeline(pipelineStages), operationQueue(queueDepth) {
+FpuPipeline::FpuPipeline(int pipelineStages = 0, int queueDepth = 0, FpuRf* rf_pointer = nullptr) : NUM_PIPELINE_STAGES(pipelineStages), QUEUE_DEPTH(queueDepth), pipeline(pipelineStages), operationQueue(queueDepth) {
   pipeline = std::deque<FpuPipeObj>(NUM_PIPELINE_STAGES, FpuPipeObj({}));//Initialize empty pipeline
   operationQueue = std::deque<FpuPipeObj>(QUEUE_DEPTH, FpuPipeObj({}));//Initialize empty queue
+  registerFilePtr = rf_pointer;
+  waitingOp = FpuPipeObj({}); //Initialize empty waiting op
+  pipelineFull = false;
+  stalled = false;
 }
 
 FpuPipeline::~FpuPipeline() {
 }
 
-FpuPipeObj FpuPipeline::step(FpuPipeObj nextOp, bool* pipelineFull){
-  FpuPipeObj op = {};
-  op = pipeline.front();
-  pipeline.pop_front();
-  pipeline.push_back(nextOp); //Use first in queue instead. Only if not stalled
-  if (0) { //TODO:pipeline.size = stages doesn't work. BUT, only applicable once stalls/multi cycle execution is added
-      //Check for full pipeline
-    if (pipelineFull != nullptr){
-      *pipelineFull = true;
-    }
+FpuPipeObj FpuPipeline::step(){
+  //Operations are decoded before adding to the pipeline
+  //Check for memory dependencies and request throough interface
+  //stall here untill memory is ready (or reorder)
+
+ //Execute operation in execute step (get from pa_....)
+ //If multicycle, stall pipeline, and decrement cycle counter
+
+ //Return result if Zfinx or similar
+
+  //Decode is already done when adding to queue
+
+  if (NUM_PIPELINE_STAGES == 0) {
+    executeOp(waitingOp, registerFilePtr);
+    return waitingOp;
+  }
+  executeOp(pipeline.at(2), registerFilePtr); //Compute operation at execute stage. //Wait for memory if needed?
+  if (pipeline.at(2).remaining_ex_cycles > 0){
+    stalled = true;
   } else {
-    if (pipelineFull != nullptr){
-      *pipelineFull = false;
+    stalled = false;
+  }
+  //Mem
+  if (pipeline.at(1).fromMem || pipeline.at(1).toMem){
+    //Request memory access
+  }
+
+  //Forwarding?
+  //WB
+  if (!pipeline.at(0).toMem){ //if writing to rf, write to register file
+    registerFilePtr->write(pipeline.at(0).addrTo, pipeline.at(0).data);
+  }
+
+  //Check for hazards underway, dependant on if OOO/fowarding is 1
+
+
+  if (!stalled){
+    pipeline.push_back(waitingOp); //Use first in queue instead. Only if not stalled
+    pipeline.pop_front();// should be dependent on what the front op is
+    if (QUEUE_DEPTH > 0){
+      setWaitingOp(operationQueue.front());
+      operationQueue.pop_front();
+    } else {
+      setWaitingOp(FpuPipeObj({}));
     }
   }
-  return op;
+  //if testfloat
+  return pipeline.at(2);
 };
 
+void FpuPipeline::addOpToQueue(FpuPipeObj op){
+  operationQueue.push_back(op);
+};
+
+void FpuPipeline::setWaitingOp(FpuPipeObj op){
+  waitingOp=op;
+};
 
 void FpuPipeline::flush(){
   pipeline = std::deque<FpuPipeObj>(NUM_PIPELINE_STAGES, FpuPipeObj({}));
@@ -41,6 +84,10 @@ void FpuPipeline::flush(){
 
 int FpuPipeline::getNumStages(){
   return NUM_PIPELINE_STAGES;
+};
+
+int FpuPipeline::getQueueDepth(){
+  return QUEUE_DEPTH;
 };
 
 unsigned int FpuPipeline::getId(int stage) {

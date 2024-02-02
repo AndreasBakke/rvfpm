@@ -11,18 +11,20 @@
 
 class FPU {
   private:
-    FpuPipeline pipeline;
     FpuRf registerFile;
+    FpuPipeline pipeline;
+
 
   public:
     FPU(int pipelineStages=4, int queueDepth=0, int rfDepth=32);
     ~FPU();
     void resetFPU();
-    FpuPipeObj operation(uint32_t instruction, unsigned int id, int fromXReg, unsigned int fromMem, unsigned int* id_out, uint32_t* toMem, uint32_t* toXReg, bool* pipelineFull, bool* toMem_valid, bool* toXReg_valid); //add toXReg and toMem
-    FpuPipeObj decodeOp(uint32_t instruction, unsigned int id);
-    void executeOp(FpuPipeObj& op, unsigned int fromMem, int fromXReg, unsigned int* id_out, uint32_t* toMem, uint32_t* toXReg, bool* toMem_valid, bool* toXReg_valid);
+    void clockEvent();
+    void addAcceptedInstruction(uint32_t instruction);//and other necessary inputs (should be somewhat close to in_xif type)
 
     //Backdoor functions
+    FpuPipeObj testFloatOp();
+    void bd_load(uint32_t instruction, unsigned int dataFromMem);
     FPNumber bd_getData(uint32_t addr);
     void bd_setRoundingMode(unsigned int rm);
     void bd_setFcsr(uint32_t data);
