@@ -68,11 +68,13 @@ module rvfpm #(
   //-----------------------
   //-- DPI-C Imports
   //-----------------------
-  import "DPI-C" function chandle create_fpu_model(input int pipelineStages, input int queueStages, input int rfDepth);
+  import "DPI-C" function chandle create_fpu_model(input int pipelineStages, input int queueDepth, input int rfDepth);
   import "DPI-C" function void reset_fpu(input chandle fpu_ptr);
   import "DPI-C" function void clock_event(input chandle fpu_ptr);
   import "DPI-C" function void destroy_fpu(input chandle fpu_ptr);
   import "DPI-C" function int unsigned getRFContent(input chandle fpu_ptr, input int addr);
+  import "DPI-C" function void add_accepted_instruction(input chandle fpu_ptr, input int instr, input int unsigned id);
+
 
   //-----------------------
   //-- Local parameters
@@ -94,7 +96,7 @@ module rvfpm #(
     else if (enable) begin
       //Call clocked functions
       clock_event(fpu);
-
+      add_accepted_instruction(fpu, instruction, id);
       //Something if accepted instruction.
       //  - fpu_addInstruction(...);
       //Read signals /can this be assigned directly from fpu?

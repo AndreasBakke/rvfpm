@@ -25,7 +25,7 @@ module rvfpm_tb;
 
   //Pipeline parameters
   parameter TB_PIPELINE_STAGES = 4; // Example value
-  parameter TB_QUEUE_DEPTH = 0; // Example value
+  parameter TB_QUEUE_DEPTH = 4; // Example value
 
   //eXtension interface parameters
   parameter TB_X_NUM_RS         =  2;  // Number of register file read ports that can be used by the eXtension interface
@@ -48,6 +48,7 @@ module rvfpm_tb;
     .X_ID_WIDTH(TB_X_ID_WIDTH),
     .NUM_REGS(TB_NUM_FPU_REGS),
     .PIPELINE_STAGES(TB_PIPELINE_STAGES),
+    .QUEUE_DEPTH(TB_QUEUE_DEPTH),
     .XLEN(TB_XLEN)
   ) uin_rvfpm ();
 
@@ -115,6 +116,7 @@ module rvfpm_tb;
   );
   import "DPI-C" function int unsigned getRFContent(input chandle fpu_ptr, input int addr);
   import "DPI-C" function int unsigned getPipeStageId(input chandle fpu_ptr, input int stage);
+  import "DPI-C" function int unsigned getQueueStageId(input chandle fpu_ptr, input int stage);
 
   always @(posedge uin_rvfpm.ck) begin
     //Get entire rf for verification
@@ -124,6 +126,11 @@ module rvfpm_tb;
     //Get entire pipeline for verification
     for (int i=0; i < TB_PIPELINE_STAGES; ++i) begin
       uin_rvfpm.pipelineIds[i] = getPipeStageId(dut.fpu, i);
+    end
+
+    //Get entire queue for verification
+    for (int i=0; i < TB_QUEUE_DEPTH; ++i) begin
+      uin_rvfpm.queueIds[i] = getQueueStageId(dut.fpu, i);
     end
 
   end

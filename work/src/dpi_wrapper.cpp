@@ -26,6 +26,11 @@ extern "C" {
     fpu->clockEvent();
   };
 
+  void add_accepted_instruction(void* fpu_ptr, uint32_t instruction, unsigned int id){
+    FPU* fpu = static_cast<FPU*>(fpu_ptr);
+    fpu->addAcceptedInstruction(instruction, id);
+  };
+
   void destroy_fpu(void* fpu_ptr) {
     FPU* fpu = static_cast<FPU*>(fpu_ptr);
     delete fpu;
@@ -39,6 +44,11 @@ extern "C" {
   unsigned int getPipeStageId(void* fpu_ptr, int stage) {
     FPU* fpu = static_cast<FPU*>(fpu_ptr);
     return fpu->bd_getPipeStageId(stage);
+  }
+
+  unsigned int getQueueStageId(void* fpu_ptr, int stage) {
+    FPU* fpu = static_cast<FPU*>(fpu_ptr);
+    return fpu->bd_getQueueStageId(stage);
   }
 
   unsigned int randomFloat() { //Generate pseudorandom float (not available in SV.)

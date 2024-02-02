@@ -20,7 +20,7 @@ class FPU {
     ~FPU();
     void resetFPU();
     void clockEvent();
-    void addAcceptedInstruction(uint32_t instruction);//and other necessary inputs (should be somewhat close to in_xif type)
+    void addAcceptedInstruction(uint32_t instruction, unsigned int id);//and other necessary inputs (should be somewhat close to in_xif type)
 
     //Backdoor functions
     FpuPipeObj testFloatOp();
@@ -31,5 +31,6 @@ class FPU {
     uint32_t bd_getFcsr();
     std::vector<float> bd_getRF();
     unsigned int bd_getPipeStageId(int stage);
+    unsigned int bd_getQueueStageId(int stage);
 
 };

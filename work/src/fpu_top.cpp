@@ -5,6 +5,7 @@
   RISC-V Floating Point Unit Model with FP registers, and parameterized number of pipelines
 */
 #include "fpu_top.h"
+#include <iostream>
 
 FPU::FPU (int pipelineStages, int queueDepth, int rfDepth) : registerFile(rfDepth),  pipeline(pipelineStages, queueDepth, &registerFile) {
   #ifndef ZFINX
@@ -37,9 +38,9 @@ FpuPipeObj FPU::testFloatOp(){
 }
 
 
-void FPU::addAcceptedInstruction(uint32_t instruction){ //and other necessary inputs (should be somewhat close to in_xif type)
+void FPU::addAcceptedInstruction(uint32_t instruction, unsigned int id){ //and other necessary inputs (should be somewhat close to in_xif type)
   FpuPipeObj newOp = decodeOp(instruction, 0); //id is 0 for now
-
+  newOp.id = id;
   if (pipeline.getQueueDepth() > 0){
     pipeline.addOpToQueue(newOp);
   }
@@ -83,5 +84,9 @@ std::vector<float> FPU::bd_getRF(){
 };
 
 unsigned int FPU::bd_getPipeStageId(int stage) {
-  return pipeline.getId(stage);
+  return pipeline.getId_pipeline(stage);
+}
+
+unsigned int FPU::bd_getQueueStageId(int stage) {
+  return pipeline.getId_operationQueue(stage);
 }

@@ -1,0 +1,398 @@
+# Current time Fri Feb  2 16:29:37 2024
+# Program = vsim
+# Id = "2020.4_1"
+# Version = "2020.11"
+# Date = "Nov  6 2020"
+# Platform = "linux_x86_64"
+# Signature = d27d22073b954621cb9dfca727acee89
+# 0    0x00007ffff6ea7acf: 'raise + 0x000000000000010f' in '/lib64/libc.so.6'
+# 1    0x00007ffff6e7aea5: 'abort + 0x0000000000000127' in '/lib64/libc.so.6'
+# --> START OF USERCODE
+# 2    0x00007fffe56f3c78: '__gnu_cxx::__verbose_terminate_handler() [clone .cold] + 0x000000000000005c' in './bin/lib_rvfpm.so'
+# 3    0x00007fffe56feca6: '_ZN10__cxxabiv111__terminateEPFvvE + 0x0000000000000006' in './bin/lib_rvfpm.so'
+# <-- END OF USERCODE
+# 4    0x00007fffe56fed11: '<unknown (@0x7fffe56fed11)>'
+# 5    0x00007fffe56fee64: '<unknown (@0x7fffe56fee64)>'
+# --> START OF USERCODE
+# 6    0x00007fffe56f4f55: '_ZSt16__throw_bad_castv + 0x0000000000000000' in './bin/lib_rvfpm.so'
+# 7    0x00007fffe56f6faf: '_ZNSt15__new_allocatorIjE8allocateEmPKv + 0x0000000000000049' in './bin/lib_rvfpm.so'
+# 8    0x00007fffe56f6f18: '_ZNSt16allocator_traitsISaIjEE8allocateERS0_m + 0x0000000000000028' in './bin/lib_rvfpm.so'
+# 9    0x00007fffe56f6eba: '_ZNSt12_Vector_baseIjSaIjEE11_M_allocateEm + 0x000000000000002a' in './bin/lib_rvfpm.so'
+# 10   0x00007fffe56f6dc7: '_ZNSt12_Vector_baseIjSaIjEE17_M_create_storageEm + 0x0000000000000023' in './bin/lib_rvfpm.so'
+# 11   0x00007fffe56f6c67: '_ZNSt12_Vector_baseIjSaIjEEC2EmRKS0_ + 0x000000000000003b' in './bin/lib_rvfpm.so'
+# 12   0x00007fffe56f6a48: '_ZNSt6vectorIjSaIjEEC1ERKS1_ + 0x0000000000000058' in './bin/lib_rvfpm.so'
+# 13   0x00007fffe56f6879: '_ZN10FpuPipeObjC2ERKS_ + 0x0000000000000045' in './bin/lib_rvfpm.so'
+# 14   0x00007fffe56fa2f5: '_ZN11FpuPipeline4stepEv + 0x000000000000025d' in './bin/lib_rvfpm.so'
+# 15   0x00007fffe56f6545: '_ZN3FPU10clockEventEv + 0x0000000000000023' in './bin/lib_rvfpm.so'
+# 16   0x00007fffe56f6346: 'clock_event + 0x0000000000000020' in './bin/lib_rvfpm.so'
+# <-- END OF USERCODE
+# 17   0x00007fefe43191af: '/work/anb7/prosjektoppgave/rvfpm/work/src/rvfpm.sv:73'
+# 18   0x00007fefe4319efb: '/work/anb7/prosjektoppgave/rvfpm/work/src/rvfpm.sv:96'
+# 19   0x000000000276dada: '<unknown (@0x276dada)>'
+# 20   0x0000000000554aab: '<unknown (@0x554aab)>'
+# 21   0x00000000006e7133: '<unknown (@0x6e7133)>'
+# 22   0x0000000000c01a25: '<unknown (@0xc01a25)>'
+# 23   0x0000000000c0687b: '<unknown (@0xc0687b)>'
+# 24   0x0000000000c0815e: '<unknown (@0xc0815e)>'
+# 25   0x0000000000ebfd9d: '<unknown (@0xebfd9d)>'
+# 26   0x0000000002bdb51d: '<unknown (@0x2bdb51d)>'
+# 27   0x0000000002bdf976: '<unknown (@0x2bdf976)>'
+# 28   0x0000000002be1061: '<unknown (@0x2be1061)>'
+# 29   0x0000000002be13c6: '<unknown (@0x2be13c6)>'
+# 30   0x00000000011259d9: '<unknown (@0x11259d9)>'
+# 31   0x0000000002c812cf: '<unknown (@0x2c812cf)>'
+# 32   0x0000000002cd4e47: '<unknown (@0x2cd4e47)>'
+# 33   0x0000000002c97d37: '<unknown (@0x2c97d37)>'
+# 34   0x0000000002c98019: '<unknown (@0x2c98019)>'
+# 35   0x0000000002a9a51d: '<unknown (@0x2a9a51d)>'
+# 36   0x0000000000bcf14c: '<unknown (@0xbcf14c)>'
+# End of Stack Trace
+
+
+# Current time Fri Feb  2 16:31:29 2024
+# Program = vsim
+# Id = "2020.4_1"
+# Version = "2020.11"
+# Date = "Nov  6 2020"
+# Platform = "linux_x86_64"
+# Signature = d27d22073b954621cb9dfca727acee89
+# 0    0x00007ffff6ea7acf: 'raise + 0x000000000000010f' in '/lib64/libc.so.6'
+# 1    0x00007ffff6e7aea5: 'abort + 0x0000000000000127' in '/lib64/libc.so.6'
+# --> START OF USERCODE
+# 2    0x00007fffe56f3c98: '__gnu_cxx::__verbose_terminate_handler() [clone .cold] + 0x000000000000005c' in './bin/lib_rvfpm.so'
+# 3    0x00007fffe56fed56: '_ZN10__cxxabiv111__terminateEPFvvE + 0x0000000000000006' in './bin/lib_rvfpm.so'
+# <-- END OF USERCODE
+# 4    0x00007fffe56fedc1: '<unknown (@0x7fffe56fedc1)>'
+# 5    0x00007fffe56fef14: '<unknown (@0x7fffe56fef14)>'
+# --> START OF USERCODE
+# 6    0x00007fffe56f4f75: '_ZSt16__throw_bad_castv + 0x0000000000000000' in './bin/lib_rvfpm.so'
+# 7    0x00007fffe56f7063: '_ZNSt15__new_allocatorIjE8allocateEmPKv + 0x0000000000000049' in './bin/lib_rvfpm.so'
+# 8    0x00007fffe56f6fcc: '_ZNSt16allocator_traitsISaIjEE8allocateERS0_m + 0x0000000000000028' in './bin/lib_rvfpm.so'
+# 9    0x00007fffe56f6f6e: '_ZNSt12_Vector_baseIjSaIjEE11_M_allocateEm + 0x000000000000002a' in './bin/lib_rvfpm.so'
+# 10   0x00007fffe56f6e7b: '_ZNSt12_Vector_baseIjSaIjEE17_M_create_storageEm + 0x0000000000000023' in './bin/lib_rvfpm.so'
+# 11   0x00007fffe56f6d1b: '_ZNSt12_Vector_baseIjSaIjEEC2EmRKS0_ + 0x000000000000003b' in './bin/lib_rvfpm.so'
+# 12   0x00007fffe56f6afc: '_ZNSt6vectorIjSaIjEEC1ERKS1_ + 0x0000000000000058' in './bin/lib_rvfpm.so'
+# 13   0x00007fffe56f692d: '_ZN10FpuPipeObjC2ERKS_ + 0x0000000000000045' in './bin/lib_rvfpm.so'
+# 14   0x00007fffe56fa3a9: '_ZN11FpuPipeline4stepEv + 0x000000000000025d' in './bin/lib_rvfpm.so'
+# 15   0x00007fffe56f6590: '_ZN3FPU10clockEventEv + 0x000000000000004e' in './bin/lib_rvfpm.so'
+# 16   0x00007fffe56f6366: 'clock_event + 0x0000000000000020' in './bin/lib_rvfpm.so'
+# <-- END OF USERCODE
+# 17   0x00007fefe43191af: '/work/anb7/prosjektoppgave/rvfpm/work/src/rvfpm.sv:73'
+# 18   0x00007fefe4319efb: '/work/anb7/prosjektoppgave/rvfpm/work/src/rvfpm.sv:96'
+# 19   0x000000000276dada: '<unknown (@0x276dada)>'
+# 20   0x0000000000554aab: '<unknown (@0x554aab)>'
+# 21   0x00000000006e7133: '<unknown (@0x6e7133)>'
+# 22   0x0000000000c01a25: '<unknown (@0xc01a25)>'
+# 23   0x0000000000c0687b: '<unknown (@0xc0687b)>'
+# 24   0x0000000000c0815e: '<unknown (@0xc0815e)>'
+# 25   0x0000000000ebfd9d: '<unknown (@0xebfd9d)>'
+# 26   0x0000000002bdb51d: '<unknown (@0x2bdb51d)>'
+# 27   0x0000000002bdf976: '<unknown (@0x2bdf976)>'
+# 28   0x0000000002be1061: '<unknown (@0x2be1061)>'
+# 29   0x0000000002be13c6: '<unknown (@0x2be13c6)>'
+# 30   0x00000000011259d9: '<unknown (@0x11259d9)>'
+# 31   0x0000000002c812cf: '<unknown (@0x2c812cf)>'
+# 32   0x0000000002cd4e47: '<unknown (@0x2cd4e47)>'
+# 33   0x0000000002c97d37: '<unknown (@0x2c97d37)>'
+# 34   0x0000000002c98019: '<unknown (@0x2c98019)>'
+# 35   0x0000000002a9a51d: '<unknown (@0x2a9a51d)>'
+# 36   0x0000000000bcf14c: '<unknown (@0xbcf14c)>'
+# End of Stack Trace
+
+
+# Current time Fri Feb  2 16:34:37 2024
+# Program = vsim
+# Id = "2020.4_1"
+# Version = "2020.11"
+# Date = "Nov  6 2020"
+# Platform = "linux_x86_64"
+# Signature = d27d22073b954621cb9dfca727acee89
+# 0    0x00007ffff6ea7acf: 'raise + 0x000000000000010f' in '/lib64/libc.so.6'
+# 1    0x00007ffff6e7aea5: 'abort + 0x0000000000000127' in '/lib64/libc.so.6'
+# --> START OF USERCODE
+# 2    0x00007fffe56f3c98: '__gnu_cxx::__verbose_terminate_handler() [clone .cold] + 0x000000000000005c' in './bin/lib_rvfpm.so'
+# 3    0x00007fffe56fedb6: '_ZN10__cxxabiv111__terminateEPFvvE + 0x0000000000000006' in './bin/lib_rvfpm.so'
+# <-- END OF USERCODE
+# 4    0x00007fffe56fee21: '<unknown (@0x7fffe56fee21)>'
+# 5    0x00007fffe56fef74: '<unknown (@0x7fffe56fef74)>'
+# --> START OF USERCODE
+# 6    0x00007fffe56f4f75: '_ZSt16__throw_bad_castv + 0x0000000000000000' in './bin/lib_rvfpm.so'
+# 7    0x00007fffe56f70b9: '_ZNSt15__new_allocatorIjE8allocateEmPKv + 0x0000000000000049' in './bin/lib_rvfpm.so'
+# 8    0x00007fffe56f7022: '_ZNSt16allocator_traitsISaIjEE8allocateERS0_m + 0x0000000000000028' in './bin/lib_rvfpm.so'
+# 9    0x00007fffe56f6fc4: '_ZNSt12_Vector_baseIjSaIjEE11_M_allocateEm + 0x000000000000002a' in './bin/lib_rvfpm.so'
+# 10   0x00007fffe56f6ed1: '_ZNSt12_Vector_baseIjSaIjEE17_M_create_storageEm + 0x0000000000000023' in './bin/lib_rvfpm.so'
+# 11   0x00007fffe56f6d71: '_ZNSt12_Vector_baseIjSaIjEEC2EmRKS0_ + 0x000000000000003b' in './bin/lib_rvfpm.so'
+# 12   0x00007fffe56f6b52: '_ZNSt6vectorIjSaIjEEC1ERKS1_ + 0x0000000000000058' in './bin/lib_rvfpm.so'
+# 13   0x00007fffe56f6983: '_ZN10FpuPipeObjC2ERKS_ + 0x0000000000000045' in './bin/lib_rvfpm.so'
+# 14   0x00007fffe56fa3ff: '_ZN11FpuPipeline4stepEv + 0x000000000000025d' in './bin/lib_rvfpm.so'
+# 15   0x00007fffe56f65e6: '_ZN3FPU10clockEventEv + 0x000000000000004e' in './bin/lib_rvfpm.so'
+# 16   0x00007fffe56f63bc: 'clock_event + 0x0000000000000076' in './bin/lib_rvfpm.so'
+# <-- END OF USERCODE
+# 17   0x00007fefe43191af: '/work/anb7/prosjektoppgave/rvfpm/work/src/rvfpm.sv:73'
+# 18   0x00007fefe4319efb: '/work/anb7/prosjektoppgave/rvfpm/work/src/rvfpm.sv:96'
+# 19   0x000000000276dada: '<unknown (@0x276dada)>'
+# 20   0x0000000000554aab: '<unknown (@0x554aab)>'
+# 21   0x00000000006e7133: '<unknown (@0x6e7133)>'
+# 22   0x0000000000c01a25: '<unknown (@0xc01a25)>'
+# 23   0x0000000000c0687b: '<unknown (@0xc0687b)>'
+# 24   0x0000000000c0815e: '<unknown (@0xc0815e)>'
+# 25   0x0000000000ebfd9d: '<unknown (@0xebfd9d)>'
+# 26   0x0000000002bdb51d: '<unknown (@0x2bdb51d)>'
+# 27   0x0000000002bdf976: '<unknown (@0x2bdf976)>'
+# 28   0x0000000002be1061: '<unknown (@0x2be1061)>'
+# 29   0x0000000002be13c6: '<unknown (@0x2be13c6)>'
+# 30   0x00000000011259d9: '<unknown (@0x11259d9)>'
+# 31   0x0000000002c812cf: '<unknown (@0x2c812cf)>'
+# 32   0x0000000002cd4e47: '<unknown (@0x2cd4e47)>'
+# 33   0x0000000002c97d37: '<unknown (@0x2c97d37)>'
+# 34   0x0000000002c98019: '<unknown (@0x2c98019)>'
+# 35   0x0000000002a9a51d: '<unknown (@0x2a9a51d)>'
+# 36   0x0000000000bcf14c: '<unknown (@0xbcf14c)>'
+# End of Stack Trace
+
+
+# Current time Fri Feb  2 16:35:02 2024
+# Program = vsim
+# Id = "2020.4_1"
+# Version = "2020.11"
+# Date = "Nov  6 2020"
+# Platform = "linux_x86_64"
+# Signature = d27d22073b954621cb9dfca727acee89
+# 0    0x00007ffff6ea7acf: 'raise + 0x000000000000010f' in '/lib64/libc.so.6'
+# 1    0x00007ffff6e7aea5: 'abort + 0x0000000000000127' in '/lib64/libc.so.6'
+# 2    0x00007fffe56ff132: '<unknown (@0x7fffe56ff132)>'
+# --> START OF USERCODE
+# 3    0x00007fffe56fedb6: '_ZN10__cxxabiv111__terminateEPFvvE + 0x0000000000000006' in './bin/lib_rvfpm.so'
+# <-- END OF USERCODE
+# 4    0x00007fffe56fee21: '<unknown (@0x7fffe56fee21)>'
+# 5    0x00007fffe56fef74: '<unknown (@0x7fffe56fef74)>'
+# --> START OF USERCODE
+# 6    0x00007fffe56f4f75: '_ZSt16__throw_bad_castv + 0x0000000000000000' in './bin/lib_rvfpm.so'
+# 7    0x00007fffe56f70b9: '_ZNSt15__new_allocatorIjE8allocateEmPKv + 0x0000000000000049' in './bin/lib_rvfpm.so'
+# 8    0x00007fffe56f7022: '_ZNSt16allocator_traitsISaIjEE8allocateERS0_m + 0x0000000000000028' in './bin/lib_rvfpm.so'
+# 9    0x00007fffe56f6fc4: '_ZNSt12_Vector_baseIjSaIjEE11_M_allocateEm + 0x000000000000002a' in './bin/lib_rvfpm.so'
+# 10   0x00007fffe56f6ed1: '_ZNSt12_Vector_baseIjSaIjEE17_M_create_storageEm + 0x0000000000000023' in './bin/lib_rvfpm.so'
+# 11   0x00007fffe56f6d71: '_ZNSt12_Vector_baseIjSaIjEEC2EmRKS0_ + 0x000000000000003b' in './bin/lib_rvfpm.so'
+# 12   0x00007fffe56f6b52: '_ZNSt6vectorIjSaIjEEC1ERKS1_ + 0x0000000000000058' in './bin/lib_rvfpm.so'
+# 13   0x00007fffe56f6983: '_ZN10FpuPipeObjC2ERKS_ + 0x0000000000000045' in './bin/lib_rvfpm.so'
+# 14   0x00007fffe56fa3ff: '_ZN11FpuPipeline4stepEv + 0x000000000000025d' in './bin/lib_rvfpm.so'
+# 15   0x00007fffe56f65e6: '_ZN3FPU10clockEventEv + 0x000000000000004e' in './bin/lib_rvfpm.so'
+# 16   0x00007fffe56f63bc: 'clock_event + 0x0000000000000076' in './bin/lib_rvfpm.so'
+# <-- END OF USERCODE
+# 17   0x00007fefe43191af: '/work/anb7/prosjektoppgave/rvfpm/work/src/rvfpm.sv:73'
+# 18   0x00007fefe4319efb: '/work/anb7/prosjektoppgave/rvfpm/work/src/rvfpm.sv:96'
+# 19   0x000000000276dada: '<unknown (@0x276dada)>'
+# 20   0x0000000000554aab: '<unknown (@0x554aab)>'
+# 21   0x00000000006e7133: '<unknown (@0x6e7133)>'
+# 22   0x0000000000c01a25: '<unknown (@0xc01a25)>'
+# 23   0x0000000000c0687b: '<unknown (@0xc0687b)>'
+# 24   0x0000000000c0815e: '<unknown (@0xc0815e)>'
+# 25   0x0000000000ebfd9d: '<unknown (@0xebfd9d)>'
+# 26   0x0000000002bdb51d: '<unknown (@0x2bdb51d)>'
+# 27   0x0000000002bdf976: '<unknown (@0x2bdf976)>'
+# 28   0x0000000002be1061: '<unknown (@0x2be1061)>'
+# 29   0x0000000002be13c6: '<unknown (@0x2be13c6)>'
+# 30   0x00000000011259d9: '<unknown (@0x11259d9)>'
+# 31   0x0000000002c812cf: '<unknown (@0x2c812cf)>'
+# 32   0x0000000002cd4e47: '<unknown (@0x2cd4e47)>'
+# 33   0x0000000002c97d37: '<unknown (@0x2c97d37)>'
+# 34   0x0000000002c98019: '<unknown (@0x2c98019)>'
+# 35   0x0000000002a9a51d: '<unknown (@0x2a9a51d)>'
+# 36   0x0000000000bcf14c: '<unknown (@0xbcf14c)>'
+# End of Stack Trace
+
+
+# Current time Fri Feb  2 16:36:27 2024
+# Program = vsim
+# Id = "2020.4_1"
+# Version = "2020.11"
+# Date = "Nov  6 2020"
+# Platform = "linux_x86_64"
+# Signature = d27d22073b954621cb9dfca727acee89
+# 0    0x00007ffff6ea7acf: 'raise + 0x000000000000010f' in '/lib64/libc.so.6'
+# 1    0x00007ffff6e7aea5: 'abort + 0x0000000000000127' in '/lib64/libc.so.6'
+# 2    0x00007fffe56ff132: '<unknown (@0x7fffe56ff132)>'
+# --> START OF USERCODE
+# 3    0x00007fffe56fedb6: '_ZN10__cxxabiv111__terminateEPFvvE + 0x0000000000000006' in './bin/lib_rvfpm.so'
+# <-- END OF USERCODE
+# 4    0x00007fffe56fee21: '<unknown (@0x7fffe56fee21)>'
+# 5    0x00007fffe56fef74: '<unknown (@0x7fffe56fef74)>'
+# --> START OF USERCODE
+# 6    0x00007fffe56f4f75: '_ZSt16__throw_bad_castv + 0x0000000000000000' in './bin/lib_rvfpm.so'
+# 7    0x00007fffe56f70b9: '_ZNSt15__new_allocatorIjE8allocateEmPKv + 0x0000000000000049' in './bin/lib_rvfpm.so'
+# 8    0x00007fffe56f7022: '_ZNSt16allocator_traitsISaIjEE8allocateERS0_m + 0x0000000000000028' in './bin/lib_rvfpm.so'
+# 9    0x00007fffe56f6fc4: '_ZNSt12_Vector_baseIjSaIjEE11_M_allocateEm + 0x000000000000002a' in './bin/lib_rvfpm.so'
+# 10   0x00007fffe56f6ed1: '_ZNSt12_Vector_baseIjSaIjEE17_M_create_storageEm + 0x0000000000000023' in './bin/lib_rvfpm.so'
+# 11   0x00007fffe56f6d71: '_ZNSt12_Vector_baseIjSaIjEEC2EmRKS0_ + 0x000000000000003b' in './bin/lib_rvfpm.so'
+# 12   0x00007fffe56f6b52: '_ZNSt6vectorIjSaIjEEC1ERKS1_ + 0x0000000000000058' in './bin/lib_rvfpm.so'
+# 13   0x00007fffe56f6983: '_ZN10FpuPipeObjC2ERKS_ + 0x0000000000000045' in './bin/lib_rvfpm.so'
+# 14   0x00007fffe56fa3ff: '_ZN11FpuPipeline4stepEv + 0x000000000000025d' in './bin/lib_rvfpm.so'
+# 15   0x00007fffe56f65e6: '_ZN3FPU10clockEventEv + 0x000000000000004e' in './bin/lib_rvfpm.so'
+# 16   0x00007fffe56f63bc: 'clock_event + 0x0000000000000076' in './bin/lib_rvfpm.so'
+# <-- END OF USERCODE
+# 17   0x00007fefe43191af: '/work/anb7/prosjektoppgave/rvfpm/work/src/rvfpm.sv:73'
+# 18   0x00007fefe4319efb: '/work/anb7/prosjektoppgave/rvfpm/work/src/rvfpm.sv:96'
+# 19   0x000000000276dada: '<unknown (@0x276dada)>'
+# 20   0x0000000000554aab: '<unknown (@0x554aab)>'
+# 21   0x00000000006e7133: '<unknown (@0x6e7133)>'
+# 22   0x0000000000c01a25: '<unknown (@0xc01a25)>'
+# 23   0x0000000000c0687b: '<unknown (@0xc0687b)>'
+# 24   0x0000000000c0815e: '<unknown (@0xc0815e)>'
+# 25   0x0000000000ebfd9d: '<unknown (@0xebfd9d)>'
+# 26   0x0000000002bdb51d: '<unknown (@0x2bdb51d)>'
+# 27   0x0000000002bdf976: '<unknown (@0x2bdf976)>'
+# 28   0x0000000002be1061: '<unknown (@0x2be1061)>'
+# 29   0x0000000002be13c6: '<unknown (@0x2be13c6)>'
+# 30   0x00000000011259d9: '<unknown (@0x11259d9)>'
+# 31   0x0000000002c812cf: '<unknown (@0x2c812cf)>'
+# 32   0x0000000002cd4e47: '<unknown (@0x2cd4e47)>'
+# 33   0x0000000002c97d37: '<unknown (@0x2c97d37)>'
+# 34   0x0000000002c98019: '<unknown (@0x2c98019)>'
+# 35   0x0000000002a9a51d: '<unknown (@0x2a9a51d)>'
+# 36   0x0000000000bcf14c: '<unknown (@0xbcf14c)>'
+# End of Stack Trace
+
+
+# Current time Fri Feb  2 16:36:52 2024
+# Program = vsim
+# Id = "2020.4_1"
+# Version = "2020.11"
+# Date = "Nov  6 2020"
+# Platform = "linux_x86_64"
+# Signature = d27d22073b954621cb9dfca727acee89
+# 0    0x00007ffff6ea7acf: 'raise + 0x000000000000010f' in '/lib64/libc.so.6'
+# 1    0x00007ffff6e7aea5: 'abort + 0x0000000000000127' in '/lib64/libc.so.6'
+# 2    0x00007fffe56ff132: '<unknown (@0x7fffe56ff132)>'
+# --> START OF USERCODE
+# 3    0x00007fffe56fedb6: '_ZN10__cxxabiv111__terminateEPFvvE + 0x0000000000000006' in './bin/lib_rvfpm.so'
+# <-- END OF USERCODE
+# 4    0x00007fffe56fee21: '<unknown (@0x7fffe56fee21)>'
+# 5    0x00007fffe56fef74: '<unknown (@0x7fffe56fef74)>'
+# --> START OF USERCODE
+# 6    0x00007fffe56f3c3c: '_ZN9__gnu_cxx27__verbose_terminate_handlerEv.cold + 0x0000000000000000' in './bin/lib_rvfpm.so'
+# 7    0x00007fffe56f70ce: '_ZNSt15__new_allocatorIjE8allocateEmPKv + 0x000000000000005e' in './bin/lib_rvfpm.so'
+# 8    0x00007fffe56f7022: '_ZNSt16allocator_traitsISaIjEE8allocateERS0_m + 0x0000000000000028' in './bin/lib_rvfpm.so'
+# 9    0x00007fffe56f6fc4: '_ZNSt12_Vector_baseIjSaIjEE11_M_allocateEm + 0x000000000000002a' in './bin/lib_rvfpm.so'
+# 10   0x00007fffe56f6ed1: '_ZNSt12_Vector_baseIjSaIjEE17_M_create_storageEm + 0x0000000000000023' in './bin/lib_rvfpm.so'
+# 11   0x00007fffe56f6d71: '_ZNSt12_Vector_baseIjSaIjEEC2EmRKS0_ + 0x000000000000003b' in './bin/lib_rvfpm.so'
+# 12   0x00007fffe56f6b52: '_ZNSt6vectorIjSaIjEEC1ERKS1_ + 0x0000000000000058' in './bin/lib_rvfpm.so'
+# 13   0x00007fffe56f6983: '_ZN10FpuPipeObjC2ERKS_ + 0x0000000000000045' in './bin/lib_rvfpm.so'
+# 14   0x00007fffe56fa3ff: '_ZN11FpuPipeline4stepEv + 0x000000000000025d' in './bin/lib_rvfpm.so'
+# 15   0x00007fffe56f65e6: '_ZN3FPU10clockEventEv + 0x000000000000004e' in './bin/lib_rvfpm.so'
+# 16   0x00007fffe56f63bc: 'clock_event + 0x0000000000000076' in './bin/lib_rvfpm.so'
+# <-- END OF USERCODE
+# 17   0x00007fefe43191af: '/work/anb7/prosjektoppgave/rvfpm/work/src/rvfpm.sv:73'
+# 18   0x00007fefe4319efb: '/work/anb7/prosjektoppgave/rvfpm/work/src/rvfpm.sv:96'
+# 19   0x000000000276dada: '<unknown (@0x276dada)>'
+# 20   0x0000000000554aab: '<unknown (@0x554aab)>'
+# 21   0x00000000006e7133: '<unknown (@0x6e7133)>'
+# 22   0x0000000000c01a25: '<unknown (@0xc01a25)>'
+# 23   0x0000000000c0687b: '<unknown (@0xc0687b)>'
+# 24   0x0000000000c0815e: '<unknown (@0xc0815e)>'
+# 25   0x0000000000ebfd9d: '<unknown (@0xebfd9d)>'
+# 26   0x0000000002bdb51d: '<unknown (@0x2bdb51d)>'
+# 27   0x0000000002bdf976: '<unknown (@0x2bdf976)>'
+# 28   0x0000000002be1061: '<unknown (@0x2be1061)>'
+# 29   0x0000000002be13c6: '<unknown (@0x2be13c6)>'
+# 30   0x00000000011259d9: '<unknown (@0x11259d9)>'
+# 31   0x0000000002c812cf: '<unknown (@0x2c812cf)>'
+# 32   0x0000000002cd4e47: '<unknown (@0x2cd4e47)>'
+# 33   0x0000000002c97d37: '<unknown (@0x2c97d37)>'
+# 34   0x0000000002c98019: '<unknown (@0x2c98019)>'
+# 35   0x0000000002a9a51d: '<unknown (@0x2a9a51d)>'
+# 36   0x0000000000bcf14c: '<unknown (@0xbcf14c)>'
+# End of Stack Trace
+
+
+# Current time Fri Feb  2 16:48:41 2024
+# Program = vsim
+# Id = "2020.4_1"
+# Version = "2020.11"
+# Date = "Nov  6 2020"
+# Platform = "linux_x86_64"
+# Signature = d27d22073b954621cb9dfca727acee89
+# 0    0x00007ffff6ea7acf: 'raise + 0x000000000000010f' in '/lib64/libc.so.6'
+# 1    0x00007ffff6e7aea5: 'abort + 0x0000000000000127' in '/lib64/libc.so.6'
+# --> START OF USERCODE
+# 2    0x00007fffe56f3da8: '__gnu_cxx::__verbose_terminate_handler() [clone .cold] + 0x000000000000005c' in './bin/lib_rvfpm.so'
+# 3    0x00007fffe56fef36: '_ZN10__cxxabiv111__terminateEPFvvE + 0x0000000000000006' in './bin/lib_rvfpm.so'
+# <-- END OF USERCODE
+# 4    0x00007fffe56fefa1: '<unknown (@0x7fffe56fefa1)>'
+# 5    0x00007fffe56ff0f4: '<unknown (@0x7fffe56ff0f4)>'
+# --> START OF USERCODE
+# 6    0x00007fffe56f5284: '_ZSt24__throw_out_of_range_fmtPKcz.cold + 0x0000000000000016' in './bin/lib_rvfpm.so'
+# 7    0x00007fffe56fb4c5: '_ZNKSt5dequeI10FpuPipeObjSaIS0_EE14_M_range_checkEm + 0x0000000000000051' in './bin/lib_rvfpm.so'
+# 8    0x00007fffe56fab45: '_ZNSt5dequeI10FpuPipeObjSaIS0_EE2atEm + 0x0000000000000023' in './bin/lib_rvfpm.so'
+# 9    0x00007fffe56fa7f9: '_ZN11FpuPipeline20getId_operationQueueEi + 0x0000000000000027' in './bin/lib_rvfpm.so'
+# 10   0x00007fffe56f69f8: '_ZN3FPU18bd_getQueueStageIdEi + 0x0000000000000024' in './bin/lib_rvfpm.so'
+# 11   0x00007fffe56f6580: 'getQueueStageId + 0x0000000000000028' in './bin/lib_rvfpm.so'
+# <-- END OF USERCODE
+# 12   0x00007fefe431ac66: '/work/anb7/prosjektoppgave/rvfpm/work/sim/rvfpm_tb.sv:119'
+# 13   0x00007fefe431b977: '/work/anb7/prosjektoppgave/rvfpm/work/sim/rvfpm_tb.sv:133'
+# 14   0x000000000276dada: '<unknown (@0x276dada)>'
+# 15   0x0000000000554aab: '<unknown (@0x554aab)>'
+# 16   0x00000000006e7133: '<unknown (@0x6e7133)>'
+# 17   0x0000000000c01a25: '<unknown (@0xc01a25)>'
+# 18   0x0000000000c0687b: '<unknown (@0xc0687b)>'
+# 19   0x0000000000c0815e: '<unknown (@0xc0815e)>'
+# 20   0x0000000000ebfd9d: '<unknown (@0xebfd9d)>'
+# 21   0x0000000002bdb51d: '<unknown (@0x2bdb51d)>'
+# 22   0x0000000002bdf976: '<unknown (@0x2bdf976)>'
+# 23   0x0000000002be1061: '<unknown (@0x2be1061)>'
+# 24   0x0000000002be13c6: '<unknown (@0x2be13c6)>'
+# 25   0x00000000011259d9: '<unknown (@0x11259d9)>'
+# 26   0x0000000002c812cf: '<unknown (@0x2c812cf)>'
+# 27   0x0000000002cd4e47: '<unknown (@0x2cd4e47)>'
+# 28   0x0000000002c97d37: '<unknown (@0x2c97d37)>'
+# 29   0x0000000002c98019: '<unknown (@0x2c98019)>'
+# 30   0x0000000002a9a51d: '<unknown (@0x2a9a51d)>'
+# 31   0x0000000000bcf14c: '<unknown (@0xbcf14c)>'
+# End of Stack Trace
+
+
+# Current time Fri Feb  2 16:49:01 2024
+# Program = vsim
+# Id = "2020.4_1"
+# Version = "2020.11"
+# Date = "Nov  6 2020"
+# Platform = "linux_x86_64"
+# Signature = d27d22073b954621cb9dfca727acee89
+# 0    0x00007ffff6ea7acf: 'raise + 0x000000000000010f' in '/lib64/libc.so.6'
+# 1    0x00007ffff6e7aea5: 'abort + 0x0000000000000127' in '/lib64/libc.so.6'
+# 2    0x00007fffe56ff2b2: '<unknown (@0x7fffe56ff2b2)>'
+# --> START OF USERCODE
+# 3    0x00007fffe56fef36: '_ZN10__cxxabiv111__terminateEPFvvE + 0x0000000000000006' in './bin/lib_rvfpm.so'
+# <-- END OF USERCODE
+# 4    0x00007fffe56fefa1: '<unknown (@0x7fffe56fefa1)>'
+# 5    0x00007fffe56ff0f4: '<unknown (@0x7fffe56ff0f4)>'
+# --> START OF USERCODE
+# 6    0x00007fffe56f5284: '_ZSt24__throw_out_of_range_fmtPKcz.cold + 0x0000000000000016' in './bin/lib_rvfpm.so'
+# 7    0x00007fffe56fb4c5: '_ZNKSt5dequeI10FpuPipeObjSaIS0_EE14_M_range_checkEm + 0x0000000000000051' in './bin/lib_rvfpm.so'
+# 8    0x00007fffe56fab45: '_ZNSt5dequeI10FpuPipeObjSaIS0_EE2atEm + 0x0000000000000023' in './bin/lib_rvfpm.so'
+# 9    0x00007fffe56fa7f9: '_ZN11FpuPipeline20getId_operationQueueEi + 0x0000000000000027' in './bin/lib_rvfpm.so'
+# 10   0x00007fffe56f69f8: '_ZN3FPU18bd_getQueueStageIdEi + 0x0000000000000024' in './bin/lib_rvfpm.so'
+# 11   0x00007fffe56f6580: 'getQueueStageId + 0x0000000000000028' in './bin/lib_rvfpm.so'
+# <-- END OF USERCODE
+# 12   0x00007fefe431ac66: '/work/anb7/prosjektoppgave/rvfpm/work/sim/rvfpm_tb.sv:119'
+# 13   0x00007fefe431b977: '/work/anb7/prosjektoppgave/rvfpm/work/sim/rvfpm_tb.sv:133'
+# 14   0x000000000276dada: '<unknown (@0x276dada)>'
+# 15   0x0000000000554aab: '<unknown (@0x554aab)>'
+# 16   0x00000000006e7133: '<unknown (@0x6e7133)>'
+# 17   0x0000000000c01a25: '<unknown (@0xc01a25)>'
+# 18   0x0000000000c0687b: '<unknown (@0xc0687b)>'
+# 19   0x0000000000c0815e: '<unknown (@0xc0815e)>'
+# 20   0x0000000000ebfd9d: '<unknown (@0xebfd9d)>'
+# 21   0x0000000002bdb51d: '<unknown (@0x2bdb51d)>'
+# 22   0x0000000002bdf976: '<unknown (@0x2bdf976)>'
+# 23   0x0000000002be1061: '<unknown (@0x2be1061)>'
+# 24   0x0000000002be13c6: '<unknown (@0x2be13c6)>'
+# 25   0x00000000011259d9: '<unknown (@0x11259d9)>'
+# 26   0x0000000002c812cf: '<unknown (@0x2c812cf)>'
+# 27   0x0000000002cd4e47: '<unknown (@0x2cd4e47)>'
+# 28   0x0000000002c97d37: '<unknown (@0x2c97d37)>'
+# 29   0x0000000002c98019: '<unknown (@0x2c98019)>'
+# 30   0x0000000002a9a51d: '<unknown (@0x2a9a51d)>'
+# 31   0x0000000000bcf14c: '<unknown (@0xbcf14c)>'
+# End of Stack Trace
+
+

@@ -49,16 +49,14 @@ FpuPipeObj FpuPipeline::step(){
 
   //Forwarding?
   //WB
-  if (!pipeline.at(0).toMem){ //if writing to rf, write to register file
+  if (!pipeline.at(0).toMem && !pipeline.at(0).toXReg){ //if writing to rf, write to register file
     registerFilePtr->write(pipeline.at(0).addrTo, pipeline.at(0).data);
   }
 
   //Check for hazards underway, dependant on if OOO/fowarding is 1
-
-
   if (!stalled){
-    pipeline.push_back(waitingOp); //Use first in queue instead. Only if not stalled
-    pipeline.pop_front();// should be dependent on what the front op is
+    pipeline.push_back(waitingOp);
+    pipeline.pop_front();//should be dependent on what the front op is
     if (QUEUE_DEPTH > 0){
       setWaitingOp(operationQueue.front());
       operationQueue.pop_front();
@@ -90,7 +88,11 @@ int FpuPipeline::getQueueDepth(){
   return QUEUE_DEPTH;
 };
 
-unsigned int FpuPipeline::getId(int stage) {
+unsigned int FpuPipeline::getId_pipeline(int stage) {
   return pipeline.at(stage).id;
+};
+
+unsigned int FpuPipeline::getId_operationQueue(int stage) {
+  return operationQueue.at(stage).id;
 };
 

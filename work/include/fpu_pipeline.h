@@ -36,5 +36,7 @@ class FpuPipeline {
     void flush();
     int getNumStages();
     int getQueueDepth();
-    unsigned int getId(int stage);
+    unsigned int getId_pipeline(int stage);
+    unsigned int getId_operationQueue(int stage);
+
 };
