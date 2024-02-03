@@ -33,6 +33,10 @@ void FPU::clockEvent(){
   //pipeline checkForHazards
 };
 
+void FPU::predecodeInstruction(uint32_t instruction, unsigned int id){
+  predecoder.predecodeInstruction(instruction, id);
+};
+
 void FPU::pollPredecoderResult(bool& accept_ref, x_issue_resp_t& resp_ref){
   predecoder.pollPredecoderResult(accept_ref, resp_ref);
 };

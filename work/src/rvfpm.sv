@@ -13,6 +13,8 @@
 `define XLEN 32
 `define NUM_FPU_REGS 32
 `define COPROC 0
+`include "in_xif.sv"
+import in_xif::*;
 
 
 module rvfpm #(
@@ -74,16 +76,17 @@ module rvfpm #(
   import "DPI-C" function void destroy_fpu(input chandle fpu_ptr);
   import "DPI-C" function int unsigned getRFContent(input chandle fpu_ptr, input int addr);
   import "DPI-C" function void add_accepted_instruction(input chandle fpu_ptr, input int instr, input int unsigned id);
-  import "DPI-C" function void poll_predecoder_result(input chandle fpu_ptr, ref logic accept, ref in_xif.coproc_issue.issue_resp_t resp);
-  //import "DPI-C" function void predecode_instruction(input chandle fpu_ptr, input int instr, input int unsigned id, input int unsigned hartid);
+  import "DPI-C" function void poll_predecoder_result(input chandle fpu_ptr, output logic accept, output x_issue_resp_t resp);
+  import "DPI-C" function void predecode_instruction(input chandle fpu_ptr, input int instr, input int unsigned id);
   //Something to issue response from predecoder
   //-----------------------
   //-- Local parameters
   //-----------------------
-  logic fpu_ready; //status signal
+  logic fpu_ready_s; //status signal
   logic [X_ID_WIDTH-1:0] fpu_accept_id; //ID of accepted instruction
   logic fpu_accept; //Acceptance signal
-  logic new_instruction_accepted; //Signal to indicate that a new instruction is accepted
+  logic new_instruction_accepted; //Indicates that a new instruction is accepted
+  logic issue_transaction_active; //Indicates that an issue transaction is active
   //-----------------------
   //-- Initialization
   //-----------------------
@@ -91,7 +94,7 @@ module rvfpm #(
   initial begin
     fpu = create_fpu_model(PIPELINE_STAGES, QUEUE_DEPTH, NUM_REGS);
   end
-  assign fpu_ready = 1;
+  assign fpu_ready_s = 1;
 
   //issue ready er egentlig bare at fpu er klar til å motta en forespørsel om ofloaded instruction
   //Så set til 1 så lenge fpu er ready
@@ -106,7 +109,7 @@ module rvfpm #(
       // add_accepted_instruction(fpu, instruction, id); //This can be async! Handle in predecoder when accepted
       
       if (xif_issue_if.issue_valid) begin
-        xif_issue_if.issue_ready = fpu_ready; //if it is actually ready.
+        xif_issue_if.issue_ready = fpu_ready_s; //if it is actually ready.
       end else begin
         xif_issue_if.issue_ready = 0;
         //fpu_operation(fpu, instruction, id, data_fromXReg, data_fromMem, id_out, data_toMem, data_toXReg, pipelineFull, toMem_valid, toXReg_valid);

@@ -24,6 +24,7 @@ class FPU {
     void resetFPU();
     void clockEvent();
     void addAcceptedInstruction(uint32_t instruction, unsigned int id);//and other necessary inputs (should be somewhat close to in_xif type)
+    void predecodeInstruction(uint32_t instruction, unsigned int id);
     void pollPredecoderResult(bool& accept_ref, x_issue_resp_t& resp_ref);
 
     //Backdoor functions

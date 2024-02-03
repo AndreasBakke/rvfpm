@@ -31,10 +31,16 @@ extern "C" {
     fpu->addAcceptedInstruction(instruction, id);
   };
 
+  void predecode_instruction(void* fpu_ptr, uint32_t instruction, unsigned int id){
+    FPU* fpu = static_cast<FPU*>(fpu_ptr);
+    fpu->predecodeInstruction(instruction, id);
+  };
+
   void poll_predecoder_result(void* fpu_ptr, bool& accept, x_issue_resp_t& resp){
     FPU* fpu = static_cast<FPU*>(fpu_ptr);
     fpu->pollPredecoderResult(accept, resp);
   };
+
 
 
 
