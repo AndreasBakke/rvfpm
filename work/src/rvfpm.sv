@@ -132,7 +132,7 @@ module rvfpm #(
     if (issue_transaction_active) begin
       predecode_instruction(fpu, xif_issue_if.issue_req.instr, xif_issue_if.issue_req.id);
       poll_predecoder_result(fpu, fpu_accept, xif_issue_if.issue_resp);
-      assign xif_issue_if.issue_resp.accept = xif_issue_if.issue_valid && fpu_accept:  1'b0; //Accept instruction if valid
+      assign xif_issue_if.issue_resp.accept = xif_issue_if.issue_valid && fpu_accept; //Accept instruction if valid
       assign new_instruction_accepted = xif_issue_if.issue_valid && xif_issue_if.issue_ready && xif_issue_if.issue_resp.accept; //Signal that a new instruction is accepted
     end
   end
