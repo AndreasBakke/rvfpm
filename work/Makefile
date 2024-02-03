@@ -51,6 +51,7 @@ sim_full:
 	make clean
 	make sharedLib
 	vlog -work work /work/anb7/prosjektoppgave/rvfpm/work/src/in_xif.sv
+	vlog -work work /work/anb7/prosjektoppgave/rvfpm/work/src/pa_rvfpm.sv
 	vlog -work work /work/anb7/prosjektoppgave/rvfpm/work/src/rvfpm.sv
 	vlog -work work /work/anb7/prosjektoppgave/rvfpm/work/sim/inTest_rvfpm.sv
 	vlog -work work /work/anb7/prosjektoppgave/rvfpm/work/sim/assertions_rvfpm.sv

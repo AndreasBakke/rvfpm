@@ -13,8 +13,8 @@
 `define XLEN 32
 `define NUM_FPU_REGS 32
 `define COPROC 0
-`include "in_xif.sv"
-import in_xif::*;
+`include "pa_rvfpm.sv"
+import pa_rvfpm::*;
 
 
 module rvfpm #(
