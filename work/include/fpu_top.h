@@ -8,11 +8,14 @@
 #include "fpu_pipeline.h"
 #include "fpu_decode.h"
 #include "fpu_execute.h"
+#include "fpu_predecoder.h"
 
 class FPU {
   private:
     FpuRf registerFile;
     FpuPipeline pipeline;
+    FpuPredecoder predecoder;
+    bool fpuReady;
 
 
   public:
@@ -21,6 +24,7 @@ class FPU {
     void resetFPU();
     void clockEvent();
     void addAcceptedInstruction(uint32_t instruction, unsigned int id);//and other necessary inputs (should be somewhat close to in_xif type)
+    void pollPredecoderResult(bool& accept_ref, x_issue_resp_t& resp_ref);
 
     //Backdoor functions
     FpuPipeObj testFloatOp();

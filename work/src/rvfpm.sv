@@ -74,12 +74,16 @@ module rvfpm #(
   import "DPI-C" function void destroy_fpu(input chandle fpu_ptr);
   import "DPI-C" function int unsigned getRFContent(input chandle fpu_ptr, input int addr);
   import "DPI-C" function void add_accepted_instruction(input chandle fpu_ptr, input int instr, input int unsigned id);
-
-
+  import "DPI-C" function void poll_predecoder_result(input chandle fpu_ptr, ref logic accept, ref in_xif.coproc_issue.issue_resp_t resp);
+  //import "DPI-C" function void predecode_instruction(input chandle fpu_ptr, input int instr, input int unsigned id, input int unsigned hartid);
+  //Something to issue response from predecoder
   //-----------------------
   //-- Local parameters
   //-----------------------
-  logic pipelineFull; //status signal
+  logic fpu_ready; //status signal
+  logic [X_ID_WIDTH-1:0] fpu_accept_id; //ID of accepted instruction
+  logic fpu_accept; //Acceptance signal
+  logic new_instruction_accepted; //Signal to indicate that a new instruction is accepted
   //-----------------------
   //-- Initialization
   //-----------------------
@@ -87,7 +91,10 @@ module rvfpm #(
   initial begin
     fpu = create_fpu_model(PIPELINE_STAGES, QUEUE_DEPTH, NUM_REGS);
   end
+  assign fpu_ready = 1;
 
+  //issue ready er egentlig bare at fpu er klar til å motta en forespørsel om ofloaded instruction
+  //Så set til 1 så lenge fpu er ready
 
   always_ff @(posedge ck) begin: la_main
     if (rst) begin
@@ -96,17 +103,35 @@ module rvfpm #(
     else if (enable) begin
       //Call clocked functions
       clock_event(fpu);
-      add_accepted_instruction(fpu, instruction, id);
-      //Something if accepted instruction.
-      //  - fpu_addInstruction(...);
-      //Read signals /can this be assigned directly from fpu?
-      // fpu_operation(fpu, instruction, id, data_fromXReg, data_fromMem, id_out, data_toMem, data_toXReg, pipelineFull, toMem_valid, toXReg_valid);
-    end begin
+      // add_accepted_instruction(fpu, instruction, id); //This can be async! Handle in predecoder when accepted
+      
+      if (xif_issue_if.issue_valid) begin
+        xif_issue_if.issue_ready = fpu_ready; //if it is actually ready.
+      end else begin
+        xif_issue_if.issue_ready = 0;
+        //fpu_operation(fpu, instruction, id, data_fromXReg, data_fromMem, id_out, data_toMem, data_toXReg, pipelineFull, toMem_valid, toXReg_valid);
+      end
+
+      if (issue_transaction_active && new_instruction_accepted) begin
+        add_accepted_instruction(fpu, xif_issue_if.issue_req.instr, xif_issue_if.issue_req.id);
+      end
+
+      if (issue_transaction_active && !new_instruction_accepted) begin
+        //Do not accept instruction
+      end
+
     end
   end
 
+
   always_comb begin
-    fpu_ready <= !pipelineFull;
+    assign issue_transaction_active = xif_issue_if.issue_valid && xif_issue_if.issue_ready;
+    if (issue_transaction_active) begin
+      predecode_instruction(fpu, xif_issue_if.issue_req.instr, xif_issue_if.issue_req.id);
+      poll_predecoder_result(fpu, fpu_accept, xif_issue_if.issue_resp);
+      assign xif_issue_if.issue_resp.accept = xif_issue_if.issue_valid && fpu_accept:  1'b0; //Accept instruction if valid
+      assign new_instruction_accepted = xif_issue_if.issue_valid && xif_issue_if.issue_ready && xif_issue_if.issue_resp.accept; //Signal that a new instruction is accepted
+    end
   end
 
 

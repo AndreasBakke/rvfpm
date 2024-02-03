@@ -13,6 +13,7 @@ FpuPipeObj decodeOp(uint32_t instruction, unsigned int id) { //Add more fields i
   //Get result of operation
   unsigned int opcode = instruction & 127 ; //Get first 7 bit
   FpuPipeObj result = {};
+  result.valid = true;
   switch (opcode)
   {
   case FLW:
@@ -37,6 +38,7 @@ FpuPipeObj decodeOp(uint32_t instruction, unsigned int id) { //Add more fields i
     result = decode_RTYPE(instruction);
     break;
   default:
+    result.valid = false; //TODO: add tests for validity in each decode aswell
     break;
   }
   result.id = id;

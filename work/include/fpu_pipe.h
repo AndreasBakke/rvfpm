@@ -25,8 +25,9 @@ struct FpuPipeObj {
   bool fromMem = 0;
   uint32_t uDataToXreg = 0; //unsigned DataToXreg
   int32_t dataToXreg = 0;
-
   unsigned int remaining_ex_cycles: 1; //1 cycle for execution as standard
+  bool valid = 0; //Is the instruction valid?
+
 
   bool isEmpty() const {
     return addrFrom.empty() &&

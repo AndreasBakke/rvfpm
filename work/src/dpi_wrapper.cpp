@@ -31,6 +31,13 @@ extern "C" {
     fpu->addAcceptedInstruction(instruction, id);
   };
 
+  void poll_predecoder_result(void* fpu_ptr, bool& accept, x_issue_resp_t& resp){
+    FPU* fpu = static_cast<FPU*>(fpu_ptr);
+    fpu->pollPredecoderResult(accept, resp);
+  };
+
+
+
   void destroy_fpu(void* fpu_ptr) {
     FPU* fpu = static_cast<FPU*>(fpu_ptr);
     delete fpu;

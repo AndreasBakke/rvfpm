@@ -7,7 +7,7 @@
 #include "fpu_top.h"
 #include <iostream>
 
-FPU::FPU (int pipelineStages, int queueDepth, int rfDepth) : registerFile(rfDepth),  pipeline(pipelineStages, queueDepth, &registerFile) {
+FPU::FPU (int pipelineStages, int queueDepth, int rfDepth) : registerFile(rfDepth),  pipeline(pipelineStages, queueDepth, &registerFile), predecoder(fpuReady) {
   #ifndef ZFINX
     // registerFile(rfDepth)
   #else
@@ -31,6 +31,10 @@ void FPU::resetFPU(){
 void FPU::clockEvent(){
   pipeline.step();
   //pipeline checkForHazards
+};
+
+void FPU::pollPredecoderResult(bool& accept_ref, x_issue_resp_t& resp_ref){
+  predecoder.pollPredecoderResult(accept_ref, resp_ref);
 };
 
 FpuPipeObj FPU::testFloatOp(){

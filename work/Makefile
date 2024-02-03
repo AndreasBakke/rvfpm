@@ -14,7 +14,7 @@ else
 endif
 
 #Filepaths for the c++ core
-COREFILES = src/fpu_top.cpp src/fpu_decode.cpp src/fpu_execute.cpp src/fpu_pipeline.cpp src/fpu_rf.cpp  src/fp_number.cpp
+COREFILES = src/fpu_top.cpp src/fpu_predecoder.cpp src/fpu_decode.cpp src/fpu_execute.cpp src/fpu_pipeline.cpp src/fpu_rf.cpp  src/fp_number.cpp
 
 TestFloat: #Compile and test for IEEE754 compliance
 	make clean
