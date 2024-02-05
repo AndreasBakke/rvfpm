@@ -41,6 +41,16 @@ extern "C" {
     fpu->pollPredecoderResult(accept, resp);
   };
 
+  void poll_mem_req(void* fpu_ptr, bool& mem_valid, x_mem_req_t& mem_req){
+    FPU* fpu = static_cast<FPU*>(fpu_ptr);
+    fpu->pollMemReq(mem_valid, mem_req);
+  };
+
+  void write_mem_res(void* fpu_ptr, bool mem_result_valid, x_memory_res_t mem_result){
+    FPU* fpu = static_cast<FPU*>(fpu_ptr);
+    fpu->writeMemRes(mem_result_valid, mem_result);
+  };
+
 
 
 

@@ -11,6 +11,8 @@
 #include "fpu_instructions.h"
 #include "fpu_decode.h"
 #include "fpu_execute.h"
+#include "fpu_config.h"
+
 #include <deque> //Double ended queue
 
 class FpuPipeline {
@@ -23,16 +25,27 @@ class FpuPipeline {
 
     FpuPipeObj waitingOp; //Next in line to pipeline
     bool pipelineFull;
-    bool stalled; //or something like this
+    bool stalled;
 
+    //Memory request interface
+    bool mem_valid; //set by core, polled in rvfpm.sv
+    x_mem_req_t mem_req; //set by core, polled in rvfpm.sv
+
+    //Memory result interface
+    bool memoryResultValid; //Set during memory result transaction
+    x_memory_res_t memoryResults; //Set during memory result transaction
 
   public:
     FpuPipeline(int pipelineStages, int queueDepth, FpuRf* rf_pointer);
     ~FpuPipeline();
     FpuPipeObj step(); //Advance pipeline by one step (called by clock in interface)
+    bool isStalled();
 
     void addOpToQueue(FpuPipeObj op);
     void setWaitingOp(FpuPipeObj op);
+    void pollMemReq(bool& mem_valid, x_mem_req_t& mem_req);
+    void writeMemRes(bool mem_result_valid, x_memory_res_t mem_result);
+
     void flush();
     int getNumStages();
     int getQueueDepth();

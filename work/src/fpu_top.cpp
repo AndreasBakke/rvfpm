@@ -30,7 +30,7 @@ void FPU::resetFPU(){
 
 void FPU::clockEvent(){
   pipeline.step();
-  //pipeline checkForHazards
+  fpuReady = pipeline.isStalled();
 };
 
 void FPU::predecodeInstruction(uint32_t instruction, unsigned int id){
@@ -47,16 +47,23 @@ FpuPipeObj FPU::testFloatOp(){
 
 
 void FPU::addAcceptedInstruction(uint32_t instruction, unsigned int id){ //and other necessary inputs (should be somewhat close to in_xif type)
-  FpuPipeObj newOp = decodeOp(instruction, 0); //id is 0 for now
-  newOp.id = id;
+  FpuPipeObj newOp = decodeOp(instruction, id);
+  // newOp.id = id;
   if (pipeline.getQueueDepth() > 0){
     pipeline.addOpToQueue(newOp);
   }
   else {
     pipeline.setWaitingOp(newOp); //set waitingOp (if queue=0, this will be empty given the instruction is accepted
-
   }
 }
+
+void FPU::pollMemReq(bool& mem_valid, x_mem_req_t& mem_req){
+  pipeline.pollMemReq(mem_valid, mem_req);
+};
+
+void FPU::writeMemRes(bool mem_result_valid, x_memory_res_t mem_result){
+  pipeline.writeMemRes(mem_result_valid, mem_result);
+};
 
 
 

@@ -8,7 +8,7 @@
 
 
 
-void executeOp(FpuPipeObj& op, FpuRf* registerFile) {
+void executeOp(FpuPipeObj& op, FpuRf* registerFile, bool& mem_valid, x_mem_req_t& mem_req) {
   #ifndef NO_ROUNDING  // NO_ROUNDING uses c++ default rounding mode.
     unsigned int rm = registerFile->readfrm();
     if (rm == 0b111) //0b111 is dynamic rounding, and is handled for the relevant instructions later.
@@ -42,17 +42,17 @@ void executeOp(FpuPipeObj& op, FpuRf* registerFile) {
     {
     case it_ITYPE:
     {
-      // execute_ITYPE(op, registerFile, fromMem);
+      execute_ITYPE(op, registerFile, mem_valid, mem_req);
       break;
     }
     case it_STYPE:
     {
-      // execute_STYPE(op, registerFile, id_out, toMem, toMem_valid);
+      execute_STYPE(op, registerFile, mem_valid, mem_req);
       break;
     }
     case it_RTYPE:
     {
-      execute_RTYPE(op, registerFile);//, fromXReg, id_out, toXReg, toXReg_valid);
+      execute_RTYPE(op, registerFile);
       break;
     }
     case it_R4TYPE:
@@ -386,29 +386,44 @@ void execute_RTYPE(FpuPipeObj& op, FpuRf* registerFile){ //, int fromXReg, unsig
 };
 
 
-void execute_ITYPE(FpuPipeObj& op, FpuRf* registerFile, unsigned int fromMem){
+void execute_ITYPE(FpuPipeObj& op, FpuRf* registerFile, bool& mem_valid, x_mem_req_t& mem_req){
   //Only ITYPE operation implemented is FLW
-  op.data.bitpattern = fromMem;
-  if (registerFile != nullptr) {
-    registerFile->write(op.addrTo, op.data); //TODO: This might need to be moved elsewhere depending on pipeline structure (this might be a wait for memory stage)
-  }
+  mem_valid = true;
+  mem_req = {
+    op.id, //id
+    op.addrFrom.front(), //addr TODO: find out what this should be
+    0, //mode
+    0, //we
+    5, //size (5=32 bit) TODO: change for other formats
+    0, //be
+    0,//attr
+    0, //wdata
+    0,//last
+    0 //spec
+  };
 }
 
 
 
-void execute_STYPE(FpuPipeObj& op, FpuRf* registerFile, unsigned int* id_out, uint32_t* toMem, bool* toMem_valid){
+void execute_STYPE(FpuPipeObj& op, FpuRf* registerFile, bool& mem_valid, x_mem_req_t& mem_req){
   if (registerFile != nullptr) {
     op.data = registerFile->read(op.addrFrom.front());
   }
-  if (toMem != nullptr) {
-    *toMem = op.data.bitpattern; //Will need to be requested through interface
-  }
-  if (toMem_valid != nullptr) {
-    *toMem_valid = true; //TODO: check if it is actually valid. TODO: rename to ready?
-  }
-  if (id_out != nullptr) {
-    *id_out = op.id;
-  }
+  // initiate memory write request (using data.bitpattern)
+  mem_valid = true;
+  mem_req = {
+    op.id, //id
+    op.addrTo, //addr TOODO: find out what this should be
+    0, //mode
+    1, //we
+    5, //size (5=32 bit) TODO: change for other formats
+    0, //be
+    0,//attr
+    op.data.bitpattern, //wdata
+    0,//last
+    0 //spec
+  };
+
 }
 
 void setRoundingMode(unsigned int rm){ //Sets c++ rounding mode. FCSR is written seperately

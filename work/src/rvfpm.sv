@@ -78,6 +78,9 @@ module rvfpm #(
   import "DPI-C" function void add_accepted_instruction(input chandle fpu_ptr, input int instr, input int unsigned id);
   import "DPI-C" function void poll_predecoder_result(input chandle fpu_ptr, output logic accept, output x_issue_resp_t resp);
   import "DPI-C" function void predecode_instruction(input chandle fpu_ptr, input int instr, input int unsigned id);
+  import "DPI-C" function void poll_mem_req(input chandle fpu_ptr, output logic mem_valid, output x_mem_req_t mem_req);
+  import "DPI-C" function void write_mem_res(input chandle fpu_ptr, input logic mem_result_valid, input x_mem_result_t mem_result);
+
   //Something to issue response from predecoder
   //-----------------------
   //-- Local parameters
@@ -90,6 +93,7 @@ module rvfpm #(
   //-----------------------
   //-- Initialization
   //-----------------------
+  assign new_instruction_accepted = xif_issue_if.issue_valid && xif_issue_if.issue_ready && xif_issue_if.issue_resp.accept; //Signal that a new instruction is accepted
   chandle fpu;
   initial begin
     fpu = create_fpu_model(PIPELINE_STAGES, QUEUE_DEPTH, NUM_REGS);
@@ -106,8 +110,11 @@ module rvfpm #(
     else if (enable) begin
       //Call clocked functions
       clock_event(fpu);
+      poll_mem_req(fpu, xif_mem_if.mem_valid, xif_mem_if.mem_req);
+      write_mem_res(fpu, xif_mem_result_if.mem_result_valid, xif_mem_result_if.mem_result);
+
       // add_accepted_instruction(fpu, instruction, id); //This can be async! Handle in predecoder when accepted
-      
+
       if (xif_issue_if.issue_valid) begin
         xif_issue_if.issue_ready = fpu_ready_s; //if it is actually ready.
       end else begin
@@ -132,8 +139,8 @@ module rvfpm #(
     if (issue_transaction_active) begin
       predecode_instruction(fpu, xif_issue_if.issue_req.instr, xif_issue_if.issue_req.id);
       poll_predecoder_result(fpu, fpu_accept, xif_issue_if.issue_resp);
-      assign xif_issue_if.issue_resp.accept = xif_issue_if.issue_valid && fpu_accept; //Accept instruction if valid
-      assign new_instruction_accepted = xif_issue_if.issue_valid && xif_issue_if.issue_ready && xif_issue_if.issue_resp.accept; //Signal that a new instruction is accepted
+      xif_issue_if.issue_resp.accept <= xif_issue_if.issue_valid && fpu_accept; //Accept instruction if valid
+
     end
   end
 

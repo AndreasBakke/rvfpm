@@ -3,10 +3,24 @@
 
   Description:
   RISC-V Floating Point Unit Model.
-  Package for types 
+  Package for types
 */
 
 package pa_rvfpm;
+  parameter NUM_REGS          = 32;
+  parameter XLEN              = 32;
+
+  //CORE-V-XIF parameters for coprocessor
+  parameter X_NUM_RS          = 2; //Read ports //TODO: not used
+  parameter X_ID_WIDTH        = 4;
+  parameter X_MEM_WIDTH       = 32; //TODO: dependent on extension
+  parameter X_RFR_WIDTH       = 32; //Read acces width //TODO: not used
+  parameter X_RFW_WIDTH       = 32; //Write acces width //TODO: not used
+  parameter X_MISA            = 'h0000_0000; //TODO: not used
+  parameter X_ECS_XS          = 2'b0;        //TODO: not used
+  parameter X_DUALREAD        = 0; //TODO: not implemented
+  parameter X_DUALWRITE       = 0; //TODO: not implemented
+
 
   typedef struct packed { //from in_xif.sv
     logic       accept;     // Is the offloaded instruction (id) accepted by the coprocessor?
@@ -18,5 +32,24 @@ package pa_rvfpm;
     logic       exc;        // Can the offloaded instruction possibly cause a synchronous exception in the coprocessor itself?
   } x_issue_resp_t;
 
+  typedef struct packed {
+    logic [X_ID_WIDTH   -1:0] id;    // Identification of the offloaded instruction
+    logic [             31:0] addr;  // Virtual address of the memory transaction
+    logic [              1:0] mode;  // Privilege level
+    logic                     we;    // Write enable of the memory transaction
+    logic [              2:0] size;  // Size of the memory transaction
+    logic [X_MEM_WIDTH/8-1:0] be;    // Byte enables for memory transaction
+    logic [              1:0] attr;  // Memory transaction attributes
+    logic [X_MEM_WIDTH  -1:0] wdata; // Write data of a store memory transaction
+    logic                     last;  // Is this the last memory transaction for the offloaded instruction?
+    logic                     spec;  // Is the memory transaction speculative?
+  } x_mem_req_t;
+
+  typedef struct packed {
+    logic [X_ID_WIDTH -1:0] id;     // Identification of the offloaded instruction
+    logic [X_MEM_WIDTH-1:0] rdata;  // Read data of a read memory transaction
+    logic                   err;    // Did the instruction cause a bus error?
+    logic                   dbg;    // Did the read data cause a debug trigger match with ``mcontrol.timing`` = 0?
+  } x_mem_result_t;
 
 endpackage : pa_rvfpm
