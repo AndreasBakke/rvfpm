@@ -9,8 +9,6 @@
 */
 
 
-`define FLEN 32
-`define XLEN 32
 `define NUM_FPU_REGS 32
 `define COPROC 0
 `include "pa_rvfpm.sv"
@@ -18,8 +16,8 @@ import pa_rvfpm::*;
 
 
 module rvfpm #(
-  parameter NUM_REGS          = 32,
-  parameter XLEN              = `XLEN,
+  parameter NUM_REGS          = pa_rvfpm::NUM_REGS,
+  parameter XLEN              = pa_rvfpm::XLEN,
   //System parameters
   parameter COPROC            = `COPROC, //Set to 1 to function as coprocessor, will act as a HW unit if not
   //Pipeline parameters
@@ -29,15 +27,15 @@ module rvfpm #(
   parameter OUT_OF_ORDER      = 0, //Set to 1 to enable out of order execution, not implemented
 
   //CORE-V-XIF parameters for coprocessor
-  parameter X_NUM_RS          = 2, //Read ports //TODO: not used
-  parameter X_ID_WIDTH        = 4,
-  parameter X_MEM_WIDTH       = `FLEN, //TODO: dependent on extension
-  parameter X_RFR_WIDTH       = `FLEN, //Read acces width //TODO: not used
-  parameter X_RFW_WIDTH       = `FLEN, //Write acces width //TODO: not used
-  parameter X_MISA            = 'h0000_0000, //TODO: not used
-  parameter X_ECS_XS          = 2'b0,        //TODO: not used
-  parameter X_DUALREAD        = 0, //TODO: not implemented
-  parameter X_DUALWRITE       = 0 //TODO: not implemented
+  parameter X_NUM_RS          = pa_rvfpm::X_NUM_RS, //Read ports //TODO: not used
+  parameter X_ID_WIDTH        = pa_rvfpm::X_ID_WIDTH,
+  parameter X_MEM_WIDTH       = pa_rvfpm::FLEN, //TODO: dependent on extension
+  parameter X_RFR_WIDTH       = pa_rvfpm::FLEN, //Read acces width //TODO: not used
+  parameter X_RFW_WIDTH       = pa_rvfpm::FLEN, //Write acces width //TODO: not used
+  parameter X_MISA            = pa_rvfpm::X_MISA, //TODO: not used
+  parameter X_ECS_XS          = pa_rvfpm::X_ECS_XS,        //TODO: not used
+  parameter X_DUALREAD        = pa_rvfpm::X_DUALREAD, //TODO: not implemented
+  parameter X_DUALWRITE       = pa_rvfpm::X_DUALWRITE //TODO: not implemented
 
 )
 

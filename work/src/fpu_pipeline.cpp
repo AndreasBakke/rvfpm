@@ -67,11 +67,12 @@ FpuPipeObj FpuPipeline::step(){
   }
 
   //WB
+  //TODO: check for stall
   if (!pipeline.at(WRITEBACK_STEP).toMem && !pipeline.at(WRITEBACK_STEP).toXReg){ //if writing to rf, write to register file
     registerFilePtr->write(pipeline.at(WRITEBACK_STEP).addrTo, pipeline.at(WRITEBACK_STEP).data);
   }
 
-  //Check for hazards underway, dependant on if OOO/fowarding is 1
+  //TODO: Check for hazards underway, dependant on if OOO/fowarding is 1
 
   //advance pipeline
   if (!stalled){

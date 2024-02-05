@@ -9,6 +9,7 @@
 package pa_rvfpm;
   parameter NUM_REGS          = 32;
   parameter XLEN              = 32;
+  parameter FLEN              = 32;
 
   //CORE-V-XIF parameters for coprocessor
   parameter X_NUM_RS          = 2; //Read ports //TODO: not used
