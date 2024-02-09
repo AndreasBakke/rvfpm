@@ -153,7 +153,8 @@ module rvfpm_tb;
     .PIPELINE_STAGES(TB_PIPELINE_STAGES),
     .X_ID_WIDTH(TB_X_ID_WIDTH)
   ) u_testPr(
-    .uin_rvfpm(uin_rvfpm)
+    .uin_rvfpm(uin_rvfpm),
+    .uin_xif(uin_xif)
   );
 
   //-----------------------

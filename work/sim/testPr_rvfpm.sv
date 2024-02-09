@@ -12,7 +12,8 @@ program automatic testPr_rvfpm #(
     parameter X_ID_WIDTH
 )
 (
-    inTest_rvfpm uin_rvfpm
+    inTest_rvfpm uin_rvfpm,
+    in_Xif uin_xif
 );
     import "DPI-C" function int unsigned randomFloat(); //C++ function for random float generation
 
@@ -192,7 +193,9 @@ end
 
     task doITYPE(input int imm = 0, input int rs1 = 0, input int funct3 = 0, input int rd = $urandom_range(0, NUM_REGS-1), input int unsigned data = randomFloat()); //Default: Store random value into random register
         @(posedge uin_rvfpm.ck)
-        setId();
+        localparam instId;
+        setId(instId);
+        uin_rvfpm.id = instId; //imm
         uin_rvfpm.instruction[31:20] = imm; //imm
         uin_rvfpm.instruction[19:15] = rs1; //rs1 (base)
         uin_rvfpm.instruction[14:12] = 3'b010; //rm (W)
@@ -200,16 +203,45 @@ end
         uin_rvfpm.instruction[6:0] = 7'b0000111;  //OPCODE
         fork
             begin
-                repeat(PIPELINE_STAGES) @(posedge uin_rvfpm.ck);
-                uin_rvfpm.data_fromMem = data; //set data at appropriate time
+                while (true) begin
+                    @(uin_xif.cpu_mem_req.mem_valid) //Wait for memory request from CPU
+                    if (uin_xif.cpu_mem.mem_req.id == instId) begin
+                        // uin_xif.cpu_mem.mem_res
+                        @(posedge uin_rvfpm.ck)
+                        uin_xif.cpu_mem_result.mem_result.id = instId;
+                        uin_xif.cpu_mem_result.mem_result.rdata = data;
+                        uin_xif.cpu_mem_result.mem_result.err = 0;
+                        uin_xif.cpu_mem_result.mem_result.dbg = 0;
+                        uin_xif.cpu_mem_result.mem_result_valid = 1;
+                        //Return data to coproc
+                    end
+                    
+                    //Wait for memory request from CPU with the correct id.
+                    //respond with data
+                end
             end
         join_none
         @(posedge uin_rvfpm.ck)
         uin_rvfpm.instruction = 0;
     endtask
 
-    task setId();
-        uin_rvfpm.id = (uin_rvfpm.id +1) % 2**X_ID_WIDTH;
+    task doIssueInst() //Issue instruction to coproc
+
+    endtask
+
+
+    task doMemRes() //Issue memoryRequest response to coproc
+
+    endtask;
+
+    task doMemResp() //Issue response to memResult
+
+    endtask;
+
+    localparam lastId
+    task nextId(output id);
+        lastId = (lastId+1) % 2**X_ID_WIDTH;
+        id = lastId;
     endtask;
 
 endprogram
