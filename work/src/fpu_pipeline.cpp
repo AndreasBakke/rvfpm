@@ -63,6 +63,8 @@ FpuPipeObj FpuPipeline::step(){
       }
       memoryResults = x_memory_res_t({0, 0, 0, 0});
       memoryResultValid = false;
+      //Also remove memory requ
+      
     }
   }
 

@@ -389,6 +389,7 @@ void execute_RTYPE(FpuPipeObj& op, FpuRf* registerFile){ //, int fromXReg, unsig
 void execute_ITYPE(FpuPipeObj& op, FpuRf* registerFile, bool& mem_valid, x_mem_req_t& mem_req){
   //Only ITYPE operation implemented is FLW
   mem_valid = true;
+  std::cout << op.id << std::endl;
   mem_req = {
     op.id, //id
     op.addrFrom.front(), //addr TODO: find out what this should be

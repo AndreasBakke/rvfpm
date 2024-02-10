@@ -195,6 +195,7 @@ end
         @(posedge uin_rvfpm.ck)
         localparam instId;
         setId(instId);
+        $display(instId);
         uin_rvfpm.id = instId; //imm
         uin_rvfpm.instruction[31:20] = imm; //imm
         uin_rvfpm.instruction[19:15] = rs1; //rs1 (base)
