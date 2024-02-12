@@ -28,17 +28,18 @@ void FPU::resetFPU(){
 };
 
 
-void FPU::clockEvent(){
+void FPU::clockEvent(bool& fpu_ready){
   pipeline.step();
-  fpuReady = pipeline.isStalled();
+  fpuReady = !pipeline.isStalled();
+  fpu_ready = fpuReady;
 };
 
 void FPU::predecodeInstruction(uint32_t instruction, unsigned int id){
   predecoder.predecodeInstruction(instruction, id);
 };
 
-void FPU::pollPredecoderResult(bool& accept_ref, x_issue_resp_t& resp_ref){
-  predecoder.pollPredecoderResult(accept_ref, resp_ref);
+void FPU::pollPredecoderResult(x_issue_resp_t& resp_ref){
+  predecoder.pollPredecoderResult(resp_ref);
 };
 
 FpuPipeObj FPU::testFloatOp(){
@@ -61,8 +62,8 @@ void FPU::pollMemReq(bool& mem_valid, x_mem_req_t& mem_req){
   pipeline.pollMemReq(mem_valid, mem_req);
 };
 
-void FPU::writeMemRes(bool mem_result_valid, x_memory_res_t mem_result){
-  pipeline.writeMemRes(mem_result_valid, mem_result);
+void FPU::writeMemRes(bool mem_result_valid, unsigned int id, unsigned int rdata, bool err, bool dbg){
+  pipeline.writeMemRes(mem_result_valid, id, rdata, err, dbg);
 };
 
 

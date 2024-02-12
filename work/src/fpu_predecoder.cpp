@@ -7,9 +7,9 @@
 */
 
 #include "fpu_predecoder.h"
+#include <iostream>
 
 FpuPredecoder::FpuPredecoder(bool& fpuReady) : fpuReady(fpuReady) {
-  accept = false;
   current_decode_id = 0;
   resp.accept = false;
   resp.writeback = false;
@@ -27,9 +27,9 @@ void FpuPredecoder::predecodeInstruction(uint32_t instruction, unsigned int id) 
   current_decode_id = id;
   FpuPipeObj res = {};
   res = decodeOp(instruction, id);
-
+  std::cout << "predec id: " << id << std::endl;
   if (res.valid && fpuReady) { // And the fpu is ready
-    accept = true;
+    resp.accept = true;
     resp.writeback = !(res.toMem || res.fromMem);
     resp.dualwrite = false; //Not used by any instructions in F-extension
     resp.dualread = 0; //TODO: Implement dual read
@@ -37,7 +37,7 @@ void FpuPredecoder::predecodeInstruction(uint32_t instruction, unsigned int id) 
     resp.ecswrite = false; //Todo: understand this
     resp.exc = false; //Todo: understand this
   } else {
-    accept = false;
+    resp.accept = false;
     resp.writeback = false;
     resp.dualwrite = false;
     resp.dualread = 0;
@@ -47,7 +47,6 @@ void FpuPredecoder::predecodeInstruction(uint32_t instruction, unsigned int id) 
   }
 }
 
-void FpuPredecoder::pollPredecoderResult(bool& accept_ref, x_issue_resp_t& resp_ref) {
-  accept_ref = accept;
+void FpuPredecoder::pollPredecoderResult(x_issue_resp_t& resp_ref) {
   resp_ref = resp;
 }

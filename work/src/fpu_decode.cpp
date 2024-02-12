@@ -8,12 +8,10 @@
 #include "fpu_decode.h"
 
 
-
 FpuPipeObj decodeOp(uint32_t instruction, unsigned int id) { //Add more fields if needed by eXtension interface
   //Get result of operation
   unsigned int opcode = instruction & 127 ; //Get first 7 bit
   FpuPipeObj result = {};
-  result.valid = true;
   switch (opcode)
   {
   case FLW:
@@ -38,10 +36,11 @@ FpuPipeObj decodeOp(uint32_t instruction, unsigned int id) { //Add more fields i
     result = decode_RTYPE(instruction);
     break;
   default:
-    result.valid = false; //TODO: add tests for validity in each decode aswell
+    result.valid = 0; //TODO: add tests for validity in each decode aswell
     break;
   }
   result.id = id;
+
   return result;
 };
 
@@ -49,6 +48,7 @@ FpuPipeObj decodeOp(uint32_t instruction, unsigned int id) { //Add more fields i
 FpuPipeObj decode_R4TYPE(uint32_t instr) {
   RTYPE dec_instr = {.instr = instr};
   FpuPipeObj result = {};
+  result.valid = 1;
   result.addrFrom = {dec_instr.parts_r4type.rs1, dec_instr.parts_r4type.rs2, dec_instr.parts_r4type.rs3};
   result.addrTo = {dec_instr.parts_r4type.rd};
   result.instr = instr; //save instruction
@@ -59,6 +59,7 @@ FpuPipeObj decode_R4TYPE(uint32_t instr) {
 FpuPipeObj decode_RTYPE(uint32_t instr) {
   RTYPE dec_instr = {.instr = instr}; //"Decode" into ITYPE
   FpuPipeObj result = {};
+  result.valid = 1;
   result.addrFrom = {dec_instr.parts.rs1, dec_instr.parts.rs2};
   result.addrTo = {dec_instr.parts.rd};
   result.instr_type = it_RTYPE; //For decoding in execution step.
@@ -106,8 +107,12 @@ FpuPipeObj decode_RTYPE(uint32_t instr) {
 FpuPipeObj decode_ITYPE(uint32_t instr) {
   ITYPE dec_instr = {.instr = instr}; //"Decode" into ITYPE
   FpuPipeObj result = {};
-  result.addrFrom = {}; //FLW is atomic
+  result.valid = 1;
+  int32_t offset = dec_instr.parts.offset;
+  int32_t extendedOffset = (offset << 20) >> 20; //Sign extend - TODO: num-bit independent
+  result.addrFrom = {dec_instr.parts.rs1 + extendedOffset};
   result.addrTo = dec_instr.parts.rd;
+  result.fromMem = 1;
   result.instr = instr; //Save instruction
   result.instr_type = it_ITYPE;
   return result;
@@ -116,6 +121,7 @@ FpuPipeObj decode_ITYPE(uint32_t instr) {
 FpuPipeObj decode_STYPE(uint32_t instr){
   STYPE dec_instr = {.instr = instr}; //Decode into STYPE
   FpuPipeObj result = {};
+  result.valid = 1;
   result.addrFrom = {dec_instr.parts.rs2};
   result.addrTo = 0; //destination is memory
   result.toMem = true;

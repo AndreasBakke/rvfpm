@@ -9,9 +9,13 @@
 */
 
 #pragma once
-
+#pragma scalar_storage_order little-endian
 //Configuration for the pipeline steps. Multiple steps can be set to the same value. 0 is the last step of pipeline, NUM_PIPELINE_STAGES-1 is the first step
 //Decoding is done when adding to queue
+
+
+//TODO: get this from the package. Use 1 file to define both pa_rvfpm and fpu_config.
+#define X_ID_WIDTH 4
 
 enum pipelineConfig {
   EXECUTE_STEP = 2, //Defines at what stage the execute step is in the pipeline
@@ -21,21 +25,31 @@ enum pipelineConfig {
 
 
 typedef struct {
-  unsigned int  id;
-  unsigned int  rdata;
-  bool          err ;  // Will the coprocessor write the Extension Context Status in mstatus?
-  bool          dbg;        // Can the offloaded instruction possibly cause a synchronous exception in the coprocessor itself?
-} x_memory_res_t;
+  bool          accept    : 1;     // Is the offloaded instruction (id) accepted by the coprocessor?
+  bool          writeback : 1;  // Will the coprocessor perform a writeback in the core to rd?
+  bool          dualwrite : 1;  // Will the coprocessor perform a dual writeback in the core to rd and rd+1?
+  unsigned int  dualread  : 3;   // Will the coprocessor require dual reads from rs1\rs2\rs3 and rs1+1\rs2+1\rs3+1?
+  bool          loadstore : 1;  // Is the offloaded instruction a load/store instruction?
+  bool          ecswrite  : 1;  // Will the coprocessor write the Extension Context Status in mstatus?
+  bool          exc       : 1;        // Can the offloaded instruction possibly cause a synchronous exception in the coprocessor itself?
+}  __attribute__((packed)) x_issue_resp_t;
 
 typedef struct {
-  unsigned int  id;
-  unsigned int  addr;
-  unsigned int  mode; //TODO: ?
-  bool          we; //Write enable
-  unsigned int  size;
-  bool          be; //Byte enable
-  unsigned int  attr; //TODO: ?
-  unsigned int  wdata;
-  bool          last;
-  bool          spec;
-} x_mem_req_t;
+  unsigned int  id    : X_ID_WIDTH;
+  unsigned int  rdata : 32;
+  bool          err   : 1;  // Will the coprocessor write the Extension Context Status in mstatus?
+  bool          dbg   : 1;        // Can the offloaded instruction possibly cause a synchronous exception in the coprocessor itself?
+} __attribute__((packed)) x_mem_result_t;
+
+typedef struct {
+  unsigned int  id    : X_ID_WIDTH;
+  unsigned int  addr  : 32;
+  unsigned int  mode  : 2 ; //TODO: ?
+  bool          we    : 1; //Write enable
+  unsigned int  size  : 3;
+  unsigned int  be    : 4; //Byte enable
+  unsigned int  attr  : 2; //TODO: ?
+  unsigned int  wdata : 32;
+  bool          last  : 1;
+  bool          spec  : 1;
+} __attribute__((packed)) x_mem_req_t;

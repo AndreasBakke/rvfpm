@@ -22,12 +22,12 @@ class FPU {
     FPU(int pipelineStages=4, int queueDepth=0, int rfDepth=32);
     ~FPU();
     void resetFPU();
-    void clockEvent();
+    void clockEvent(bool& fpu_ready);
     void addAcceptedInstruction(uint32_t instruction, unsigned int id);//and other necessary inputs (should be somewhat close to in_xif type)
     void predecodeInstruction(uint32_t instruction, unsigned int id);
-    void pollPredecoderResult(bool& accept_ref, x_issue_resp_t& resp_ref);
+    void pollPredecoderResult(x_issue_resp_t& resp_ref);
     void pollMemReq(bool& mem_valid, x_mem_req_t& mem_req);
-    void writeMemRes(bool mem_result_valid, x_memory_res_t mem_result);
+    void writeMemRes(bool mem_result_valid, unsigned int id, unsigned int rdata, bool err, bool dbg);
 
 
     //Backdoor functions

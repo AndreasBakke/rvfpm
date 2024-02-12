@@ -5,8 +5,7 @@
   Execute operations for fpu.
 */
 #include "fpu_execute.h"
-
-
+#include <iostream>
 
 void executeOp(FpuPipeObj& op, FpuRf* registerFile, bool& mem_valid, x_mem_req_t& mem_req) {
   #ifndef NO_ROUNDING  // NO_ROUNDING uses c++ default rounding mode.
@@ -37,7 +36,6 @@ void executeOp(FpuPipeObj& op, FpuRf* registerFile, bool& mem_valid, x_mem_req_t
   //   *id_out = 0;
   // }
 
-
   switch (op.instr_type)
     {
     case it_ITYPE:
@@ -65,7 +63,7 @@ void executeOp(FpuPipeObj& op, FpuRf* registerFile, bool& mem_valid, x_mem_req_t
       break;
   }
   registerFile->raiseFlags(op.flags);
-  op.remaining_ex_cycles -=1; //decrement by 1
+  std::cout << "remaining, after ex: " << op.remaining_ex_cycles << std::endl;
 }
 
 void execute_R4TYPE(FpuPipeObj& op, FpuRf* registerFile){
@@ -389,19 +387,8 @@ void execute_RTYPE(FpuPipeObj& op, FpuRf* registerFile){ //, int fromXReg, unsig
 void execute_ITYPE(FpuPipeObj& op, FpuRf* registerFile, bool& mem_valid, x_mem_req_t& mem_req){
   //Only ITYPE operation implemented is FLW
   mem_valid = true;
-  std::cout << op.id << std::endl;
-  mem_req = {
-    op.id, //id
-    op.addrFrom.front(), //addr TODO: find out what this should be
-    0, //mode
-    0, //we
-    5, //size (5=32 bit) TODO: change for other formats
-    0, //be
-    0,//attr
-    0, //wdata
-    0,//last
-    0 //spec
-  };
+  mem_req.id = op.id;
+  mem_req.addr = op.addrFrom.front();
 }
 
 

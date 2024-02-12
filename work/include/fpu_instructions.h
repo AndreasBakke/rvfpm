@@ -52,7 +52,7 @@ typedef union { //Only used for FLW
     unsigned int rd         : 5;
     unsigned int funct3     : 3;
     unsigned int rs1        : 5;
-    unsigned int immm_11_0  : 12;
+    unsigned int offset  : 12;
     //Etc for all fields that are of type RTYPE. Then the instructions can be mapped when the type is R.
   } parts;
 } ITYPE;
@@ -65,7 +65,7 @@ typedef union { //Only used for FSW
     unsigned int funct3     : 3;
     unsigned int rs1        : 5;
     unsigned int rs2        : 5;
-    unsigned int immm_11_5  : 7;
+    unsigned int offset  : 7;
   } parts;
 } STYPE;
 

@@ -25,6 +25,8 @@ class FpuPipeline {
 
     FpuPipeObj waitingOp; //Next in line to pipeline
     bool pipelineFull;
+    bool ex_stalled; //Stalled due to ex?
+    bool mem_stalled; //stalled due to mem?
     bool stalled;
 
     //Memory request interface
@@ -33,7 +35,7 @@ class FpuPipeline {
 
     //Memory result interface
     bool memoryResultValid; //Set during memory result transaction
-    x_memory_res_t memoryResults; //Set during memory result transaction
+    x_mem_result_t memoryResults; //Set during memory result transaction
 
   public:
     FpuPipeline(int pipelineStages, int queueDepth, FpuRf* rf_pointer);
@@ -44,7 +46,7 @@ class FpuPipeline {
     void addOpToQueue(FpuPipeObj op);
     void setWaitingOp(FpuPipeObj op);
     void pollMemReq(bool& mem_valid, x_mem_req_t& mem_req);
-    void writeMemRes(bool mem_result_valid, x_memory_res_t mem_result);
+    void writeMemRes(bool mem_result_valid, unsigned int id, unsigned int rdata, bool err, bool dbg);
 
     void flush();
     int getNumStages();

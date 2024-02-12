@@ -22,6 +22,15 @@ package pa_rvfpm;
   parameter X_DUALREAD        = 0; //TODO: not implemented
   parameter X_DUALWRITE       = 0; //TODO: not implemented
 
+  typedef struct packed {
+    logic [          31:0]                  instr;     // Offloaded instruction
+    logic [           1:0]                  mode;      // Privilege level
+    logic [X_ID_WIDTH-1:0]                  id;        // Identification of the offloaded instruction
+    logic [X_NUM_RS  -1:0][X_RFR_WIDTH-1:0] rs;        // Register file source operands for the offloaded instruction
+    logic [X_NUM_RS  -1:0]                  rs_valid;  // Validity of the register file source operand(s)
+    logic [           5:0]                  ecs;       // Extension Context Status ({mstatus.xs, mstatus.fs, mstatus.vs})
+    logic                                   ecs_valid; // Validity of the Extension Context Status
+  } x_issue_req_t;
 
   typedef struct packed { //from in_xif.sv
     logic       accept;     // Is the offloaded instruction (id) accepted by the coprocessor?

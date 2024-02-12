@@ -396,3 +396,336 @@
 # End of Stack Trace
 
 
+# Current time Sat Feb 10 15:57:52 2024
+# Program = vsim
+# Id = "2020.4_1"
+# Version = "2020.11"
+# Date = "Nov  6 2020"
+# Platform = "linux_x86_64"
+# Signature = d27d22073b954621cb9dfca727acee89
+# --> START OF USERCODE
+# 0    0x00007fffe56f8470: 'execute_ITYPE(FpuPipeObj&, FpuRf*, bool&, x_mem_req_t&) + 0x0000000000000062' in './bin/lib_rvfpm.so'
+# 1    0x00007fffe56f6f0b: '_Z9executeOpR10FpuPipeObjP5FpuRfRbR11x_mem_req_t + 0x00000000000000ff' in './bin/lib_rvfpm.so'
+# 2    0x00007fffe56f8daf: '_ZN11FpuPipeline4stepEv + 0x000000000000017d' in './bin/lib_rvfpm.so'
+# 3    0x00007fffe56f4883: '_ZN3FPU10clockEventEv + 0x0000000000000023' in './bin/lib_rvfpm.so'
+# 4    0x00007fffe56f44f6: 'clock_event + 0x0000000000000020' in './bin/lib_rvfpm.so'
+# <-- END OF USERCODE
+# 5    0x00007fefe4312ebf: '/work/anb7/prosjektoppgave/rvfpm/work/src/rvfpm.sv:73'
+# 6    0x00007fefe431537e: '/work/anb7/prosjektoppgave/rvfpm/work/src/rvfpm.sv:110'
+# 7    0x000000000276dada: '<unknown (@0x276dada)>'
+# 8    0x0000000000554aab: '<unknown (@0x554aab)>'
+# 9    0x00000000006e7133: '<unknown (@0x6e7133)>'
+# 10   0x0000000000c01a25: '<unknown (@0xc01a25)>'
+# 11   0x0000000000c0687b: '<unknown (@0xc0687b)>'
+# 12   0x0000000000c0815e: '<unknown (@0xc0815e)>'
+# 13   0x0000000000ebfd9d: '<unknown (@0xebfd9d)>'
+# 14   0x0000000002bdb51d: '<unknown (@0x2bdb51d)>'
+# 15   0x0000000002bdf976: '<unknown (@0x2bdf976)>'
+# 16   0x0000000002be1061: '<unknown (@0x2be1061)>'
+# 17   0x0000000002be13c6: '<unknown (@0x2be13c6)>'
+# 18   0x00000000011259d9: '<unknown (@0x11259d9)>'
+# 19   0x0000000002c812cf: '<unknown (@0x2c812cf)>'
+# 20   0x0000000002cd4e47: '<unknown (@0x2cd4e47)>'
+# 21   0x0000000002c97d37: '<unknown (@0x2c97d37)>'
+# 22   0x0000000002c98019: '<unknown (@0x2c98019)>'
+# 23   0x0000000002a9a51d: '<unknown (@0x2a9a51d)>'
+# 24   0x0000000000bcf14c: '<unknown (@0xbcf14c)>'
+# End of Stack Trace
+
+
+# Current time Sat Feb 10 15:59:31 2024
+# Program = vsim
+# Id = "2020.4_1"
+# Version = "2020.11"
+# Date = "Nov  6 2020"
+# Platform = "linux_x86_64"
+# Signature = d27d22073b954621cb9dfca727acee89
+# --> START OF USERCODE
+# 0    0x00007fffe56f8470: '_Z13execute_ITYPER10FpuPipeObjP5FpuRfRbR11x_mem_req_t + 0x0000000000000062' in './bin/lib_rvfpm.so'
+# 1    0x00007fffe56f6f0b: '_Z9executeOpR10FpuPipeObjP5FpuRfRbR11x_mem_req_t + 0x00000000000000ff' in './bin/lib_rvfpm.so'
+# 2    0x00007fffe56f8daf: '_ZN11FpuPipeline4stepEv + 0x000000000000017d' in './bin/lib_rvfpm.so'
+# 3    0x00007fffe56f4883: '_ZN3FPU10clockEventEv + 0x0000000000000023' in './bin/lib_rvfpm.so'
+# 4    0x00007fffe56f44f6: 'clock_event + 0x0000000000000020' in './bin/lib_rvfpm.so'
+# <-- END OF USERCODE
+# 5    0x00007fefe4312ebf: '/work/anb7/prosjektoppgave/rvfpm/work/src/rvfpm.sv:73'
+# 6    0x00007fefe431537e: '/work/anb7/prosjektoppgave/rvfpm/work/src/rvfpm.sv:110'
+# 7    0x000000000276dada: '<unknown (@0x276dada)>'
+# 8    0x0000000000554aab: '<unknown (@0x554aab)>'
+# 9    0x00000000006e7133: '<unknown (@0x6e7133)>'
+# 10   0x0000000000c01a25: '<unknown (@0xc01a25)>'
+# 11   0x0000000000c0687b: '<unknown (@0xc0687b)>'
+# 12   0x0000000000c0815e: '<unknown (@0xc0815e)>'
+# 13   0x0000000000ebfd9d: '<unknown (@0xebfd9d)>'
+# 14   0x0000000002bdb51d: '<unknown (@0x2bdb51d)>'
+# 15   0x0000000002bdf976: '<unknown (@0x2bdf976)>'
+# 16   0x0000000002be1061: '<unknown (@0x2be1061)>'
+# 17   0x0000000002be13c6: '<unknown (@0x2be13c6)>'
+# 18   0x00000000011259d9: '<unknown (@0x11259d9)>'
+# 19   0x0000000002c812cf: '<unknown (@0x2c812cf)>'
+# 20   0x0000000002cd4e47: '<unknown (@0x2cd4e47)>'
+# 21   0x0000000002c97d37: '<unknown (@0x2c97d37)>'
+# 22   0x0000000002c98019: '<unknown (@0x2c98019)>'
+# 23   0x0000000002a9a51d: '<unknown (@0x2a9a51d)>'
+# 24   0x0000000000bcf14c: '<unknown (@0xbcf14c)>'
+# End of Stack Trace
+
+
+# Current time Sat Feb 10 16:15:26 2024
+# Program = vsim
+# Id = "2020.4_1"
+# Version = "2020.11"
+# Date = "Nov  6 2020"
+# Platform = "linux_x86_64"
+# Signature = d27d22073b954621cb9dfca727acee89
+# --> START OF USERCODE
+# 0    0x00007fffe56f8470: '_Z13execute_ITYPER10FpuPipeObjP5FpuRfRbR11x_mem_req_t + 0x0000000000000062' in './bin/lib_rvfpm.so'
+# 1    0x00007fffe56f6f0b: '_Z9executeOpR10FpuPipeObjP5FpuRfRbR11x_mem_req_t + 0x00000000000000ff' in './bin/lib_rvfpm.so'
+# 2    0x00007fffe56f8daf: '_ZN11FpuPipeline4stepEv + 0x000000000000017d' in './bin/lib_rvfpm.so'
+# 3    0x00007fffe56f4883: '_ZN3FPU10clockEventEv + 0x0000000000000023' in './bin/lib_rvfpm.so'
+# 4    0x00007fffe56f44f6: 'clock_event + 0x0000000000000020' in './bin/lib_rvfpm.so'
+# <-- END OF USERCODE
+# 5    0x00007fefe4312ebf: '/work/anb7/prosjektoppgave/rvfpm/work/src/rvfpm.sv:73'
+# 6    0x00007fefe431537e: '/work/anb7/prosjektoppgave/rvfpm/work/src/rvfpm.sv:110'
+# 7    0x000000000276dada: '<unknown (@0x276dada)>'
+# 8    0x0000000000554aab: '<unknown (@0x554aab)>'
+# 9    0x00000000006e7133: '<unknown (@0x6e7133)>'
+# 10   0x0000000000c01a25: '<unknown (@0xc01a25)>'
+# 11   0x0000000000c0687b: '<unknown (@0xc0687b)>'
+# 12   0x0000000000c0815e: '<unknown (@0xc0815e)>'
+# 13   0x0000000000ebfd9d: '<unknown (@0xebfd9d)>'
+# 14   0x0000000002bdb51d: '<unknown (@0x2bdb51d)>'
+# 15   0x0000000002bdf976: '<unknown (@0x2bdf976)>'
+# 16   0x0000000002be1061: '<unknown (@0x2be1061)>'
+# 17   0x0000000002be13c6: '<unknown (@0x2be13c6)>'
+# 18   0x00000000011259d9: '<unknown (@0x11259d9)>'
+# 19   0x0000000002c812cf: '<unknown (@0x2c812cf)>'
+# 20   0x0000000002cd4e47: '<unknown (@0x2cd4e47)>'
+# 21   0x0000000002c97d37: '<unknown (@0x2c97d37)>'
+# 22   0x0000000002c98019: '<unknown (@0x2c98019)>'
+# 23   0x0000000002a9a51d: '<unknown (@0x2a9a51d)>'
+# 24   0x0000000000bcf14c: '<unknown (@0xbcf14c)>'
+# End of Stack Trace
+
+
+# Current time Sat Feb 10 16:24:16 2024
+# Program = vsim
+# Id = "2020.4_1"
+# Version = "2020.11"
+# Date = "Nov  6 2020"
+# Platform = "linux_x86_64"
+# Signature = d27d22073b954621cb9dfca727acee89
+# --> START OF USERCODE
+# 0    0x00007fffe56f73ce: 'execute_ITYPE(FpuPipeObj&, FpuRf*, bool&, x_mem_req_t&) + 0x0000000000000062' in './bin/lib_rvfpm.so'
+# 1    0x00007fffe56f5e69: '_Z9executeOpR10FpuPipeObjP5FpuRfRbR11x_mem_req_t + 0x00000000000000cb' in './bin/lib_rvfpm.so'
+# 2    0x00007fffe56f7d67: '_ZN11FpuPipeline4stepEv + 0x00000000000001d7' in './bin/lib_rvfpm.so'
+# 3    0x00007fffe56f389e: '_ZN3FPU10clockEventEv + 0x000000000000004e' in './bin/lib_rvfpm.so'
+# 4    0x00007fffe56f34e6: 'clock_event + 0x0000000000000020' in './bin/lib_rvfpm.so'
+# <-- END OF USERCODE
+# 5    0x00007fefe43131bf: '/work/anb7/prosjektoppgave/rvfpm/work/src/rvfpm.sv:73'
+# 6    0x00007fefe431567e: '/work/anb7/prosjektoppgave/rvfpm/work/src/rvfpm.sv:110'
+# 7    0x000000000276dada: '<unknown (@0x276dada)>'
+# 8    0x0000000000554aab: '<unknown (@0x554aab)>'
+# 9    0x00000000006e7133: '<unknown (@0x6e7133)>'
+# 10   0x0000000000c01a25: '<unknown (@0xc01a25)>'
+# 11   0x0000000000c0687b: '<unknown (@0xc0687b)>'
+# 12   0x0000000000c0815e: '<unknown (@0xc0815e)>'
+# 13   0x0000000000ebfd9d: '<unknown (@0xebfd9d)>'
+# 14   0x0000000002bdb51d: '<unknown (@0x2bdb51d)>'
+# 15   0x0000000002bdf976: '<unknown (@0x2bdf976)>'
+# 16   0x0000000002be1061: '<unknown (@0x2be1061)>'
+# 17   0x0000000002be13c6: '<unknown (@0x2be13c6)>'
+# 18   0x00000000011259d9: '<unknown (@0x11259d9)>'
+# 19   0x0000000002c812cf: '<unknown (@0x2c812cf)>'
+# 20   0x0000000002cd4e47: '<unknown (@0x2cd4e47)>'
+# 21   0x0000000002c97d37: '<unknown (@0x2c97d37)>'
+# 22   0x0000000002c98019: '<unknown (@0x2c98019)>'
+# 23   0x0000000002a9a51d: '<unknown (@0x2a9a51d)>'
+# 24   0x0000000000bcf14c: '<unknown (@0xbcf14c)>'
+# End of Stack Trace
+
+
+# Current time Sat Feb 10 16:26:22 2024
+# Program = vsim
+# Id = "2020.4_1"
+# Version = "2020.11"
+# Date = "Nov  6 2020"
+# Platform = "linux_x86_64"
+# Signature = d27d22073b954621cb9dfca727acee89
+# --> START OF USERCODE
+# 0    0x00007fffe56f7424: 'execute_ITYPE(FpuPipeObj&, FpuRf*, bool&, x_mem_req_t&) + 0x0000000000000062' in './bin/lib_rvfpm.so'
+# 1    0x00007fffe56f5e69: '_Z9executeOpR10FpuPipeObjP5FpuRfRbR11x_mem_req_t + 0x00000000000000cb' in './bin/lib_rvfpm.so'
+# 2    0x00007fffe56f7dbd: '_ZN11FpuPipeline4stepEv + 0x00000000000001d7' in './bin/lib_rvfpm.so'
+# 3    0x00007fffe56f389e: '_ZN3FPU10clockEventEv + 0x000000000000004e' in './bin/lib_rvfpm.so'
+# 4    0x00007fffe56f34e6: 'clock_event + 0x0000000000000020' in './bin/lib_rvfpm.so'
+# <-- END OF USERCODE
+# 5    0x00007fefe43131bf: '/work/anb7/prosjektoppgave/rvfpm/work/src/rvfpm.sv:73'
+# 6    0x00007fefe431567e: '/work/anb7/prosjektoppgave/rvfpm/work/src/rvfpm.sv:110'
+# 7    0x000000000276dada: '<unknown (@0x276dada)>'
+# 8    0x0000000000554aab: '<unknown (@0x554aab)>'
+# 9    0x00000000006e7133: '<unknown (@0x6e7133)>'
+# 10   0x0000000000c01a25: '<unknown (@0xc01a25)>'
+# 11   0x0000000000c0687b: '<unknown (@0xc0687b)>'
+# 12   0x0000000000c0815e: '<unknown (@0xc0815e)>'
+# 13   0x0000000000ebfd9d: '<unknown (@0xebfd9d)>'
+# 14   0x0000000002bdb51d: '<unknown (@0x2bdb51d)>'
+# 15   0x0000000002bdf976: '<unknown (@0x2bdf976)>'
+# 16   0x0000000002be1061: '<unknown (@0x2be1061)>'
+# 17   0x0000000002be13c6: '<unknown (@0x2be13c6)>'
+# 18   0x00000000011259d9: '<unknown (@0x11259d9)>'
+# 19   0x0000000002c812cf: '<unknown (@0x2c812cf)>'
+# 20   0x0000000002cd4e47: '<unknown (@0x2cd4e47)>'
+# 21   0x0000000002c97d37: '<unknown (@0x2c97d37)>'
+# 22   0x0000000002c98019: '<unknown (@0x2c98019)>'
+# 23   0x0000000002a9a51d: '<unknown (@0x2a9a51d)>'
+# 24   0x0000000000bcf14c: '<unknown (@0xbcf14c)>'
+# End of Stack Trace
+
+
+# Current time Sat Feb 10 16:26:32 2024
+# Program = vsim
+# Id = "2020.4_1"
+# Version = "2020.11"
+# Date = "Nov  6 2020"
+# Platform = "linux_x86_64"
+# Signature = d27d22073b954621cb9dfca727acee89
+# --> START OF USERCODE
+# 0    0x00007fffe56f7424: '_Z13execute_ITYPER10FpuPipeObjP5FpuRfRbR11x_mem_req_t + 0x0000000000000062' in './bin/lib_rvfpm.so'
+# 1    0x00007fffe56f5e69: '_Z9executeOpR10FpuPipeObjP5FpuRfRbR11x_mem_req_t + 0x00000000000000cb' in './bin/lib_rvfpm.so'
+# 2    0x00007fffe56f7dbd: '_ZN11FpuPipeline4stepEv + 0x00000000000001d7' in './bin/lib_rvfpm.so'
+# 3    0x00007fffe56f389e: '_ZN3FPU10clockEventEv + 0x000000000000004e' in './bin/lib_rvfpm.so'
+# 4    0x00007fffe56f34e6: 'clock_event + 0x0000000000000020' in './bin/lib_rvfpm.so'
+# <-- END OF USERCODE
+# 5    0x00007fefe43131bf: '/work/anb7/prosjektoppgave/rvfpm/work/src/rvfpm.sv:73'
+# 6    0x00007fefe431567e: '/work/anb7/prosjektoppgave/rvfpm/work/src/rvfpm.sv:110'
+# 7    0x000000000276dada: '<unknown (@0x276dada)>'
+# 8    0x0000000000554aab: '<unknown (@0x554aab)>'
+# 9    0x00000000006e7133: '<unknown (@0x6e7133)>'
+# 10   0x0000000000c01a25: '<unknown (@0xc01a25)>'
+# 11   0x0000000000c0687b: '<unknown (@0xc0687b)>'
+# 12   0x0000000000c0815e: '<unknown (@0xc0815e)>'
+# 13   0x0000000000ebfd9d: '<unknown (@0xebfd9d)>'
+# 14   0x0000000002bdb51d: '<unknown (@0x2bdb51d)>'
+# 15   0x0000000002bdf976: '<unknown (@0x2bdf976)>'
+# 16   0x0000000002be1061: '<unknown (@0x2be1061)>'
+# 17   0x0000000002be13c6: '<unknown (@0x2be13c6)>'
+# 18   0x00000000011259d9: '<unknown (@0x11259d9)>'
+# 19   0x0000000002c812cf: '<unknown (@0x2c812cf)>'
+# 20   0x0000000002cd4e47: '<unknown (@0x2cd4e47)>'
+# 21   0x0000000002c97d37: '<unknown (@0x2c97d37)>'
+# 22   0x0000000002c98019: '<unknown (@0x2c98019)>'
+# 23   0x0000000002a9a51d: '<unknown (@0x2a9a51d)>'
+# 24   0x0000000000bcf14c: '<unknown (@0xbcf14c)>'
+# End of Stack Trace
+
+
+# Current time Sat Feb 10 16:28:32 2024
+# Program = vsim
+# Id = "2020.4_1"
+# Version = "2020.11"
+# Date = "Nov  6 2020"
+# Platform = "linux_x86_64"
+# Signature = d27d22073b954621cb9dfca727acee89
+# --> START OF USERCODE
+# 0    0x00007fffe56f744f: 'execute_ITYPE(FpuPipeObj&, FpuRf*, bool&, x_mem_req_t&) + 0x000000000000008d' in './bin/lib_rvfpm.so'
+# 1    0x00007fffe56f5e69: '_Z9executeOpR10FpuPipeObjP5FpuRfRbR11x_mem_req_t + 0x00000000000000cb' in './bin/lib_rvfpm.so'
+# 2    0x00007fffe56f7e13: '_ZN11FpuPipeline4stepEv + 0x00000000000001d7' in './bin/lib_rvfpm.so'
+# 3    0x00007fffe56f389e: '_ZN3FPU10clockEventEv + 0x000000000000004e' in './bin/lib_rvfpm.so'
+# 4    0x00007fffe56f34e6: 'clock_event + 0x0000000000000020' in './bin/lib_rvfpm.so'
+# <-- END OF USERCODE
+# 5    0x00007fefe43131bf: '/work/anb7/prosjektoppgave/rvfpm/work/src/rvfpm.sv:73'
+# 6    0x00007fefe431567e: '/work/anb7/prosjektoppgave/rvfpm/work/src/rvfpm.sv:110'
+# 7    0x000000000276dada: '<unknown (@0x276dada)>'
+# 8    0x0000000000554aab: '<unknown (@0x554aab)>'
+# 9    0x00000000006e7133: '<unknown (@0x6e7133)>'
+# 10   0x0000000000c01a25: '<unknown (@0xc01a25)>'
+# 11   0x0000000000c0687b: '<unknown (@0xc0687b)>'
+# 12   0x0000000000c0815e: '<unknown (@0xc0815e)>'
+# 13   0x0000000000ebfd9d: '<unknown (@0xebfd9d)>'
+# 14   0x0000000002bdb51d: '<unknown (@0x2bdb51d)>'
+# 15   0x0000000002bdf976: '<unknown (@0x2bdf976)>'
+# 16   0x0000000002be1061: '<unknown (@0x2be1061)>'
+# 17   0x0000000002be13c6: '<unknown (@0x2be13c6)>'
+# 18   0x00000000011259d9: '<unknown (@0x11259d9)>'
+# 19   0x0000000002c812cf: '<unknown (@0x2c812cf)>'
+# 20   0x0000000002cd4e47: '<unknown (@0x2cd4e47)>'
+# 21   0x0000000002c97d37: '<unknown (@0x2c97d37)>'
+# 22   0x0000000002c98019: '<unknown (@0x2c98019)>'
+# 23   0x0000000002a9a51d: '<unknown (@0x2a9a51d)>'
+# 24   0x0000000000bcf14c: '<unknown (@0xbcf14c)>'
+# End of Stack Trace
+
+
+# Current time Sat Feb 10 16:31:05 2024
+# Program = vsim
+# Id = "2020.4_1"
+# Version = "2020.11"
+# Date = "Nov  6 2020"
+# Platform = "linux_x86_64"
+# Signature = d27d22073b954621cb9dfca727acee89
+# --> START OF USERCODE
+# 0    0x00007fffe56f741d: 'execute_ITYPE(FpuPipeObj&, FpuRf*, bool&, x_mem_req_t&) + 0x000000000000005b' in './bin/lib_rvfpm.so'
+# 1    0x00007fffe56f5e69: '_Z9executeOpR10FpuPipeObjP5FpuRfRbR11x_mem_req_t + 0x00000000000000cb' in './bin/lib_rvfpm.so'
+# 2    0x00007fffe56f7e37: '_ZN11FpuPipeline4stepEv + 0x00000000000001d7' in './bin/lib_rvfpm.so'
+# 3    0x00007fffe56f389e: '_ZN3FPU10clockEventEv + 0x000000000000004e' in './bin/lib_rvfpm.so'
+# 4    0x00007fffe56f34e6: 'clock_event + 0x0000000000000020' in './bin/lib_rvfpm.so'
+# <-- END OF USERCODE
+# 5    0x00007fefe43131bf: '/work/anb7/prosjektoppgave/rvfpm/work/src/rvfpm.sv:73'
+# 6    0x00007fefe431567e: '/work/anb7/prosjektoppgave/rvfpm/work/src/rvfpm.sv:110'
+# 7    0x000000000276dada: '<unknown (@0x276dada)>'
+# 8    0x0000000000554aab: '<unknown (@0x554aab)>'
+# 9    0x00000000006e7133: '<unknown (@0x6e7133)>'
+# 10   0x0000000000c01a25: '<unknown (@0xc01a25)>'
+# 11   0x0000000000c0687b: '<unknown (@0xc0687b)>'
+# 12   0x0000000000c0815e: '<unknown (@0xc0815e)>'
+# 13   0x0000000000ebfd9d: '<unknown (@0xebfd9d)>'
+# 14   0x0000000002bdb51d: '<unknown (@0x2bdb51d)>'
+# 15   0x0000000002bdf976: '<unknown (@0x2bdf976)>'
+# 16   0x0000000002be1061: '<unknown (@0x2be1061)>'
+# 17   0x0000000002be13c6: '<unknown (@0x2be13c6)>'
+# 18   0x00000000011259d9: '<unknown (@0x11259d9)>'
+# 19   0x0000000002c812cf: '<unknown (@0x2c812cf)>'
+# 20   0x0000000002cd4e47: '<unknown (@0x2cd4e47)>'
+# 21   0x0000000002c97d37: '<unknown (@0x2c97d37)>'
+# 22   0x0000000002c98019: '<unknown (@0x2c98019)>'
+# 23   0x0000000002a9a51d: '<unknown (@0x2a9a51d)>'
+# 24   0x0000000000bcf14c: '<unknown (@0xbcf14c)>'
+# End of Stack Trace
+
+
+# Current time Sat Feb 10 16:38:35 2024
+# Program = vsim
+# Id = "2020.4_1"
+# Version = "2020.11"
+# Date = "Nov  6 2020"
+# Platform = "linux_x86_64"
+# Signature = d27d22073b954621cb9dfca727acee89
+# --> START OF USERCODE
+# 0    0x00007fffe56f741c: 'execute_ITYPE(FpuPipeObj&, FpuRf*, bool&, x_mem_req_t&) + 0x000000000000005a' in './bin/lib_rvfpm.so'
+# 1    0x00007fffe56f5e69: '_Z9executeOpR10FpuPipeObjP5FpuRfRbR11x_mem_req_t + 0x00000000000000cb' in './bin/lib_rvfpm.so'
+# 2    0x00007fffe56f7df7: '_ZN11FpuPipeline4stepEv + 0x00000000000001d7' in './bin/lib_rvfpm.so'
+# 3    0x00007fffe56f389e: '_ZN3FPU10clockEventEv + 0x000000000000004e' in './bin/lib_rvfpm.so'
+# 4    0x00007fffe56f34e6: 'clock_event + 0x0000000000000020' in './bin/lib_rvfpm.so'
+# <-- END OF USERCODE
+# 5    0x00007fefe43131bf: '/work/anb7/prosjektoppgave/rvfpm/work/src/rvfpm.sv:73'
+# 6    0x00007fefe431567e: '/work/anb7/prosjektoppgave/rvfpm/work/src/rvfpm.sv:110'
+# 7    0x000000000276dada: '<unknown (@0x276dada)>'
+# 8    0x0000000000554aab: '<unknown (@0x554aab)>'
+# 9    0x00000000006e7133: '<unknown (@0x6e7133)>'
+# 10   0x0000000000c01a25: '<unknown (@0xc01a25)>'
+# 11   0x0000000000c0687b: '<unknown (@0xc0687b)>'
+# 12   0x0000000000c0815e: '<unknown (@0xc0815e)>'
+# 13   0x0000000000ebfd9d: '<unknown (@0xebfd9d)>'
+# 14   0x0000000002bdb51d: '<unknown (@0x2bdb51d)>'
+# 15   0x0000000002bdf976: '<unknown (@0x2bdf976)>'
+# 16   0x0000000002be1061: '<unknown (@0x2be1061)>'
+# 17   0x0000000002be13c6: '<unknown (@0x2be13c6)>'
+# 18   0x00000000011259d9: '<unknown (@0x11259d9)>'
+# 19   0x0000000002c812cf: '<unknown (@0x2c812cf)>'
+# 20   0x0000000002cd4e47: '<unknown (@0x2cd4e47)>'
+# 21   0x0000000002c97d37: '<unknown (@0x2c97d37)>'
+# 22   0x0000000002c98019: '<unknown (@0x2c98019)>'
+# 23   0x0000000002a9a51d: '<unknown (@0x2a9a51d)>'
+# 24   0x0000000000bcf14c: '<unknown (@0xbcf14c)>'
+# End of Stack Trace
+
+
