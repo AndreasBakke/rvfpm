@@ -26,6 +26,7 @@ FpuPipeline::~FpuPipeline() {
 }
 
 FpuPipeObj FpuPipeline::step(){
+  std::cout << "wdata-step: " << this->mem_req.wdata << std::endl;
   //Operations are decoded before adding to the pipeline
   //Check for memory dependencies and request throough interface
   //stall here untill memory is ready (or reorder)
@@ -45,8 +46,8 @@ FpuPipeObj FpuPipeline::step(){
   //Do some stall checking here
   if (!stalled){
       mem_valid = 0;
-      mem_req = x_mem_req_t({0, 0, 0, 0});
-      executeOp(pipeline.at(EXECUTE_STEP), registerFilePtr, mem_valid, mem_req); //Compute operation at execute stage. //Issue memory request to CPU at this stage
+      this->mem_req = {};
+      executeOp(pipeline.at(EXECUTE_STEP), registerFilePtr, mem_valid, this->mem_req); //Compute operation at execute stage. //Issue memory request to CPU at this stage
     if (pipeline.at(EXECUTE_STEP).remaining_ex_cycles > 0){
       ex_stalled = true;
     } else {

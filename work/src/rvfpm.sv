@@ -43,21 +43,9 @@ module rvfpm #(
   input logic ck,
   input logic rst,
   input logic enable,
-
-  input logic[31:0] instruction,
-  input logic [X_ID_WIDTH-1:0] id,
-  output logic [X_ID_WIDTH-1:0] id_out,
-
-  input logic[XLEN-1:0] data_fromXReg,
-  input int unsigned data_fromMem,
-  output logic[XLEN-1:0] data_toXReg,
-  output int unsigned  data_toMem,
-  output logic toXReg_valid, //valid flags for outputs
-  output logic toMem_valid,
   output logic fpu_ready, //0 if not accepting instructions
 
 //eXtension interface for coprocessor
-  in_xif.coproc_compressed xif_compressed_if,
   in_xif.coproc_issue xif_issue_if,
   in_xif.coproc_commit xif_commit_if,
   in_xif.coproc_mem  xif_mem_if,
@@ -103,20 +91,20 @@ module rvfpm #(
     fpu = create_fpu_model(PIPELINE_STAGES, QUEUE_DEPTH, NUM_REGS);
   end
   assign fpu_ready = fpu_ready_s;
-
-  //Need to switch byte order, first for the whole struct, then for each part.
+  //Need to switch byte order, first for the whole struct, then for each part. Only for incoming structs. Outgoing structs need to be passed part by part
   assign mem_req_r= {<< {mem_req}};
   assign xif_mem_if.mem_req.id = {<< {mem_req_r.id}};
   assign xif_mem_if.mem_req.addr = {<< {mem_req_r.addr}};
+  assign xif_mem_if.mem_req.mode = {<< {mem_req_r.mode}};
   assign xif_mem_if.mem_req.we = {<< {mem_req_r.we}};
+  assign xif_mem_if.mem_req.size = {<< {mem_req_r.size}};
   assign xif_mem_if.mem_req.be = {<< {mem_req_r.be}};
+  assign xif_mem_if.mem_req.attr = {<< {mem_req_r.attr}};
+  assign xif_mem_if.mem_req.wdata = {<< {mem_req_r.wdata}};
+  assign xif_mem_if.mem_req.last = {<< {mem_req_r.last}};
+  assign xif_mem_if.mem_req.spec = {<< {mem_req_r.spec}};
   assign xif_issue_if.issue_resp = {<< {issue_resp}};
-  assign mem_res =  xif_mem_result_if.mem_result;
-  x_mem_result_t mem_res_r;
-  assign mem_res_r.id = 0;//{<< {mem_res.id}};
-  assign mem_res_r.rdata = 0;//{<< {mem_res.rdata}};
-  assign mem_res_r.err = 0;
-  assign mem_res_r.dbg = 0;
+  assign mem_res = xif_mem_result_if.mem_result;
 
 
   always_ff @(posedge ck) begin: la_main
@@ -128,7 +116,6 @@ module rvfpm #(
       clock_event(fpu, fpu_ready_s);
       poll_predecoder_result(fpu, issue_resp);
       poll_mem_req(fpu, xif_mem_if.mem_valid, mem_req);
-      $display("mem_res.id: %d, xif.id: %d", mem_res.id, xif_mem_result_if.mem_result.id);
       write_mem_res(fpu, xif_mem_result_if.mem_result_valid, mem_res.id, mem_res.rdata, mem_res.err, mem_res.dbg);
 
       // add_accepted_instruction(fpu, instruction, id); //This can be async! Handle in predecoder when accepted

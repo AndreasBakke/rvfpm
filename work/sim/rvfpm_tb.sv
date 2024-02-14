@@ -84,8 +84,6 @@ module rvfpm_tb;
     .COPROC(TB_COPROC),
     .FORWARDING(TB_FORWARDING),
     .OUT_OF_ORDER(TB_OUT_OF_ORDER),
-
-
     .NUM_REGS(TB_NUM_FPU_REGS),
     .PIPELINE_STAGES(TB_PIPELINE_STAGES),
     .QUEUE_DEPTH(TB_QUEUE_DEPTH),
@@ -95,19 +93,7 @@ module rvfpm_tb;
     .ck(uin_rvfpm.ck),
     .rst(uin_rvfpm.rst),
     .enable(uin_rvfpm.enable),
-    .instruction(uin_rvfpm.instruction),
-    .id(uin_rvfpm.id),
-    .id_out(uin_rvfpm.id_out),
-    .data_fromXReg(uin_rvfpm.data_fromXReg),
-    .data_fromMem(uin_rvfpm.data_fromMem),
-    .data_toXReg(uin_rvfpm.data_toXReg),
-    .data_toMem(uin_rvfpm.data_toMem),
-    .toXReg_valid(uin_rvfpm.toXReg_valid),
-    .toMem_valid(uin_rvfpm.toMem_valid),
     .fpu_ready(uin_rvfpm.fpu_ready),
-
-
-    .xif_compressed_if(uin_xif.coproc_compressed),
     .xif_issue_if(uin_xif.coproc_issue),
     .xif_commit_if(uin_xif.coproc_commit),
     .xif_mem_if(uin_xif.coproc_mem),

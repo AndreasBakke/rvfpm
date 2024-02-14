@@ -9,7 +9,7 @@
 */
 
 #pragma once
-#pragma scalar_storage_order little-endian
+// #pragma scalar_storage_order little-endian
 //Configuration for the pipeline steps. Multiple steps can be set to the same value. 0 is the last step of pipeline, NUM_PIPELINE_STAGES-1 is the first step
 //Decoding is done when adding to queue
 
@@ -36,7 +36,7 @@ typedef struct {
 
 typedef struct {
   unsigned int  id    : X_ID_WIDTH;
-  unsigned int  rdata : 32;
+  uint32_t  rdata : 32;
   bool          err   : 1;  // Will the coprocessor write the Extension Context Status in mstatus?
   bool          dbg   : 1;        // Can the offloaded instruction possibly cause a synchronous exception in the coprocessor itself?
 } __attribute__((packed)) x_mem_result_t;

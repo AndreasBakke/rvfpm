@@ -17,26 +17,22 @@ program automatic testPr_rvfpm #(
 );
     import "DPI-C" function int unsigned randomFloat(); //C++ function for random float generation
 
-    localparam NUM_TESTS = 10000;
+    localparam NUM_TESTS = 10;
 
 
     initial begin
         $display("--- Starting simulation ---");
         init();
         fillRF();
-        // repeat(NUM_TESTS) doRTYPE();
-        // doRTYPE(.rd(19)); //Test with specified destination
+        repeat(NUM_TESTS) doRTYPE();
+        doRTYPE(.rd(19)); //Test with specified destination
         // @(posedge uin_rvfpm.ck);
-        // uin_rvfpm.instruction = 0;
-
         // repeat(PIPELINE_STAGES*2) @(posedge uin_rvfpm.ck);
         // repeat(10) @(posedge uin_rvfpm.ck); //Wait a bit
 
-
-        // repeat(NUM_TESTS) doSTYPE();
-        // doSTYPE(.rs2(4)); //Read register 4.
+        repeat(NUM_TESTS) doSTYPE();
+        doSTYPE(.rs2(4)); //Read register 4.
         // @(posedge uin_rvfpm.ck);
-        // uin_rvfpm.instruction = 0;
         // repeat(PIPELINE_STAGES*2) @(posedge uin_rvfpm.ck);
         // repeat(10) @(posedge uin_rvfpm.ck); //Wait a bit
 
@@ -130,7 +126,7 @@ program automatic testPr_rvfpm #(
         // @(posedge uin_rvfpm.ck)
         // uin_rvfpm.instruction = 0;
         // uin_rvfpm.id=0;
-        repeat(PIPELINE_STAGES*2) @(posedge uin_rvfpm.ck);
+        repeat(PIPELINE_STAGES*4) @(posedge uin_rvfpm.ck);
 
 end
 
@@ -143,15 +139,17 @@ end
         @(posedge uin_rvfpm.ck);
     endtask
 
+    logic[X_ID_WIDTH-1:0] id = 0;
+    task nextId();
+        id = (id+1); //Reserve 0 for resets TODO: find a better way to do it.
+    endtask;
 
     task init();
         reset();
+        //TODO: init all signals
+        uin_xif.issue_valid = 0;
         uin_xif.mem_result_valid = 0;
         uin_xif.mem_result ={};
-        uin_rvfpm.instruction = 0;
-        uin_rvfpm.id = 0;
-        uin_rvfpm.data_fromMem = 0;
-        uin_rvfpm.data_fromXReg = 0;
         @(posedge uin_rvfpm.ck);
         uin_rvfpm.enable = 1;
     endtask
@@ -159,58 +157,71 @@ end
     task fillRF();
         //Fills register file with random value
         for (int i=0; i<NUM_REGS; ++i) begin
-            nextId();
-            doITYPE(.issue_id(id),.rd(i), .data(i));
+            doITYPE(.rd(i), .data(randomFloat()));
             @(negedge uin_xif.issue_valid);
         end
         repeat(PIPELINE_STAGES) @(posedge uin_rvfpm.ck); //wait for all operations to finish
     endtask
 
     task doRTYPE(input int funct7 = 0, input int rs2 = $urandom_range(0, NUM_REGS-1), input int rs1 = $urandom_range(0, NUM_REGS-1), input int funct3 = 0, input int rd = $urandom_range(0, NUM_REGS-1));
+        automatic logic[31:0]  instr_r = 0;
         @(posedge uin_rvfpm.ck)
         uin_xif.issue_valid = 1;
-        // uin_rvfpm.
-        // nextId();
-        uin_xif.issue_req.instr[31:25] = funct7;
-        uin_xif.issue_req.instr[24:20] = rs2; //rs2
-        uin_xif.issue_req.instr[19:15] = rs1; //rs1 (base)
-        uin_xif.issue_req.instr[14:12] = funct3; //RM
-        uin_xif.issue_req.instr[11:7] = rd;  //rd (dest)
-        uin_xif.issue_req.instr[6:0] = 7'b1010011;  //OPCODE
+        instr_r[31:25] = funct7;
+        instr_r[24:20] = rs2; //rs2
+        instr_r[19:15] = rs1; //rs1 (base)
+        instr_r[14:12] = funct3; //RM
+        instr_r[11:7] = rd;  //rd (dest)
+        instr_r[6:0] = 7'b1010011;  //OPCODE
+        doIssueInst(instr_r, id);
     endtask
 
-    // task testR4TYPE()
-    // endtask
-
-    task doSTYPE(input int imm = 0, input int rs2 = $urandom_range(0, NUM_REGS-1), input int rs1 = 0, input int offset = 0); //Default get value from random register
+    task doSTYPE(input int imm = 17, input int rs2 = $urandom_range(0, NUM_REGS-1), input int rs1 = 0, input int offset = 0); //Default get value from random register
+        automatic logic [31:0] instr_s = 0;
+        automatic logic[X_ID_WIDTH-1:0] issue_id = 0;
         @(posedge uin_rvfpm.ck)
-        // nextId();
-        uin_rvfpm.instruction[31:25] = imm;
-        uin_rvfpm.instruction[24:20] = rs2; //rs2 (src)
-        uin_rvfpm.instruction[19:15] = rs1; //rs1 (base)
-        uin_rvfpm.instruction[14:12] = 3'b010; //rm (W)
-        uin_rvfpm.instruction[11:7] = offset;  //rd
-        uin_rvfpm.instruction[6:0] = 7'b0100111;  //OPCODE
-        @(posedge uin_rvfpm.ck && uin_rvfpm.fpu_ready)
-        uin_rvfpm.instruction = 0; //So toMem_valid toggles
+        instr_s[31:25] = imm;
+        instr_s[24:20] = rs2; //rs2 (src)
+        instr_s[19:15] = rs1; //rs1 (base)
+        instr_s[14:12] = 3'b010; //rm (W)
+        instr_s[11:7] = offset;  //rd imm_4_0
+        instr_s[6:0] = 7'b0100111;  //OPCODE
+        issue_id = id;
+        doIssueInst(instr_s, id);
+        fork
+            begin
+                while (1) begin
+                    @(posedge uin_rvfpm.ck) //Wait for memory request from CPU
+                    if (uin_xif.mem_valid && uin_xif.mem_req.id == issue_id) begin
+                        @(posedge uin_rvfpm.ck)
+                        uin_xif.mem_ready = 1;//Todo: add response (dbg etc)
+                        @(posedge uin_rvfpm.ck)
+                        uin_xif.mem_ready = 0;//Todo: add response (dbg etc)
+                        break;
+                    end
+                end
+            end
+        join_none
+        //Fork and repond with memory write
+
     endtask
 
-    logic issue_active = 0; //TODO_ use to only have one transaction at a time
-    logic [31:0] instr_i = 0;
-    logic [X_ID_WIDTH-1:0] id_i = 0;
-    task doITYPE(input int issue_id, input int imm = 17, input int rs1 = 6, input int funct3 = 0, input int rd = $urandom_range(0, NUM_REGS-1), input int unsigned data = randomFloat()); //Default: Store random value into random register
+    task doITYPE(input int imm = 17, input int rs1 = 6, input int funct3 = 0, input int rd = $urandom_range(0, NUM_REGS-1), input int unsigned data = randomFloat()); //Default: Store random value into random register
+        automatic logic [31:0] instr_i = 0;
+        automatic logic[X_ID_WIDTH-1:0] issue_id = 0;
         @(posedge uin_rvfpm.ck)
         instr_i[31:20] = imm; //imm
         instr_i[19:15] = rs1; //rs1 (base)
         instr_i[14:12] = 3'b010; //rm (W)
         instr_i[11:7] = rd;  //rd (dest)
         instr_i[6:0] = 7'b0000111;  //OPCODE
-        doIssueInst(instr_i, issue_id);
+        issue_id = id;
+        doIssueInst(instr_i, id);
         fork
             begin
                 while (1) begin
-                    @(uin_xif.mem_valid) //Wait for memory request from CPU
-                    if (uin_xif.mem_req.id == issue_id) begin
+                    @(posedge uin_rvfpm.ck) //Wait for memory request from CPU
+                    if (uin_xif.mem_valid && uin_xif.mem_req.id == issue_id) begin
                         @(posedge uin_rvfpm.ck)
                         uin_xif.mem_ready = 1;//Todo: add response (dbg etc)
                         uin_xif.mem_result_valid = 1;
@@ -222,28 +233,43 @@ end
                         uin_xif.mem_result_valid = 0;
                         uin_xif.mem_ready = 0;
                         uin_xif.mem_result = {};
-                        //Return data to coproc
+                        break;
                     end
-
-                    //Wait for memory request from CPU with the correct id.
-                    //respond with data
                 end
             end
         join_none
     endtask;
 
-    task doIssueInst(input logic[31:0] instruction = 0, input logic[X_ID_WIDTH-1:0] id = 0); //Issue instruction to coproc
-        uin_xif.issue_valid = 1;
-        uin_xif.issue_req.instr = instruction;
-        uin_xif.issue_req.id = id;
-        fork
-            begin
-                @(uin_xif.issue_ready && uin_xif.issue_resp.accept)
-                @(posedge uin_rvfpm.ck)
-                uin_xif.issue_valid = 0;
-                uin_xif.issue_req ={};
-            end
-        join_none
+    task automatic doIssueInst(input logic[31:0] instruction = 0, input logic[X_ID_WIDTH-1:0] id = 0); //Issue instruction to coproc
+        static semaphore s = new(1);
+        while (!s.try_get) @(posedge uin_rvfpm.ck);
+            uin_xif.issue_valid = 1;
+            uin_xif.issue_req.instr = instruction;
+            uin_xif.issue_req.id = id;
+            //TODO: make this compliant- what is "not accepted"
+            fork
+                begin
+                    @(uin_xif.issue_ready && uin_xif.issue_resp.accept)
+                    @(posedge uin_rvfpm.ck)
+                    uin_xif.issue_valid = 0;
+                    uin_xif.issue_req ={};
+                    nextId();
+                    @(posedge uin_rvfpm.ck);
+                    #0 s.put();
+                    disable fork;
+                end
+                begin
+
+                    #10000; //some timeout to release s. and raise some error
+                    $error("Timeout on issue instruction");
+                    uin_xif.issue_valid = 0;
+                    uin_xif.issue_req ={};
+                    nextId();
+                    #0 s.put();
+                    disable fork;
+                end
+            join_none
+
     endtask;
 
 
@@ -255,9 +281,6 @@ end
 
     endtask;
 
-    int id = 0;
-    task nextId();
-        id = (id+1) % 2**X_ID_WIDTH;
-    endtask;
+
 
 endprogram

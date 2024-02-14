@@ -24,6 +24,7 @@ void FPU::resetFPU(){
     registerFile.resetFpuRf();
     //reset queue
   #endif
+  //TODO: reset new features aswell
   pipeline.flush();
 };
 

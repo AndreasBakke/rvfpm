@@ -29,7 +29,7 @@ TestFloat: #Compile and test for IEEE754 compliance
 
 TestFloat_all:
 	mkdir -p tests/$(ARCH)/rm$(args)
-	./bin/testfloat_gen_$(ARCH) f32_add 	| ./bin/rvfpm_testFloat fadd  $(args) 	#	| ./bin/testfloat_ver_$(ARCH) $(args)	f32_add						-errors 0 > tests/$(ARCH)/rm$(args)/f32_add.txt 2>&1
+	./bin/testfloat_gen_$(ARCH) f32_add 	| ./bin/rvfpm_testFloat fadd  $(args) 		| ./bin/testfloat_ver_$(ARCH) $(args)	f32_add						-errors 0 > tests/$(ARCH)/rm$(args)/f32_add.txt 2>&1
 	./bin/testfloat_gen_$(ARCH) f32_sub 	| ./bin/rvfpm_testFloat fsub  $(args) 		| ./bin/testfloat_ver_$(ARCH) $(args)	f32_sub						-errors 0 > tests/$(ARCH)/rm$(args)/f32_sub.txt 2>&1
 	./bin/testfloat_gen_$(ARCH) f32_mul 	| ./bin/rvfpm_testFloat fmul  $(args) 		| ./bin/testfloat_ver_$(ARCH) $(args)	f32_mul $(TININESS)			-errors 0 > tests/$(ARCH)/rm$(args)/f32_mul.txt 2>&1
 	./bin/testfloat_gen_$(ARCH) f32_div 	| ./bin/rvfpm_testFloat fdiv  $(args) 		| ./bin/testfloat_ver_$(ARCH) $(args)	f32_div						-errors 0 > tests/$(ARCH)/rm$(args)/f32_div.txt 2>&1

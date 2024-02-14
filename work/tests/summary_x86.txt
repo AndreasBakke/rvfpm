@@ -2,8 +2,8 @@
 ######### TESTFLOAT SUMMARY #########
 #####################################
 
-TESTS PERFORMED: 0
-TESTS FAILED: 0
+TESTS PERFORMED: 25,844,160
+TESTS FAILED: 2,956
 
 #####################################
 ############# ALL TESTS #############
@@ -12,67 +12,67 @@ TESTS FAILED: 0
 ######################################
 #### ROUNDING MODE: rm-rnear_even ####
 ######################################
-   f32_add: Tests performed = 0, tests failed = 0
-   f32_sub: Tests performed = 0, tests failed = 0
-   f32_mul: Tests performed = 0, tests failed = 0
-   f32_div: Tests performed = 0, tests failed = 0
-   f32_sqrt: Tests performed = 0, tests failed = 0
-   f32_eq: Tests performed = 0, tests failed = 0
-   f32_lt: Tests performed = 0, tests failed = 0
-   f32_le: Tests performed = 0, tests failed = 0
-   f32_muladd: Tests performed = 0, tests failed = 0
-   f32_uitf: Tests performed = 0, tests failed = 0
-   f32_itf: Tests performed = 0, tests failed = 0
-   f32_ftui: Tests performed = 0, tests failed = 0
-   f32_fti: Tests performed = 0, tests failed = 0
+   f32_add: Tests performed = 46,464, tests failed = 0
+   f32_sub: Tests performed = 46,464, tests failed = 0
+   f32_mul: Tests performed = 46,464, tests failed = 0
+   f32_div: Tests performed = 46,464, tests failed = 0
+   f32_sqrt: Tests performed = 600, tests failed = 0
+   f32_eq: Tests performed = 46,464, tests failed = 0
+   f32_lt: Tests performed = 46,464, tests failed = 0
+   f32_le: Tests performed = 46,464, tests failed = 0
+   f32_muladd: Tests performed = 6,133,248, tests failed = 0
+   f32_uitf: Tests performed = 372, tests failed = 370
+   f32_itf: Tests performed = 372, tests failed = 369
+   f32_ftui: Tests performed = 600, tests failed = 0
+   f32_fti: Tests performed = 600, tests failed = 0
 
 ###################################
 #### ROUNDING MODE: rm-rminMag ####
 ###################################
-   f32_add: Tests performed = 0, tests failed = 0
-   f32_sub: Tests performed = 0, tests failed = 0
-   f32_mul: Tests performed = 0, tests failed = 0
-   f32_div: Tests performed = 0, tests failed = 0
-   f32_sqrt: Tests performed = 0, tests failed = 0
-   f32_eq: Tests performed = 0, tests failed = 0
-   f32_lt: Tests performed = 0, tests failed = 0
-   f32_le: Tests performed = 0, tests failed = 0
-   f32_muladd: Tests performed = 0, tests failed = 0
-   f32_uitf: Tests performed = 0, tests failed = 0
-   f32_itf: Tests performed = 0, tests failed = 0
-   f32_ftui: Tests performed = 0, tests failed = 0
-   f32_fti: Tests performed = 0, tests failed = 0
+   f32_add: Tests performed = 46,464, tests failed = 0
+   f32_sub: Tests performed = 46,464, tests failed = 0
+   f32_mul: Tests performed = 46,464, tests failed = 0
+   f32_div: Tests performed = 46,464, tests failed = 0
+   f32_sqrt: Tests performed = 600, tests failed = 0
+   f32_eq: Tests performed = 46,464, tests failed = 0
+   f32_lt: Tests performed = 46,464, tests failed = 0
+   f32_le: Tests performed = 46,464, tests failed = 0
+   f32_muladd: Tests performed = 6,133,248, tests failed = 0
+   f32_uitf: Tests performed = 372, tests failed = 370
+   f32_itf: Tests performed = 372, tests failed = 369
+   f32_ftui: Tests performed = 600, tests failed = 0
+   f32_fti: Tests performed = 600, tests failed = 0
 
 ################################
 #### ROUNDING MODE: rm-rmin ####
 ################################
-   f32_add: Tests performed = 0, tests failed = 0
-   f32_sub: Tests performed = 0, tests failed = 0
-   f32_mul: Tests performed = 0, tests failed = 0
-   f32_div: Tests performed = 0, tests failed = 0
-   f32_sqrt: Tests performed = 0, tests failed = 0
-   f32_eq: Tests performed = 0, tests failed = 0
-   f32_lt: Tests performed = 0, tests failed = 0
-   f32_le: Tests performed = 0, tests failed = 0
-   f32_muladd: Tests performed = 0, tests failed = 0
-   f32_uitf: Tests performed = 0, tests failed = 0
-   f32_itf: Tests performed = 0, tests failed = 0
-   f32_ftui: Tests performed = 0, tests failed = 0
-   f32_fti: Tests performed = 0, tests failed = 0
+   f32_add: Tests performed = 46,464, tests failed = 0
+   f32_sub: Tests performed = 46,464, tests failed = 0
+   f32_mul: Tests performed = 46,464, tests failed = 0
+   f32_div: Tests performed = 46,464, tests failed = 0
+   f32_sqrt: Tests performed = 600, tests failed = 0
+   f32_eq: Tests performed = 46,464, tests failed = 0
+   f32_lt: Tests performed = 46,464, tests failed = 0
+   f32_le: Tests performed = 46,464, tests failed = 0
+   f32_muladd: Tests performed = 6,133,248, tests failed = 0
+   f32_uitf: Tests performed = 372, tests failed = 370
+   f32_itf: Tests performed = 372, tests failed = 369
+   f32_ftui: Tests performed = 600, tests failed = 0
+   f32_fti: Tests performed = 600, tests failed = 0
 
 ################################
 #### ROUNDING MODE: rm-rmax ####
 ################################
-   f32_add: Tests performed = 0, tests failed = 0
-   f32_sub: Tests performed = 0, tests failed = 0
-   f32_mul: Tests performed = 0, tests failed = 0
-   f32_div: Tests performed = 0, tests failed = 0
-   f32_sqrt: Tests performed = 0, tests failed = 0
-   f32_eq: Tests performed = 0, tests failed = 0
-   f32_lt: Tests performed = 0, tests failed = 0
-   f32_le: Tests performed = 0, tests failed = 0
-   f32_muladd: Tests performed = 0, tests failed = 0
-   f32_uitf: Tests performed = 0, tests failed = 0
-   f32_itf: Tests performed = 0, tests failed = 0
-   f32_ftui: Tests performed = 0, tests failed = 0
-   f32_fti: Tests performed = 0, tests failed = 0
+   f32_add: Tests performed = 46,464, tests failed = 0
+   f32_sub: Tests performed = 46,464, tests failed = 0
+   f32_mul: Tests performed = 46,464, tests failed = 0
+   f32_div: Tests performed = 46,464, tests failed = 0
+   f32_sqrt: Tests performed = 600, tests failed = 0
+   f32_eq: Tests performed = 46,464, tests failed = 0
+   f32_lt: Tests performed = 46,464, tests failed = 0
+   f32_le: Tests performed = 46,464, tests failed = 0
+   f32_muladd: Tests performed = 6,133,248, tests failed = 0
+   f32_uitf: Tests performed = 372, tests failed = 370
+   f32_itf: Tests performed = 372, tests failed = 369
+   f32_ftui: Tests performed = 600, tests failed = 0
+   f32_fti: Tests performed = 600, tests failed = 0

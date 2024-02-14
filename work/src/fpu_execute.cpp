@@ -40,12 +40,12 @@ void executeOp(FpuPipeObj& op, FpuRf* registerFile, bool& mem_valid, x_mem_req_t
     {
     case it_ITYPE:
     {
-      execute_ITYPE(op, registerFile, mem_valid, mem_req);
+      execute_ISTYPE(op, registerFile, mem_valid, mem_req);
       break;
     }
     case it_STYPE:
     {
-      execute_STYPE(op, registerFile, mem_valid, mem_req);
+      execute_ISTYPE(op, registerFile, mem_valid, mem_req);
       break;
     }
     case it_RTYPE:
@@ -63,7 +63,6 @@ void executeOp(FpuPipeObj& op, FpuRf* registerFile, bool& mem_valid, x_mem_req_t
       break;
   }
   registerFile->raiseFlags(op.flags);
-  std::cout << "remaining, after ex: " << op.remaining_ex_cycles << std::endl;
 }
 
 void execute_R4TYPE(FpuPipeObj& op, FpuRf* registerFile){
@@ -352,35 +351,15 @@ void execute_RTYPE(FpuPipeObj& op, FpuRf* registerFile){ //, int fromXReg, unsig
   case FMV_W_X:
   {
     //Moves bitpattern from X to W(F)
-    // op.data.bitpattern =  fromXReg; //Needs to be requested
+    // op.data.bitpattern =  fromXReg; //TODO: Request like mem
     break;
   }
-  //TODO: check pseudops like read/write to fcsr
   default:
     std::feraiseexcept(FE_INVALID); //raise invalid
     break;
   }
 
   op.flags |=  getFlags();
-
-  if (op.toXReg)
-  {
-    //Raise out ready flag and write to pointer
-    // if (toXReg != nullptr){
-    //   *toXReg = op.uDataToXreg ^ op.dataToXreg;
-    // };
-    // if (toXReg_valid != nullptr) {
-    //   *toXReg_valid = true;
-    // }
-    // if (id_out != nullptr) {
-    //   *id_out = op.id;
-    // }
-  } else
-  {
-    // if(registerFile != nullptr) {
-    //   // registerFile->write(op.addrTo, op.data); //might need to be moved to writeback stage
-    // }
-  }
 };
 
 
@@ -391,27 +370,37 @@ void execute_ITYPE(FpuPipeObj& op, FpuRf* registerFile, bool& mem_valid, x_mem_r
   mem_req.addr = op.addrFrom.front();
 }
 
+void execute_ISTYPE(FpuPipeObj& op, FpuRf* registerFile, bool& mem_valid, x_mem_req_t& mem_req){
+  //Execute I/S Type operations
+  mem_req = {};
+  mem_valid = true;
+  mem_req.id = op.id;
+  if (op.fromMem) {
+    mem_req.addr = op.addrFrom.front();
 
+  } else if (op.toMem) {
+    std::cout << "addr: " << op.addrTo << std::endl;
+    mem_req.addr = op.addrTo;
+    mem_req.mode = 1;
+    // mem_req.we = 1;
+    // mem_req.size = 3; //TODO: ?
+    // mem_req.wdata = op.data.bitpattern;
+  }
+}
 
 void execute_STYPE(FpuPipeObj& op, FpuRf* registerFile, bool& mem_valid, x_mem_req_t& mem_req){
   if (registerFile != nullptr) {
     op.data = registerFile->read(op.addrFrom.front());
   }
   // initiate memory write request (using data.bitpattern)
+  std::cout << "data: " <<  op.data.bitpattern << std::endl;
   mem_valid = true;
-  mem_req = {
-    op.id, //id
-    op.addrTo, //addr TOODO: find out what this should be
-    0, //mode
-    1, //we
-    5, //size (5=32 bit) TODO: change for other formats
-    0, //be
-    0,//attr
-    op.data.bitpattern, //wdata
-    0,//last
-    0 //spec
-  };
-
+  mem_req.id = op.id;
+  mem_req.addr = op.addrTo; //Lots of Z
+  mem_req.we = 1;
+  mem_req.size = 3; //TODO: ?
+  // mem_req.wdata = op.data.bitpattern; //Lots of X
+  std::cout << "wdata: " << mem_req.wdata <<std::endl;
 }
 
 void setRoundingMode(unsigned int rm){ //Sets c++ rounding mode. FCSR is written seperately

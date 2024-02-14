@@ -135,8 +135,6 @@ int main(int argc, char** argv) {
   if (op == "fmadd" || op == "fmsub" || op == "fnmsub" || op == "fnmadd") //Fused operations has an extra input compared to others
   {
     while (std::cin >> input1 >> input2 >> input3 >> input4 >> flags) {
-      //TODO: flip operands and results for the other fused operations and write makefiles with op
-
       unsigned int a = hexToUnsignedInt(input1);
       unsigned int b = hexToUnsignedInt(input2);
       unsigned int c = hexToUnsignedInt(input3);
@@ -166,6 +164,8 @@ int main(int argc, char** argv) {
       instr_load = {.parts= {7, r2, 0b010, 0, 0}};
       testFPU.bd_load(instr_load.instr, b);
       //Do operation
+      //Todo: provide data from XREG/MEM proactivly
+      //testFPU.bd_memRes(...) //Simulate memory result without delay
       RTYPE instr_rtype = {};
       if (op == "fsqrt") {
         instr_rtype = {.parts= {OP_FP, rd, 0b000, r1, 0b00000, FSQRT_S}};

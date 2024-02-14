@@ -44,16 +44,12 @@ extern "C" {
   void poll_mem_req(void* fpu_ptr, bool& mem_valid, x_mem_req_t& mem_req){
     FPU* fpu = static_cast<FPU*>(fpu_ptr);
     fpu->pollMemReq(mem_valid, mem_req);
+
   };
 
   void write_mem_res(void* fpu_ptr, bool mem_result_valid, unsigned int id, unsigned int rdata, bool err, bool dbg){
     FPU* fpu = static_cast<FPU*>(fpu_ptr);
     fpu->writeMemRes(mem_result_valid, id, rdata, err, dbg);
-    std::cout << "Memid: " << id << std::endl;
-    std::cout << "Memdata: " << rdata << std::endl;
-    std::cout << "Memerr: " << err << std::endl;
-    std::cout << "Memdbg: " << dbg << std::endl;
-
   };
 
 

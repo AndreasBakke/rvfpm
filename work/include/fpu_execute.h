@@ -23,6 +23,8 @@ void execute_RTYPE(FpuPipeObj& op, FpuRf* registerFile);//, int fromXReg, unsign
 void execute_R4TYPE(FpuPipeObj& op, FpuRf* registerFile);
 void execute_ITYPE(FpuPipeObj& op, FpuRf* registerFile, bool& mem_valid, x_mem_req_t& mem_req);
 void execute_STYPE(FpuPipeObj& op, FpuRf* registerFile, bool& mem_valid, x_mem_req_t& mem_req);
+void execute_ISTYPE(FpuPipeObj& op, FpuRf* registerFile, bool& mem_valid, x_mem_req_t& mem_req);
+
 
 void setRoundingMode(unsigned int rm);
 

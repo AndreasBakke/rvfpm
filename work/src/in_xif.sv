@@ -40,17 +40,6 @@ interface in_xif
 );
 
   typedef struct packed {
-    logic [          15:0] instr; // Offloaded compressed instruction
-    logic [           1:0] mode;  // Privilege level
-    logic [X_ID_WIDTH-1:0] id;    // Identification number of the offloaded compressed instruction
-  } x_compressed_req_t;
-
-  typedef struct packed {
-    logic [31:0] instr;   // Uncompressed instruction
-    logic        accept;  // Is the offloaded compressed instruction (id) accepted by the coprocessor?
-  } x_compressed_resp_t;
-
-  typedef struct packed {
     logic [          31:0]                  instr;     // Offloaded instruction
     logic [           1:0]                  mode;      // Privilege level
     logic [X_ID_WIDTH-1:0]                  id;        // Identification of the offloaded instruction
@@ -114,12 +103,6 @@ interface in_xif
     logic                        dbg;     // Did the instruction cause a debug trigger match with ``mcontrol.timing`` = 0?
   } x_result_t;
 
-  // Compressed interface
-  logic               compressed_valid;
-  logic               compressed_ready;
-  x_compressed_req_t  compressed_req;
-  x_compressed_resp_t compressed_resp;
-
   // Issue interface
   logic               issue_valid;
   logic               issue_ready;
@@ -146,12 +129,6 @@ interface in_xif
   x_result_t          result;
 
   // Port directions for host CPU
-  modport cpu_compressed (
-    output compressed_valid,
-    input  compressed_ready,
-    output compressed_req,
-    input  compressed_resp
-  );
   modport cpu_issue (
     output issue_valid,
     input  issue_ready,
@@ -179,12 +156,6 @@ interface in_xif
   );
 
   // Port directions for extension
-  modport coproc_compressed (
-    input  compressed_valid,
-    output compressed_ready,
-    input  compressed_req,
-    output compressed_resp
-  );
   modport coproc_issue (
     input  issue_valid,
     output issue_ready,
@@ -212,12 +183,6 @@ interface in_xif
   );
 
   // Monitor port directions
-  modport monitor_compressed (
-    input  compressed_valid,
-    input  compressed_ready,
-    input  compressed_req,
-    input  compressed_resp
-  );
   modport monitor_issue (
     input  issue_valid,
     input  issue_ready,
