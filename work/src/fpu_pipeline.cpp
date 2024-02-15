@@ -19,7 +19,6 @@ FpuPipeline::FpuPipeline(int pipelineStages, int queueDepth, FpuRf* rf_pointer) 
   stalled = false;
   mem_stalled = false;
   ex_stalled = false;
-  std::cout << "QUEUE DEPTH: " << QUEUE_DEPTH << std::endl;
 }
 
 FpuPipeline::~FpuPipeline() {
@@ -59,7 +58,6 @@ FpuPipeObj FpuPipeline::step(){
   }
 
   //Mem
-  std::cout << "mem id: " << pipeline.at(MEMORY_STEP).id << " fromM " << pipeline.at(MEMORY_STEP).fromMem << std::endl;
   if (pipeline.at(MEMORY_STEP).fromMem){ //wait for memory if the operation is dependant on memory
     //wait for memory result, stall if it has not come yet.
     std::cout << "valid?: " << memoryResultValid << std::endl;
@@ -119,6 +117,7 @@ bool FpuPipeline::isStalled(){
 void FpuPipeline::pollMemReq(bool& mem_valid, x_mem_req_t& mem_req){
   mem_valid = this->mem_valid;
   mem_req = this->mem_req;
+  // std::cout << "addYiho: " << &this->mem_req->addr << std::endl;
 };
 
 void FpuPipeline::writeMemRes(bool mem_result_valid, unsigned int id, unsigned int rdata, bool err, bool dbg){

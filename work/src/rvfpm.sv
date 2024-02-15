@@ -10,7 +10,6 @@
 
 
 `define NUM_FPU_REGS 32
-`define COPROC 0
 `include "pa_rvfpm.sv"
 import pa_rvfpm::*;
 
@@ -19,7 +18,6 @@ module rvfpm #(
   parameter NUM_REGS          = pa_rvfpm::NUM_REGS,
   parameter XLEN              = pa_rvfpm::XLEN,
   //System parameters
-  parameter COPROC            = `COPROC, //Set to 1 to function as coprocessor, will act as a HW unit if not
   //Pipeline parameters
   parameter PIPELINE_STAGES   = 4,
   parameter QUEUE_DEPTH       = 0, //Size of operation queue
@@ -36,7 +34,6 @@ module rvfpm #(
   parameter X_ECS_XS          = pa_rvfpm::X_ECS_XS,        //TODO: not used
   parameter X_DUALREAD        = pa_rvfpm::X_DUALREAD, //TODO: not implemented
   parameter X_DUALWRITE       = pa_rvfpm::X_DUALWRITE //TODO: not implemented
-
 )
 
 (
@@ -64,7 +61,7 @@ module rvfpm #(
   import "DPI-C" function void add_accepted_instruction(input chandle fpu_ptr, input int instr, input int unsigned id);
   import "DPI-C" function void poll_predecoder_result(input chandle fpu_ptr, output x_issue_resp_t resp);
   import "DPI-C" function void predecode_instruction(input chandle fpu_ptr, input int instr, input int unsigned id);
-  import "DPI-C" function void poll_mem_req(input chandle fpu_ptr, output logic mem_valid, output x_mem_req_t mem_req);
+  import "DPI-C" function void poll_mem_req(input chandle fpu_ptr, output logic mem_valid, output int unsigned id, output int unsigned addr, output int unsigned wdata);
   import "DPI-C" function void write_mem_res(input chandle fpu_ptr, input logic mem_result_valid, input int unsigned id, input int unsigned rdata, input logic err, input logic dbg);
 
   //Something to issue response from predecoder
@@ -76,12 +73,9 @@ module rvfpm #(
   logic fpu_accept; //Acceptance signal
   logic new_instruction_accepted; //Indicates that a new instruction is accepted
   logic issue_transaction_active; //Indicates that an issue transaction is active
-  x_mem_req_t mem_req; //To recieve mem-req from core
-  x_mem_req_t mem_req_r; //Reversed bit-order of mem_req
   x_issue_resp_t issue_resp; //To recieve issue response
   x_issue_resp_t issue_resp_r; //reversed bit order
   x_mem_result_t mem_res;
-
   //-----------------------
   //-- Initialization
   //-----------------------
@@ -91,18 +85,15 @@ module rvfpm #(
     fpu = create_fpu_model(PIPELINE_STAGES, QUEUE_DEPTH, NUM_REGS);
   end
   assign fpu_ready = fpu_ready_s;
+  assign xif_mem_if.mem_req.mode = 0; //TODO: Set to 0 for now
+  assign xif_mem_if.mem_req.we = 0; //TODO: Set to 0 for now
+  assign xif_mem_if.mem_req.size = 0; //TODO: Set to 0 for now
+  assign xif_mem_if.mem_req.be = 0; //TODO: Set to 0 for now
+  assign xif_mem_if.mem_req.attr = 0; //TODO: Set to 0 for now
+  assign xif_mem_if.mem_req.last = 1; //TODO: Set to 1 for now
+  assign xif_mem_if.mem_req.spec = 0; //TODO: Set to 0 for now
+
   //Need to switch byte order, first for the whole struct, then for each part. Only for incoming structs. Outgoing structs need to be passed part by part
-  assign mem_req_r= {<< {mem_req}};
-  assign xif_mem_if.mem_req.id = {<< {mem_req_r.id}};
-  assign xif_mem_if.mem_req.addr = {<< {mem_req_r.addr}};
-  assign xif_mem_if.mem_req.mode = {<< {mem_req_r.mode}};
-  assign xif_mem_if.mem_req.we = {<< {mem_req_r.we}};
-  assign xif_mem_if.mem_req.size = {<< {mem_req_r.size}};
-  assign xif_mem_if.mem_req.be = {<< {mem_req_r.be}};
-  assign xif_mem_if.mem_req.attr = {<< {mem_req_r.attr}};
-  assign xif_mem_if.mem_req.wdata = {<< {mem_req_r.wdata}};
-  assign xif_mem_if.mem_req.last = {<< {mem_req_r.last}};
-  assign xif_mem_if.mem_req.spec = {<< {mem_req_r.spec}};
   assign xif_issue_if.issue_resp = {<< {issue_resp}};
   assign mem_res = xif_mem_result_if.mem_result;
 
@@ -115,7 +106,7 @@ module rvfpm #(
       //Call clocked functions
       clock_event(fpu, fpu_ready_s);
       poll_predecoder_result(fpu, issue_resp);
-      poll_mem_req(fpu, xif_mem_if.mem_valid, mem_req);
+      poll_mem_req(fpu, xif_mem_if.mem_valid, xif_mem_if.mem_req.id, xif_mem_if.mem_req.addr, xif_mem_if.mem_req.wdata);
       write_mem_res(fpu, xif_mem_result_if.mem_result_valid, mem_res.id, mem_res.rdata, mem_res.err, mem_res.dbg);
 
       // add_accepted_instruction(fpu, instruction, id); //This can be async! Handle in predecoder when accepted
@@ -129,14 +120,8 @@ module rvfpm #(
 
       if (issue_transaction_active && new_instruction_accepted) begin
         add_accepted_instruction(fpu, xif_issue_if.issue_req.instr, xif_issue_if.issue_req.id);
-        $display("Adding instruction %t", $time);
         //Reset predecodercontent
       end
-
-      if (issue_transaction_active && !new_instruction_accepted) begin
-        //Do not accept instruction
-      end
-
     end
   end
 

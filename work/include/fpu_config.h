@@ -42,7 +42,7 @@ typedef struct {
 } __attribute__((packed)) x_mem_result_t;
 
 typedef struct {
-  unsigned int  id    : X_ID_WIDTH;
+  unsigned int  id    : 4;
   unsigned int  addr  : 32;
   unsigned int  mode  : 2 ; //TODO: ?
   bool          we    : 1; //Write enable

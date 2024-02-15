@@ -17,8 +17,7 @@ program automatic testPr_rvfpm #(
 );
     import "DPI-C" function int unsigned randomFloat(); //C++ function for random float generation
 
-    localparam NUM_TESTS = 10;
-
+    localparam NUM_TESTS = 100;
 
     initial begin
         $display("--- Starting simulation ---");
@@ -54,18 +53,18 @@ program automatic testPr_rvfpm #(
         //     join_none
         // end
         // uin_rvfpm.data_fromXReg = 0;
-        // init();
-        // fillRF();
-        // repeat(NUM_TESTS) begin //test NUM_TESTS number of min-operations using random registers
-        //     doRTYPE(.funct7(7'b0010100), .funct3(0));
-        // end
-        // init();
-        // fillRF();
-        // repeat(NUM_TESTS) begin //test NUM_TESTS number of max-operations using random registers
-        //     doRTYPE(.funct7(7'b0010100), .funct3(3'b001));
-        // end
-        // init();
-        // fillRF();
+        init();
+        fillRF();
+        repeat(NUM_TESTS) begin //test NUM_TESTS number of min-operations using random registers
+            doRTYPE(.funct7(7'b0010100), .funct3(0));
+        end
+        init();
+        fillRF();
+        repeat(NUM_TESTS) begin //test NUM_TESTS number of max-operations using random registers
+            doRTYPE(.funct7(7'b0010100), .funct3(3'b001));
+        end
+        init();
+        fillRF();
 
         // repeat(NUM_TESTS) begin //test NUM_TESTS number of FSGNJ-operations using random registers
         //     doRTYPE(.funct7(7'b0010000), .funct3(3'b000));
@@ -106,24 +105,24 @@ program automatic testPr_rvfpm #(
         // uin_rvfpm.instruction = 0;
         // repeat(PIPELINE_STAGES*2) @(posedge uin_rvfpm.ck);
 
-        // //Sign testing //For waveforms
-        // // + and  +
-        // doRTYPE(.funct7(7'b0010000), .rs1(6), .rs2(6), .rd(10), .funct3(3'b000)); //FSGNJ.S (get from +)
-        // doRTYPE(.funct7(7'b0010000), .rs1(6), .rs2(6), .rd(10), .funct3(3'b001)); //FSGNJN.S (get negated +)
-        // doRTYPE(.funct7(7'b0010000), .rs1(6), .rs2(6), .rd(10), .funct3(3'b010)); //FSGNJX.S (0 xor 0)
-        // // + and -
-        // doRTYPE(.funct7(7'b0010000), .rs1(6), .rs2(1), .rd(11), .funct3(3'b000)); //FSGNJ.S (get from -)
-        // doRTYPE(.funct7(7'b0010000), .rs1(6), .rs2(1), .rd(11), .funct3(3'b001)); //FSGNJN.S (get negated-)
-        // doRTYPE(.funct7(7'b0010000), .rs1(6), .rs2(1), .rd(11), .funct3(3'b010)); //FSGNJX.S (0 xor 1)
-        // // - and -
-        // doRTYPE(.funct7(7'b0010000), .rs1(1), .rs2(1), .rd(12), .funct3(3'b000)); //FSGNJ.S (get from -)
-        // doRTYPE(.funct7(7'b0010000), .rs1(1), .rs2(1), .rd(12), .funct3(3'b001)); //FSGNJN.S (get negated-)
-        // doRTYPE(.funct7(7'b0010000), .rs1(1), .rs2(1), .rd(12), .funct3(3'b010)); //FSGNJX.S (1 xor 1)
-        // // - and +
-        // doRTYPE(.funct7(7'b0010000), .rs1(1), .rs2(6), .rd(13), .funct3(3'b000)); //FSGNJ.S (get from -)
-        // doRTYPE(.funct7(7'b0010000), .rs1(1), .rs2(6), .rd(13), .funct3(3'b001)); //FSGNJN.S (get negated-)
-        // doRTYPE(.funct7(7'b0010000), .rs1(1), .rs2(6), .rd(13), .funct3(3'b010)); //FSGNJX.S (0 xor 1)
-        // @(posedge uin_rvfpm.ck)
+        //Sign testing //For waveforms
+        // + and  +
+        doRTYPE(.funct7(7'b0010000), .rs1(6), .rs2(6), .rd(10), .funct3(3'b000)); //FSGNJ.S (get from +)
+        doRTYPE(.funct7(7'b0010000), .rs1(6), .rs2(6), .rd(10), .funct3(3'b001)); //FSGNJN.S (get negated +)
+        doRTYPE(.funct7(7'b0010000), .rs1(6), .rs2(6), .rd(10), .funct3(3'b010)); //FSGNJX.S (0 xor 0)
+        // + and -
+        doRTYPE(.funct7(7'b0010000), .rs1(6), .rs2(1), .rd(11), .funct3(3'b000)); //FSGNJ.S (get from -)
+        doRTYPE(.funct7(7'b0010000), .rs1(6), .rs2(1), .rd(11), .funct3(3'b001)); //FSGNJN.S (get negated-)
+        doRTYPE(.funct7(7'b0010000), .rs1(6), .rs2(1), .rd(11), .funct3(3'b010)); //FSGNJX.S (0 xor 1)
+        // - and -
+        doRTYPE(.funct7(7'b0010000), .rs1(1), .rs2(1), .rd(12), .funct3(3'b000)); //FSGNJ.S (get from -)
+        doRTYPE(.funct7(7'b0010000), .rs1(1), .rs2(1), .rd(12), .funct3(3'b001)); //FSGNJN.S (get negated-)
+        doRTYPE(.funct7(7'b0010000), .rs1(1), .rs2(1), .rd(12), .funct3(3'b010)); //FSGNJX.S (1 xor 1)
+        // - and +
+        doRTYPE(.funct7(7'b0010000), .rs1(1), .rs2(6), .rd(13), .funct3(3'b000)); //FSGNJ.S (get from -)
+        doRTYPE(.funct7(7'b0010000), .rs1(1), .rs2(6), .rd(13), .funct3(3'b001)); //FSGNJN.S (get negated-)
+        doRTYPE(.funct7(7'b0010000), .rs1(1), .rs2(6), .rd(13), .funct3(3'b010)); //FSGNJX.S (0 xor 1)
+        @(posedge uin_rvfpm.ck)
         // uin_rvfpm.instruction = 0;
         // uin_rvfpm.id=0;
         repeat(PIPELINE_STAGES*4) @(posedge uin_rvfpm.ck);
@@ -247,7 +246,7 @@ end
             uin_xif.issue_req.instr = instruction;
             uin_xif.issue_req.id = id;
             //TODO: make this compliant- what is "not accepted"
-            fork
+            fork: wait_for_response
                 begin
                     @(uin_xif.issue_ready && uin_xif.issue_resp.accept)
                     @(posedge uin_rvfpm.ck)
@@ -256,7 +255,7 @@ end
                     nextId();
                     @(posedge uin_rvfpm.ck);
                     #0 s.put();
-                    disable fork;
+                    disable wait_for_response;
                 end
                 begin
 
@@ -266,7 +265,7 @@ end
                     uin_xif.issue_req ={};
                     nextId();
                     #0 s.put();
-                    disable fork;
+                    disable wait_for_response;
                 end
             join_none
 

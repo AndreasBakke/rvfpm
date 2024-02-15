@@ -13,7 +13,6 @@ module rvfpm_tb;
   //-- Parameters
   //-----------------------
   //System parameters
-  parameter TB_COPROC         = 1; //Set to 1 to function as coprocessor; will act as a HW unit if not
   parameter TB_FORWARDING     = 0; //Set to 1 to enable forwarding; not implemented
   parameter TB_OUT_OF_ORDER   = 0; //Set to 1 to enable out of order execution, not implemented
   parameter TB_X_ID_WIDTH     = 4;  // Width of ID field.
@@ -81,7 +80,6 @@ module rvfpm_tb;
   //-----------------------
 
   rvfpm #(
-    .COPROC(TB_COPROC),
     .FORWARDING(TB_FORWARDING),
     .OUT_OF_ORDER(TB_OUT_OF_ORDER),
     .NUM_REGS(TB_NUM_FPU_REGS),

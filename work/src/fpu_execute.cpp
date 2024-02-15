@@ -40,12 +40,12 @@ void executeOp(FpuPipeObj& op, FpuRf* registerFile, bool& mem_valid, x_mem_req_t
     {
     case it_ITYPE:
     {
-      execute_ISTYPE(op, registerFile, mem_valid, mem_req);
+      execute_ITYPE(op, registerFile, mem_valid, mem_req);
       break;
     }
     case it_STYPE:
     {
-      execute_ISTYPE(op, registerFile, mem_valid, mem_req);
+      execute_STYPE(op, registerFile, mem_valid, mem_req);
       break;
     }
     case it_RTYPE:
@@ -369,38 +369,15 @@ void execute_ITYPE(FpuPipeObj& op, FpuRf* registerFile, bool& mem_valid, x_mem_r
   mem_req.id = op.id;
   mem_req.addr = op.addrFrom.front();
 }
-
-void execute_ISTYPE(FpuPipeObj& op, FpuRf* registerFile, bool& mem_valid, x_mem_req_t& mem_req){
-  //Execute I/S Type operations
-  mem_req = {};
-  mem_valid = true;
-  mem_req.id = op.id;
-  if (op.fromMem) {
-    mem_req.addr = op.addrFrom.front();
-
-  } else if (op.toMem) {
-    std::cout << "addr: " << op.addrTo << std::endl;
-    mem_req.addr = op.addrTo;
-    mem_req.mode = 1;
-    // mem_req.we = 1;
-    // mem_req.size = 3; //TODO: ?
-    // mem_req.wdata = op.data.bitpattern;
-  }
-}
-
 void execute_STYPE(FpuPipeObj& op, FpuRf* registerFile, bool& mem_valid, x_mem_req_t& mem_req){
   if (registerFile != nullptr) {
     op.data = registerFile->read(op.addrFrom.front());
   }
   // initiate memory write request (using data.bitpattern)
-  std::cout << "data: " <<  op.data.bitpattern << std::endl;
   mem_valid = true;
   mem_req.id = op.id;
   mem_req.addr = op.addrTo; //Lots of Z
-  mem_req.we = 1;
-  mem_req.size = 3; //TODO: ?
-  // mem_req.wdata = op.data.bitpattern; //Lots of X
-  std::cout << "wdata: " << mem_req.wdata <<std::endl;
+  mem_req.wdata = op.data.bitpattern; //Lots of X
 }
 
 void setRoundingMode(unsigned int rm){ //Sets c++ rounding mode. FCSR is written seperately

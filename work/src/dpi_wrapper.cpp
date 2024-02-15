@@ -7,6 +7,7 @@
 
 
 #include "fpu_top.h"
+// #include "svdpi.h"
 #include <iostream>
 // #include <svdpi.h>
 
@@ -41,10 +42,13 @@ extern "C" {
     fpu->pollPredecoderResult(resp);
   };
 
-  void poll_mem_req(void* fpu_ptr, bool& mem_valid, x_mem_req_t& mem_req){
+  void poll_mem_req(void* fpu_ptr, bool& mem_valid, unsigned int& id,  unsigned int& addr, unsigned int& wdata){
     FPU* fpu = static_cast<FPU*>(fpu_ptr);
+    x_mem_req_t mem_req = {};
     fpu->pollMemReq(mem_valid, mem_req);
-
+    id = mem_req.id;
+    addr = mem_req.addr;
+    wdata = mem_req.wdata;
   };
 
   void write_mem_res(void* fpu_ptr, bool mem_result_valid, unsigned int id, unsigned int rdata, bool err, bool dbg){
