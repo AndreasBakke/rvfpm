@@ -1,0 +1,24 @@
+---
+# Add your YAML content here
+#TODO: noe som dette - så: bruke python til å parse og skrive pa_rvfpm og fpu_config.h
+# Da sikrer vi like definisjoner i begge filer (og enklere å sette opp andre strukturer.)
+#Andrepri etter å fullføre interface og timing.
+fpu_pipeline:
+  - stage: fetch
+    latency: 1
+  - stage: decode
+    latency: 1
+  - stage: execute
+    latency: 1
+  - stage: memory
+    latency: 1
+  - stage: writeback
+    latency: 1
+
+fpu_formats:
+  - format: single
+    precision: 32
+  - format: double
+    precision: 64
+  - format: quad
+    precision: 128

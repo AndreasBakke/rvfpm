@@ -10,3 +10,5 @@ fpu_new.v
 .DS_Store
 work/work/
 work/tests/*/*
+*.vstf
+*.wlf
