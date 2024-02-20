@@ -14,6 +14,10 @@
 struct FpuPipeObj {
   uint32_t instr; //Save instruction
   unsigned int id;  //from Core-V-XIF standard
+  FPNumber operand_a;
+  FPNumber operand_b;
+  FPNumber operand_c;
+  bool use_rs_i[3] ; //which input operands are used
   std::vector<uint32_t> addrFrom;
   uint32_t addrTo;
   FPNumber data;

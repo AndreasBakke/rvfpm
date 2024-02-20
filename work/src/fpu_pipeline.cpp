@@ -25,7 +25,6 @@ FpuPipeline::~FpuPipeline() {
 }
 
 FpuPipeObj FpuPipeline::step(){
-  std::cout << "wdata-step: " << this->mem_req.wdata << std::endl;
   //Operations are decoded before adding to the pipeline
   //Check for memory dependencies and request throough interface
   //stall here untill memory is ready (or reorder)
@@ -60,14 +59,10 @@ FpuPipeObj FpuPipeline::step(){
   //Mem
   if (pipeline.at(MEMORY_STEP).fromMem){ //wait for memory if the operation is dependant on memory
     //wait for memory result, stall if it has not come yet.
-    std::cout << "valid?: " << memoryResultValid << std::endl;
-    std::cout << "memiId: " << memoryResults.id << std::endl;
-    std::cout << "memstep: " << pipeline.at(MEMORY_STEP).id << std::endl;
     if (memoryResultValid && memoryResults.id == pipeline.at(MEMORY_STEP).id){
       mem_stalled = false;
       if (pipeline.at(MEMORY_STEP).fromMem){
         pipeline.at(MEMORY_STEP).data.bitpattern = memoryResults.rdata;
-        std::cout << "data: " << pipeline.at(MEMORY_STEP).data.bitpattern << std::endl;;
       }
       memoryResults = x_mem_result_t({0, 0, 0, 0});
       memoryResultValid = false;
@@ -82,17 +77,13 @@ FpuPipeObj FpuPipeline::step(){
   //TODO: check for stall
   if (!pipeline.at(WRITEBACK_STEP).toMem && !pipeline.at(WRITEBACK_STEP).toXReg){ //if writing to rf, write to register file
 
-    std::cout << "Writing: " << pipeline.at(WRITEBACK_STEP).data.bitpattern << std::endl;
     registerFilePtr->write(pipeline.at(WRITEBACK_STEP).addrTo, pipeline.at(WRITEBACK_STEP).data);
   }
 
   //TODO: Check for hazards underway, dependant on if OOO/fowarding is 1
-  std::cout << "ex_s: " << ex_stalled << std::endl;
-  std::cout << "mem_s: " << mem_stalled << std::endl;
 
   stalled = mem_stalled || ex_stalled;
   //advance pipeline
-  std::cout << "Stalled in step?: " << stalled << std::endl;
   if (!stalled){
     pipeline.push_back(waitingOp);
     pipeline.pop_front();//should be dependent on what the front op is
@@ -117,7 +108,6 @@ bool FpuPipeline::isStalled(){
 void FpuPipeline::pollMemReq(bool& mem_valid, x_mem_req_t& mem_req){
   mem_valid = this->mem_valid;
   mem_req = this->mem_req;
-  // std::cout << "addYiho: " << &this->mem_req->addr << std::endl;
 };
 
 void FpuPipeline::writeMemRes(bool mem_result_valid, unsigned int id, unsigned int rdata, bool err, bool dbg){

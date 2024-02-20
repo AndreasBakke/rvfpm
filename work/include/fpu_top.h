@@ -23,7 +23,7 @@ class FPU {
     ~FPU();
     void resetFPU();
     void clockEvent(bool& fpu_ready);
-    void addAcceptedInstruction(uint32_t instruction, unsigned int id);//and other necessary inputs (should be somewhat close to in_xif type)
+    void addAcceptedInstruction(uint32_t instruction, unsigned int id, unsigned int operand_a, unsigned int operand_b, unsigned int operand_c);//and other necessary inputs (should be somewhat close to in_xif type)
     void predecodeInstruction(uint32_t instruction, unsigned int id);
     void pollPredecoderResult(x_issue_resp_t& resp_ref);
     void pollMemReq(bool& mem_valid, x_mem_req_t& mem_req);

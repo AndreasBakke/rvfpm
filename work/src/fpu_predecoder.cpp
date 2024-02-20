@@ -26,7 +26,7 @@ FpuPredecoder::~FpuPredecoder() {
 void FpuPredecoder::predecodeInstruction(uint32_t instruction, unsigned int id) { //TODO: reset respo when new instruction is accepted
   current_decode_id = id;
   FpuPipeObj res = {};
-  res = decodeOp(instruction, id);
+  res = decodeOp(instruction, id, 0, 0, 0);
   if (res.valid && fpuReady) { // And the fpu is ready
     resp.accept = true;
     resp.writeback = !(res.toMem || res.fromMem);

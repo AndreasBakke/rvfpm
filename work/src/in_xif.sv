@@ -30,7 +30,7 @@ interface in_xif
 #(
   parameter int XLEN = 32,
   parameter int FLEN = 32,
-  parameter int unsigned X_NUM_RS        =  2,  // Number of register file read ports that can be used by the eXtension interface
+  parameter int unsigned X_NUM_RS        =  3,  // Number of register file read ports that can be used by the eXtension interface
   parameter int unsigned X_ID_WIDTH      =  4,  // Width of ID field.
   parameter int unsigned X_MEM_WIDTH     =  32, // Memory access width for loads/stores via the eXtension interface
   parameter int unsigned X_RFR_WIDTH     =  32, // Register file read access width for the eXtension interface

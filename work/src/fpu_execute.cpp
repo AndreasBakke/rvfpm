@@ -271,12 +271,12 @@ void execute_RTYPE(FpuPipeObj& op, FpuRf* registerFile){ //, int fromXReg, unsig
     {
     case 0b00000: //FCVT.S.W
     {
-      // op.data.f = static_cast<float>(fromXReg); //Needs to be requested from cpu?
+      op.data.f = static_cast<float>(op.operand_a.s); //Needs to be requested from cpu?
       break;
     }
     case 0b00001: //FCVT.S.WU
     {
-      // op.data.f = static_cast<float>(static_cast<uint32_t>(fromXReg)); //Cast to unsigned first - needs to be requested from cpu
+      op.data.f = static_cast<float>(static_cast<uint32_t>(op.operand_a.u)); //Cast to unsigned first - needs to be requested from cpu
       break;
     }
     default:

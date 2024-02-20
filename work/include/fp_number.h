@@ -31,5 +31,7 @@
       unsigned int sign : 1;
     } parts;
     uint32_t bitpattern; //bitpattern. NOTE: no interpretation of value should be done.
+    unsigned int u; //unsigned int representation
+    int s; //signed int representation
   } FPNumber;
 #endif

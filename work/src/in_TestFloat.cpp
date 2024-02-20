@@ -149,7 +149,7 @@ int main(int argc, char** argv) {
       testFPU.bd_load(instr_load.instr, c);
 
       RTYPE instr_r4type = {.parts_r4type= {FMADD_S, 0, 0b000, r1, r2, 0b00, r3}};
-      testFPU.addAcceptedInstruction(instr_r4type.instr, 0);
+      testFPU.addAcceptedInstruction(instr_r4type.instr, 0, 0, 0, 0);
       FpuPipeObj result = testFPU.testFloatOp();
       std::cout << input1 << " " << input2 << " " << input3 << " " << floatToHex(result.data.f) << " " << convFlags(result.flags)  << std::endl;
     }
@@ -169,23 +169,23 @@ int main(int argc, char** argv) {
       RTYPE instr_rtype = {};
       if (op == "fsqrt") {
         instr_rtype = {.parts= {OP_FP, rd, 0b000, r1, 0b00000, FSQRT_S}};
-        testFPU.addAcceptedInstruction(instr_rtype.instr, 0);
+        testFPU.addAcceptedInstruction(instr_rtype.instr, 0, 0, 0, 0);
       }
       else if (op == "ui32_to_f32") {
         instr_rtype = {.parts= {OP_FP, rd, 0b000, r1, 0b00001, FCVT_S_W}};
-        testFPU.addAcceptedInstruction(instr_rtype.instr, 0);
+        testFPU.addAcceptedInstruction(instr_rtype.instr, 0, a, 0, 0);
       }
       else if (op == "i32_to_f32") {
         instr_rtype = {.parts= {OP_FP, rd, 0b000, r1, 0b00000, FCVT_S_W}};
-        testFPU.addAcceptedInstruction(instr_rtype.instr, 0);
+        testFPU.addAcceptedInstruction(instr_rtype.instr, 0, a, 0, 0);
       }
       else if (op == "f32_to_ui32") {
         instr_rtype = {.parts= {OP_FP, rd, 0b000, r1, 0b00001, FCVT_W_S}};
-        testFPU.addAcceptedInstruction(instr_rtype.instr, 0);
+        testFPU.addAcceptedInstruction(instr_rtype.instr, 0, 0, 0, 0);
       }
       else if (op == "f32_to_i32") {
         instr_rtype = {.parts= {OP_FP, rd, 0b000, r1, 0b00000, FCVT_W_S}};
-        testFPU.addAcceptedInstruction(instr_rtype.instr, 0);
+        testFPU.addAcceptedInstruction(instr_rtype.instr, 0, 0, 0, 0);
       }
       FpuPipeObj result = testFPU.testFloatOp();
       if (op == "fsqrt" || op == "ui32_to_f32" || op == "i32_to_f32") {
@@ -234,7 +234,7 @@ int main(int argc, char** argv) {
       {
         instr_rtype = {.parts = {OP_FP, rd, 0b000, r1, r2, FCMP}};
       }
-      testFPU.addAcceptedInstruction(instr_rtype.instr, 0);
+      testFPU.addAcceptedInstruction(instr_rtype.instr, 0, 0, 0, 0);
       FpuPipeObj result = testFPU.testFloatOp();
       if (op == "feq" || op == "flt" || op == "fle"){
         std::cout << input1 << " " << input2 << " " << std::to_string(result.uDataToXreg).front() << " " << convFlags(result.flags)  << std::endl;

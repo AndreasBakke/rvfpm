@@ -58,7 +58,7 @@ module rvfpm #(
   import "DPI-C" function void clock_event(input chandle fpu_ptr, output logic fpu_ready);
   import "DPI-C" function void destroy_fpu(input chandle fpu_ptr);
   import "DPI-C" function int unsigned getRFContent(input chandle fpu_ptr, input int addr);
-  import "DPI-C" function void add_accepted_instruction(input chandle fpu_ptr, input int instr, input int unsigned id);
+  import "DPI-C" function void add_accepted_instruction(input chandle fpu_ptr, input int instr, input int unsigned id, input int unsigned operand_a, input int unsigned operand_b, input int unsigned operand_c);
   import "DPI-C" function void poll_predecoder_result(input chandle fpu_ptr, output x_issue_resp_t resp);
   import "DPI-C" function void predecode_instruction(input chandle fpu_ptr, input int instr, input int unsigned id);
   import "DPI-C" function void poll_mem_req(input chandle fpu_ptr, output logic mem_valid, output int unsigned id, output int unsigned addr, output int unsigned wdata);
@@ -112,14 +112,16 @@ module rvfpm #(
       // add_accepted_instruction(fpu, instruction, id); //This can be async! Handle in predecoder when accepted
 
       if (xif_issue_if.issue_valid) begin
-        xif_issue_if.issue_ready = fpu_ready_s; //if it is actually ready.
+        xif_issue_if.issue_ready = fpu_ready_s ; //TODO: and if RS_valid is true for all used operands (find out in predecoder) (Could predictivly do it in case of ZFINX aswell)
       end else begin
         xif_issue_if.issue_ready = 0;
         //fpu_operation(fpu, instruction, id, data_fromXReg, data_fromMem, id_out, data_toMem, data_toXReg, pipelineFull, toMem_valid, toXReg_valid);
       end
 
       if (issue_transaction_active && new_instruction_accepted) begin
-        add_accepted_instruction(fpu, xif_issue_if.issue_req.instr, xif_issue_if.issue_req.id);
+        add_accepted_instruction(fpu, xif_issue_if.issue_req.instr, xif_issue_if.issue_req.id, xif_issue_if.issue_req.rs[0], xif_issue_if.issue_req.rs[1], xif_issue_if.issue_req.rs[2]);
+
+        //TODO: Add operands from register-interace
         //Reset predecodercontent
       end
     end

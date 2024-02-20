@@ -35,7 +35,7 @@ void FPU::clockEvent(bool& fpu_ready){
   fpu_ready = fpuReady;
 };
 
-void FPU::predecodeInstruction(uint32_t instruction, unsigned int id){
+void FPU::predecodeInstruction(uint32_t instruction, unsigned int id){ //TODO: wait for opready
   predecoder.predecodeInstruction(instruction, id);
 };
 
@@ -48,8 +48,8 @@ FpuPipeObj FPU::testFloatOp(){
 }
 
 
-void FPU::addAcceptedInstruction(uint32_t instruction, unsigned int id){ //and other necessary inputs (should be somewhat close to in_xif type)
-  FpuPipeObj newOp = decodeOp(instruction, id);
+void FPU::addAcceptedInstruction(uint32_t instruction, unsigned int id, unsigned int operand_a, unsigned int operand_b, unsigned int operand_c){ //and other necessary inputs (should be somewhat close to in_xif type)
+  FpuPipeObj newOp = decodeOp(instruction, id, operand_a, operand_b, operand_c);
   // newOp.id = id;
   if (pipeline.getQueueDepth() > 0){
     pipeline.addOpToQueue(newOp);
@@ -72,7 +72,7 @@ void FPU::writeMemRes(bool mem_result_valid, unsigned int id, unsigned int rdata
 //Backdoor functions
 
 void FPU::bd_load(uint32_t instruction, unsigned int dataFromMem){
-  FpuPipeObj op = decodeOp(instruction, 0); //id is 0 for now
+  FpuPipeObj op = decodeOp(instruction, 0, 0, 0, 0); //id is 0 for now
   op.data.bitpattern = dataFromMem;
   registerFile.write(op.addrTo, op.data);
 };

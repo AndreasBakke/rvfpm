@@ -27,9 +27,9 @@ extern "C" {
     fpu->clockEvent(fpu_ready);
   };
 
-  void add_accepted_instruction(void* fpu_ptr, uint32_t instruction, unsigned int id){
+  void add_accepted_instruction(void* fpu_ptr, uint32_t instruction, unsigned int id, unsigned int operand_a, unsigned int operand_b, unsigned int operand_c){
     FPU* fpu = static_cast<FPU*>(fpu_ptr);
-    fpu->addAcceptedInstruction(instruction, id);
+    fpu->addAcceptedInstruction(instruction, id, operand_a, operand_b, operand_c);
   };
 
   void predecode_instruction(void* fpu_ptr, uint32_t instruction, unsigned int id){

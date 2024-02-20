@@ -3,7 +3,7 @@
 #####################################
 
 TESTS PERFORMED: 25,844,160
-TESTS FAILED: 2,956
+TESTS FAILED: 0
 
 #####################################
 ############# ALL TESTS #############
@@ -21,8 +21,8 @@ TESTS FAILED: 2,956
    f32_lt: Tests performed = 46,464, tests failed = 0
    f32_le: Tests performed = 46,464, tests failed = 0
    f32_muladd: Tests performed = 6,133,248, tests failed = 0
-   f32_uitf: Tests performed = 372, tests failed = 370
-   f32_itf: Tests performed = 372, tests failed = 369
+   f32_uitf: Tests performed = 372, tests failed = 0
+   f32_itf: Tests performed = 372, tests failed = 0
    f32_ftui: Tests performed = 600, tests failed = 0
    f32_fti: Tests performed = 600, tests failed = 0
 
@@ -38,8 +38,8 @@ TESTS FAILED: 2,956
    f32_lt: Tests performed = 46,464, tests failed = 0
    f32_le: Tests performed = 46,464, tests failed = 0
    f32_muladd: Tests performed = 6,133,248, tests failed = 0
-   f32_uitf: Tests performed = 372, tests failed = 370
-   f32_itf: Tests performed = 372, tests failed = 369
+   f32_uitf: Tests performed = 372, tests failed = 0
+   f32_itf: Tests performed = 372, tests failed = 0
    f32_ftui: Tests performed = 600, tests failed = 0
    f32_fti: Tests performed = 600, tests failed = 0
 
@@ -55,8 +55,8 @@ TESTS FAILED: 2,956
    f32_lt: Tests performed = 46,464, tests failed = 0
    f32_le: Tests performed = 46,464, tests failed = 0
    f32_muladd: Tests performed = 6,133,248, tests failed = 0
-   f32_uitf: Tests performed = 372, tests failed = 370
-   f32_itf: Tests performed = 372, tests failed = 369
+   f32_uitf: Tests performed = 372, tests failed = 0
+   f32_itf: Tests performed = 372, tests failed = 0
    f32_ftui: Tests performed = 600, tests failed = 0
    f32_fti: Tests performed = 600, tests failed = 0
 
@@ -72,7 +72,7 @@ TESTS FAILED: 2,956
    f32_lt: Tests performed = 46,464, tests failed = 0
    f32_le: Tests performed = 46,464, tests failed = 0
    f32_muladd: Tests performed = 6,133,248, tests failed = 0
-   f32_uitf: Tests performed = 372, tests failed = 370
-   f32_itf: Tests performed = 372, tests failed = 369
+   f32_uitf: Tests performed = 372, tests failed = 0
+   f32_itf: Tests performed = 372, tests failed = 0
    f32_ftui: Tests performed = 600, tests failed = 0
    f32_fti: Tests performed = 600, tests failed = 0

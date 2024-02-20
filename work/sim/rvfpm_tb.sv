@@ -27,7 +27,7 @@ module rvfpm_tb;
   parameter TB_QUEUE_DEPTH = 4; // Example value
 
   //eXtension interface parameters
-  parameter TB_X_NUM_RS         =  2;  // Number of register file read ports that can be used by the eXtension interface
+  parameter TB_X_NUM_RS         =  3;  // Number of register file read ports that can be used by the eXtension interface
   parameter TB_X_MEM_WIDTH      =  32; // Memory access width for loads/stores via the eXtension interface
   parameter TB_X_RFR_WIDTH      =  TB_FLEN; // Register file read access width for the eXtension interface
   parameter TB_X_RFW_WIDTH      =  TB_FLEN; // Register file write access width for the eXtension interface
