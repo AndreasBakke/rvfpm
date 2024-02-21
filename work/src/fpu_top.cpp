@@ -73,7 +73,9 @@ void FPU::writeMemRes(bool mem_ready, bool mem_result_valid, unsigned int id, un
   pipeline.writeMemRes(mem_ready, mem_result_valid, id, rdata, err, dbg);
 };
 
-
+void FPU::pollResult(bool& result_valid, x_result_t& result){
+  pipeline.pollResult(result_valid, result);
+};
 
 //Backdoor functions
 

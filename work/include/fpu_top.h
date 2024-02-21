@@ -36,6 +36,9 @@ class FPU {
     void writeMemRes(bool mem_ready, bool mem_result_valid, unsigned int id, unsigned int rdata, bool err, bool dbg);
 
 
+    //Result interface
+    void pollResult(bool& result_valid, x_result_t& result);
+
     //Backdoor functions
     FpuPipeObj testFloatOp();
     void bd_load(uint32_t instruction, unsigned int dataFromMem);

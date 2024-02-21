@@ -42,7 +42,7 @@ typedef struct {
 } __attribute__((packed)) x_mem_result_t;
 
 typedef struct {
-  unsigned int  id    : 4;
+  unsigned int  id    : X_ID_WIDTH;
   unsigned int  addr  : 32;
   unsigned int  mode  : 2 ; //TODO: ?
   bool          we    : 1; //Write enable
@@ -53,3 +53,16 @@ typedef struct {
   bool          last  : 1;
   bool          spec  : 1;
 } __attribute__((packed)) x_mem_req_t;
+
+typedef struct{
+    unsigned int  id  : X_ID_WIDTH;      // Identification of the offloaded instruction
+    unsigned int data : 32;    // Register file write data value(s)
+    unsigned int rd   : 5;      // Register file destination address(es)
+    // logic [X_RFW_WIDTH/XLEN-1:0] we;      // Register file write enable(s)
+    // logic [                 5:0] ecsdata; // Write data value for {mstatus.xs, mstatus.fs, mstatus.vs}
+    // logic [                 2:0] ecswe;   // Write enables for {mstatus.xs, mstatus.fs, mstatus.vs}
+    // bool                        exc :1;     // Did the instruction cause a synchronous exception?
+    // logic [                 5:0] exccode; // Exception code
+    // bool                        err :1;     // Did the instruction cause a bus error?
+    // bool                        dbg :1;     // Did the instruction cause a debug trigger match with ``mcontrol.timing`` = 0?
+  } __attribute__((packed)) x_result_t;

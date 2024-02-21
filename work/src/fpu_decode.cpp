@@ -103,6 +103,7 @@ FpuPipeObj decode_RTYPE(uint32_t instr, unsigned int operand_a, unsigned int ope
     case FCLASS_FMV_X_W:
     {
       result.addrFrom = {dec_instr.parts.rs1, 999}; //Overwrite since only one address is used
+      result.addrTo = {dec_instr.parts.rd};
       result.toXReg = true;
       break;
     }

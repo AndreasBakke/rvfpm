@@ -27,7 +27,6 @@ interface inTest_rvfpm #(
     //-----------------------
     logic enable;
     logic fpu_ready;
-    logic[31:0] instruction;
 
     logic[0:NUM_REGS-1][FLEN-1:0] registerFile; //For verification
     int unsigned pipelineIds[PIPELINE_STAGES];

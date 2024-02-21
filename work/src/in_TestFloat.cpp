@@ -191,7 +191,7 @@ int main(int argc, char** argv) {
       if (op == "fsqrt" || op == "ui32_to_f32" || op == "i32_to_f32") {
         std::cout << input1 << " " << floatToHex(result.data.f) << " " << convFlags(result.flags)  << std::endl;
       } else {
-        std::cout << input1 << " " << uint32ToHexString(static_cast<uint32_t>(result.dataToXreg | result.uDataToXreg)) << " " << convFlags(result.flags & 0b01111)  << std::endl; //Conversion to int doesn't check for exactness
+        std::cout << input1 << " " << uint32ToHexString(static_cast<uint32_t>(result.data.s)) << " " << convFlags(result.flags & 0b01111)  << std::endl; //Conversion to int doesn't check for exactness
       }
     }
   } else {
@@ -237,7 +237,7 @@ int main(int argc, char** argv) {
       testFPU.addAcceptedInstruction(instr_rtype.instr, 0, 0, 0, 0);
       FpuPipeObj result = testFPU.testFloatOp();
       if (op == "feq" || op == "flt" || op == "fle"){
-        std::cout << input1 << " " << input2 << " " << std::to_string(result.uDataToXreg).front() << " " << convFlags(result.flags)  << std::endl;
+        std::cout << input1 << " " << input2 << " " << std::to_string(result.data.s).front() << " " << convFlags(result.flags)  << std::endl;
       } else {
         std::cout << input1 << " " << input2 << " " << floatToHex(result.data.f) << " " << convFlags(result.flags)  << std::endl;
       }

@@ -80,16 +80,26 @@ FpuPipeObj FpuPipeline::step(){
   }
 
   //WB
-  //TODO: check for stall
   if (!pipeline.at(WRITEBACK_STEP).toMem && !pipeline.at(WRITEBACK_STEP).toXReg && !pipeline.at(WRITEBACK_STEP).isEmpty()){ //if writing to rf, write to register file
     registerFilePtr->write(pipeline.at(WRITEBACK_STEP).addrTo, pipeline.at(WRITEBACK_STEP).data);
+    result_valid = 0;
+    result = {};
+  } else if (pipeline.at(WRITEBACK_STEP).toXReg && !pipeline.at(WRITEBACK_STEP).isEmpty()){ //if writing to xreg, write to xreg
+    //Use result interface to write to xreg
+    result_valid = 1; //TODO: add wait for result ready
+    result.id = pipeline.at(WRITEBACK_STEP).id;
+    result.data = pipeline.at(WRITEBACK_STEP).data.u;
+    result.rd = pipeline.at(WRITEBACK_STEP).addrTo;
+  } else {
+    result_valid = 0;
+    result = {};
   }
 
   //TODO: Write to result interface if toXReg or ZFINX
 
   //TODO: Check for hazards underway, dependant on if OOO/fowarding is 1
 
-  stalled = mem_stalled || ex_stalled;
+  stalled = mem_stalled || ex_stalled; //TODO: check stalling if we are waiting for result-ready
   //advance pipeline
   if (!stalled){
     pipeline.push_back(waitingOp);
@@ -125,6 +135,12 @@ void FpuPipeline::writeMemRes(bool mem_ready, bool mem_result_valid, unsigned in
   memoryResults.err = err;
   memoryResults.dbg = dbg;
 
+};
+
+
+void FpuPipeline::pollResult(bool& result_valid, x_result_t& result){
+  result_valid = this->result_valid;
+  result = this->result;
 };
 
 

@@ -61,6 +61,15 @@ extern "C" {
     fpu->writeMemRes(mem_ready, mem_result_valid, id, rdata, err, dbg);
   };
 
+  void poll_res(void* fpu_ptr, bool& result_valid, unsigned int& id, unsigned int& data, unsigned int& rd){
+    FPU* fpu = static_cast<FPU*>(fpu_ptr);
+    x_result_t result = {};
+    fpu->pollResult(result_valid, result);
+    id = result.id;
+    data = result.data;
+    rd = result.rd;
+  };
+
 
 
 

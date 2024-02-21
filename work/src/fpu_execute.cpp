@@ -98,9 +98,9 @@ void execute_R4TYPE(FpuPipeObj& op, FpuRf* registerFile){
   }
   op.flags |= getFlags(); //Get flags and add to result.
 
-  if(registerFile != nullptr) {
-    registerFile->write(op.addrTo, op.data); //This might need to be moved to WriteBack stage
-  }
+  // if(registerFile != nullptr) {
+  //   registerFile->write(op.addrTo, op.data); //This might need to be moved to WriteBack stage
+  // }
 
 };
 
@@ -196,22 +196,22 @@ void execute_RTYPE(FpuPipeObj& op, FpuRf* registerFile){
     {
     case 0b010: //FEQ.S
     {
-      data1.f == data2.f ? op.uDataToXreg = 1 : op.uDataToXreg = 0;
+      data1.f == data2.f ? op.data.u = 1 : op.data.u = 0;
       break;
     }
     case 0b001: //FLT.s
     {
-      data1.f < data2.f ? op.uDataToXreg = 1 : op.uDataToXreg = 0;
+      data1.f < data2.f ? op.data.u = 1 : op.data.u = 0;
       break;
     }
     case 0b000: //FLE.S
     {
-      data1.f <= data2.f ? op.uDataToXreg = 1 : op.uDataToXreg = 0;
+      data1.f <= data2.f ? op.data.u = 1 : op.data.u = 0;
       break;
     }
     default:
     {
-      op.uDataToXreg = 0;
+      op.data.u = 0;
       std::feraiseexcept(FE_INVALID); //raise invalid
       break;
     }
@@ -224,26 +224,27 @@ void execute_RTYPE(FpuPipeObj& op, FpuRf* registerFile){
     {
     case 0b00000: //FCVT.W.S
     {
-      op.dataToXreg= static_cast<int32_t>(nearbyint(data1.f)); //Use nearbyint instead of round, round does not follow rounding mode set in cfenv
+      op.data_signed = true;
+      op.data.s= static_cast<int32_t>(nearbyint(data1.f)); //Use nearbyint instead of round, round does not follow rounding mode set in cfenv
       break;
     }
     case 0b00001: //FCVT.WU.S
     {
       if (std::isnan(data1.f) && !(data1.parts.mantissa & 0x00400000)) {  // Check for sNaN
-        op.uDataToXreg = 0xFFFFFFFF;
+        op.data.u = 0xFFFFFFFF;
         op.flags |= 0b00001;
       } else if (nearbyint(data1.f) < 0.0f || nearbyint(data1.f) > UINT32_MAX) {  // Check for out-of-range values
-        op.uDataToXreg = 0xFFFFFFFF;
+        op.data.u = 0xFFFFFFFF;
         op.flags |= 0b00001;
       } else {
         // Convert if within range
-        op.uDataToXreg = static_cast<unsigned int>(nearbyint(data1.f));
+        op.data.u = static_cast<unsigned int>(nearbyint(data1.f));
       }
       break;
     }
     default:
     {
-      op.dataToXreg = 0;
+      op.data.s = 0;
       std::feraiseexcept(FE_INVALID); //raise invalid
     }
     }
@@ -275,7 +276,8 @@ void execute_RTYPE(FpuPipeObj& op, FpuRf* registerFile){
     {
     case 0b000: //FMV_X_W
     {
-      op.dataToXreg = data1.bitpattern; //TODO: use ResultInterface at writeback stage
+      op.data_signed = true;
+      op.data.s = data1.bitpattern; //TODO: use ResultInterface at writeback stage
       break;
     }
     case 0b001: //FCLASS.S
@@ -285,10 +287,10 @@ void execute_RTYPE(FpuPipeObj& op, FpuRf* registerFile){
         //subnormal number
         if (data1.f < 0)
         {
-          op.uDataToXreg = 0b0000000100;
+          op.data.bitpattern = 0b0000000100;
         } else if (data1.f > 0)
         {
-          op.uDataToXreg = 0b0000100000;
+          op.data.bitpattern = 0b0000100000;
         } else {
           std::feraiseexcept(FE_INVALID); //raise invalid
         }
@@ -297,31 +299,31 @@ void execute_RTYPE(FpuPipeObj& op, FpuRf* registerFile){
         //normal numbers
         if (data1.f == -INFINITY) //negative inf.
         {
-          op.uDataToXreg = 0b0000000001;
+          op.data.bitpattern = 0b0000000001;
         } else if (data1.f < 0) //negative normal number
         {
-          op.uDataToXreg = 0b0000000010;
+          op.data.bitpattern = 0b0000000010;
         } else if (data1.f == 0 && data1.parts.sign == 1) //negative zero
         {
-          op.uDataToXreg = 0b0000001000;
+          op.data.bitpattern = 0b0000001000;
         } else if (data1.f == 0 && data1.parts.sign == 0) //positive 0
         {
-          op.uDataToXreg = 0b0000010000;
+          op.data.bitpattern = 0b0000010000;
 
         } else if (data1.f == INFINITY) //positive inf
         {
-          op.uDataToXreg = 0b0010000000;
+          op.data.bitpattern = 0b0010000000;
         } else if (std::isnan(data1.f) && !(data1.bitpattern & 0x00400000)) //If leading mantissa-bit is not set -> sNaN
         {
-          op.uDataToXreg = 0b0100000000; //SNaN
+          op.data.bitpattern = 0b0100000000; //SNaN
         } else if (std::isnan(data1.f))
         {
-          op.uDataToXreg = 0b1000000000; //QNaN
+          op.data.bitpattern = 0b1000000000; //QNaN
         } else if (data1.f > 0) //positive normal number
         {
-          op.uDataToXreg = 0b0001000000;
+          op.data.bitpattern = 0b0001000000;
         } else {
-          op.uDataToXreg = 0b0000000000;
+          op.data.bitpattern = 0b0000000000;
           std::feraiseexcept(FE_INVALID); //raise invalid
         };
       }
@@ -331,6 +333,7 @@ void execute_RTYPE(FpuPipeObj& op, FpuRf* registerFile){
       std::feraiseexcept(FE_INVALID); //raise invalid
       break;
     }
+    break;
   }
   case FMV_W_X:
   {

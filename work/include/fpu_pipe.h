@@ -27,8 +27,7 @@ struct FpuPipeObj {
   bool toMem = 0;
   bool fromXReg = 0;
   bool fromMem = 0;
-  uint32_t uDataToXreg = 0; //unsigned DataToXreg
-  int32_t dataToXreg = 0;
+  bool data_signed = 0;
   int remaining_ex_cycles: 1; //1 cycle for execution as standard
   bool valid = 0; //Is the instruction valid?
 
@@ -42,7 +41,8 @@ struct FpuPipeObj {
         !toMem &&
         !fromXReg &&
         !fromMem &&
-        uDataToXreg == 0 &&
-        dataToXreg == 0;
+        !data_signed;
+        // uDataToXreg == 0 &&
+        // dataToXreg == 0;
   }
 };

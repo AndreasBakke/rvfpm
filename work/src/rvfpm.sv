@@ -65,18 +65,15 @@ module rvfpm #(
   import "DPI-C" function void poll_mem_req(input chandle fpu_ptr, output logic mem_valid, output int unsigned id, output int unsigned addr, output int unsigned wdata);
   import "DPI-C" function void write_mem_res(input chandle fpu_ptr, input logic mem_ready, input logic mem_result_valid, input int unsigned id, input int unsigned rdata, input logic err, input logic dbg);
 
+  import "DPI-C" function void poll_res(input chandle fpu_ptr, output logic result_valid, output int unsigned id, output int unsigned data, output int unsigned rd); //TODO: add remaining signals in interface
   //Something to issue response from predecoder
   //-----------------------
   //-- Local parameters
   //-----------------------
   logic fpu_ready_s; //status signal
-  logic [X_ID_WIDTH-1:0] fpu_accept_id; //ID of accepted instruction
   logic [X_NUM_RS-1:0] use_rs_i; //Which operands are used
-  logic fpu_accept; //Acceptance signal
   logic new_instruction_accepted; //Indicates that a new instruction is accepted
-  logic issue_transaction_active; //Indicates that an issue transaction is active
   x_issue_resp_t issue_resp; //To recieve issue response
-  x_issue_resp_t issue_resp_r; //reversed bit order
   x_mem_result_t mem_res;
   //-----------------------
   //-- Initialization
@@ -115,6 +112,7 @@ module rvfpm #(
       clock_event(fpu, fpu_ready_s);
       poll_predecoder_result(fpu, issue_resp, use_rs_i[0], use_rs_i[1], use_rs_i[2]);
       poll_mem_req(fpu, xif_mem_if.mem_valid, xif_mem_if.mem_req.id, xif_mem_if.mem_req.addr, xif_mem_if.mem_req.wdata);
+      poll_res(fpu, xif_result_if.result_valid, xif_result_if.result.id, xif_result_if.result.data, xif_result_if.result.rd); //TODO: add remaining signals in interface
       // write_mem_res(fpu, xif_mem_if.mem_ready, xif_mem_result_if.mem_result_valid, mem_res.id, mem_res.rdata, mem_res.err, mem_res.dbg);
 
 
