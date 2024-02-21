@@ -94,7 +94,6 @@ FpuPipeObj decode_RTYPE(uint32_t instr, unsigned int operand_a, unsigned int ope
     }
     case FCVT_S_W: //FCVT.S.W[U]
     {
-      std::cout << "FCVT_S_W" << std::endl;
       result.addrFrom = {dec_instr.parts.rs1, 999}; //Overwrite since only one address is used
       result.fromXReg = true;
       result.use_rs_i[0] = true;
@@ -103,14 +102,12 @@ FpuPipeObj decode_RTYPE(uint32_t instr, unsigned int operand_a, unsigned int ope
     }
     case FCLASS_FMV_X_W:
     {
-      std::cout << "FCLASS_FMV_X_W" << std::endl;
       result.addrFrom = {dec_instr.parts.rs1, 999}; //Overwrite since only one address is used
       result.toXReg = true;
       break;
     }
     case FMV_W_X:
     {
-      std::cout << "FMV_W_X" << std::endl;
       result.fromXReg = true;
       result.use_rs_i[0] = true;
       result.operand_a.bitpattern = operand_a;

@@ -30,7 +30,6 @@ void FpuPredecoder::predecodeInstruction(uint32_t instruction, unsigned int id) 
   current_decode_id = id;
   FpuPipeObj res = {};
   res = decodeOp(instruction, id, 0, 0, 0);
-  std::cout << "Predecoding instruction: " << std::hex << instruction << std::dec << " with id: " << id << std::endl;
   this->use_rs_i[0] = res.use_rs_i[0];
   this->use_rs_i[1] = res.use_rs_i[1];
   this->use_rs_i[2] = res.use_rs_i[2];
@@ -72,5 +71,4 @@ void FpuPredecoder::reset() {
   this->use_rs_i[0] = false;
   this->use_rs_i[1] = false;
   this->use_rs_i[2] = false;
-  std::cout << "Predecoder reset" << std::endl;
 }

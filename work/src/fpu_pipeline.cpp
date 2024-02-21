@@ -82,8 +82,6 @@ FpuPipeObj FpuPipeline::step(){
   //WB
   //TODO: check for stall
   if (!pipeline.at(WRITEBACK_STEP).toMem && !pipeline.at(WRITEBACK_STEP).toXReg && !pipeline.at(WRITEBACK_STEP).isEmpty()){ //if writing to rf, write to register file
-    std::cout << "Writing to register file" << std::endl;
-    //Skriver den selv om det er en tom instruction?
     registerFilePtr->write(pipeline.at(WRITEBACK_STEP).addrTo, pipeline.at(WRITEBACK_STEP).data);
   }
 

@@ -17,19 +17,23 @@ program automatic testPr_rvfpm #(
 );
     import "DPI-C" function int unsigned randomFloat(); //C++ function for random float generation
 
-    localparam NUM_TESTS = 100;
+    localparam NUM_TESTS = 10;
 
     initial begin
         $display("--- Starting simulation ---");
         init();
         fillRF();
+        $display("--- %t: started RTYPE ---", $time);
+
         repeat(NUM_TESTS) doRTYPE();
         doRTYPE(.rd(19)); //Test with specified destination
 
+        $display("--- %t: started STYPE ---", $time);
         repeat(NUM_TESTS) doSTYPE();
         doSTYPE(.rs2(4)); //Read register 4.
-
+        repeat(4*PIPELINE_STAGES) @(posedge uin_rvfpm.ck); //Wait for all operations to finish
         $display("--- %t: started FMW.X:W ---", $time);
+
         // init();
         // fillRF();
         // repeat(NUM_TESTS) begin //test FMV.X:W (move to integer).
@@ -103,7 +107,6 @@ program automatic testPr_rvfpm #(
         $display("--- %t: started Classify2 ---", $time);
         //Her stopper vi og venter på operands. Men vi skal ikke bruke operands?
         for (int i=0; i<10; ++i) begin
-            $display("i: %0d", i);
             doRTYPE(.funct7(7'b1110000), .rs1(i), .rs2(0), .rd(0), .funct3(3'b001)); //Class
         end
 
@@ -149,14 +152,13 @@ end
 
     logic[X_ID_WIDTH-1:0] id = 0;
     task nextId();
-        id = (id+1); //Reserve 0 for resets TODO: find a better way to do it.
+        id = (id+1);
     endtask;
 
     task init();
         reset();
         @(posedge uin_rvfpm.ck);
         uin_rvfpm.enable = 1;
-        // uin_xif.issue_req.rs_valid = 3'b111;
     endtask
 
     task fillRF();

@@ -280,7 +280,6 @@ void execute_RTYPE(FpuPipeObj& op, FpuRf* registerFile){
     }
     case 0b001: //FCLASS.S
     {
-      std::cout << "FCLASS.S" << std::endl;
       if(isSubnormal(data1))
       {
         //subnormal number
