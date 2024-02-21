@@ -111,11 +111,12 @@ module rvfpm #(
     end
     else if (enable) begin
       //Call clocked functions
+      write_mem_res(fpu, xif_mem_if.mem_ready, xif_mem_result_if.mem_result_valid, mem_res.id, mem_res.rdata, mem_res.err, mem_res.dbg);
       clock_event(fpu, fpu_ready_s);
       poll_predecoder_result(fpu, issue_resp, use_rs_i[0], use_rs_i[1], use_rs_i[2]);
       poll_mem_req(fpu, xif_mem_if.mem_valid, xif_mem_if.mem_req.id, xif_mem_if.mem_req.addr, xif_mem_if.mem_req.wdata);
-      write_mem_res(fpu, xif_mem_if.mem_ready, xif_mem_result_if.mem_result_valid, mem_res.id, mem_res.rdata, mem_res.err, mem_res.dbg);
-      // add_accepted_instruction(fpu, instruction, id); //This can be async! Handle in predecoder when accepted
+      // write_mem_res(fpu, xif_mem_if.mem_ready, xif_mem_result_if.mem_result_valid, mem_res.id, mem_res.rdata, mem_res.err, mem_res.dbg);
+
 
       if (xif_issue_if.issue_valid) begin
         xif_issue_if.issue_ready = fpu_ready_s
@@ -125,18 +126,17 @@ module rvfpm #(
       end else begin
         xif_issue_if.issue_ready = 0;
       end
-
-      if (issue_transaction_active && new_instruction_accepted && fpu_ready_s) begin
+      if (new_instruction_accepted && fpu_ready_s) begin
         add_accepted_instruction(fpu, xif_issue_if.issue_req.instr, xif_issue_if.issue_req.id, xif_issue_if.issue_req.rs[0], xif_issue_if.issue_req.rs[1], xif_issue_if.issue_req.rs[2]);
         reset_predecoder(fpu); //or something
       end
+
     end
   end
 
 
   always_comb begin
-    assign issue_transaction_active = xif_issue_if.issue_valid && xif_issue_if.issue_ready;
-    if (issue_transaction_active && fpu_ready_s) begin
+    if (xif_issue_if.issue_valid && fpu_ready_s) begin
       predecode_instruction(fpu, xif_issue_if.issue_req.instr, xif_issue_if.issue_req.id); //TODO: add issue_transaction_active?
     end
   end

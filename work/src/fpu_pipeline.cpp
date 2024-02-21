@@ -26,8 +26,6 @@ FpuPipeline::~FpuPipeline() {
 
 FpuPipeObj FpuPipeline::step(){
 
-  std::cout << "Step" << std::endl;
-  std::cout << "MemStall: " << mem_stalled << " ExStall: " << ex_stalled << " stalled: " << stalled << std::endl;
   //Operations are decoded before adding to the pipeline
   //Check for memory dependencies and request throough interface
   //stall here untill memory is ready (or reorder)
@@ -57,7 +55,11 @@ FpuPipeObj FpuPipeline::step(){
     }
   } else { //TODO: add check fordependencies with the operation in the memory step
     pipeline.at(EXECUTE_STEP).remaining_ex_cycles--;
-    ex_stalled = pipeline.at(EXECUTE_STEP).remaining_ex_cycles > 0; //sets stalled to false if remaining cycles is 0, can still be stalled at other steps
+    if (pipeline.at(EXECUTE_STEP).remaining_ex_cycles > 0){
+      ex_stalled = true;
+    } else {
+      ex_stalled = false;
+    }
   }
 
   //Mem
@@ -79,7 +81,9 @@ FpuPipeObj FpuPipeline::step(){
 
   //WB
   //TODO: check for stall
-  if (!pipeline.at(WRITEBACK_STEP).toMem && !pipeline.at(WRITEBACK_STEP).toXReg){ //if writing to rf, write to register file
+  if (!pipeline.at(WRITEBACK_STEP).toMem && !pipeline.at(WRITEBACK_STEP).toXReg && !pipeline.at(WRITEBACK_STEP).isEmpty()){ //if writing to rf, write to register file
+    std::cout << "Writing to register file" << std::endl;
+    //Skriver den selv om det er en tom instruction?
     registerFilePtr->write(pipeline.at(WRITEBACK_STEP).addrTo, pipeline.at(WRITEBACK_STEP).data);
   }
 

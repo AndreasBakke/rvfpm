@@ -37,6 +37,8 @@ interface inTest_rvfpm #(
     //-- Error count
     //-----------------------
     int errorCntAssertions;
+    int errorCntPr;
+
 
 endinterface
 

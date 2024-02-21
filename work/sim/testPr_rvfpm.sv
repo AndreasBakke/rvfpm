@@ -17,7 +17,7 @@ program automatic testPr_rvfpm #(
 );
     import "DPI-C" function int unsigned randomFloat(); //C++ function for random float generation
 
-    localparam NUM_TESTS = 10;
+    localparam NUM_TESTS = 100;
 
     initial begin
         $display("--- Starting simulation ---");
@@ -25,16 +25,9 @@ program automatic testPr_rvfpm #(
         fillRF();
         repeat(NUM_TESTS) doRTYPE();
         doRTYPE(.rd(19)); //Test with specified destination
-        // @(posedge uin_rvfpm.ck);
-        // repeat(PIPELINE_STAGES*2) @(posedge uin_rvfpm.ck);
-        // repeat(10) @(posedge uin_rvfpm.ck); //Wait a bit
 
         repeat(NUM_TESTS) doSTYPE();
         doSTYPE(.rs2(4)); //Read register 4.
-        // @(posedge uin_rvfpm.ck);
-        // repeat(PIPELINE_STAGES*2) @(posedge uin_rvfpm.ck);
-        // repeat(10) @(posedge uin_rvfpm.ck); //Wait a bit
-
 
         $display("--- %t: started FMW.X:W ---", $time);
         // init();
@@ -87,7 +80,6 @@ program automatic testPr_rvfpm #(
 
         //Classify
 
-        //Vi mem-staller her.
         doITYPE(.rd(0), .data(32'b11111111100000000000000000000000)); //-inf
         @(negedge uin_xif.issue_valid);
         doITYPE(.rd(1), .data($shortrealtobits(-1.4125))); //Negative normal
@@ -109,18 +101,17 @@ program automatic testPr_rvfpm #(
         doITYPE(.rd(9), .data(32'b01111111110000000000000000000000)); //qNaN
         @(negedge uin_xif.issue_valid);
         $display("--- %t: started Classify2 ---", $time);
-        //Her stopper vi
+        //Her stopper vi og venter på operands. Men vi skal ikke bruke operands?
         for (int i=0; i<10; ++i) begin
             $display("i: %0d", i);
             doRTYPE(.funct7(7'b1110000), .rs1(i), .rs2(0), .rd(0), .funct3(3'b001)); //Class
         end
-        @(posedge uin_rvfpm.ck);
+
+
         repeat(PIPELINE_STAGES*2) @(posedge uin_rvfpm.ck);
         $display("--- %t: started Sign Testing ---", $time);
-
-
-        //Sign testing //For waveforms
-        // + and  +
+        // //Sign testing //For waveforms
+        // // + and  +
         doRTYPE(.funct7(7'b0010000), .rs1(6), .rs2(6), .rd(10), .funct3(3'b000)); //FSGNJ.S (get from +)
         doRTYPE(.funct7(7'b0010000), .rs1(6), .rs2(6), .rd(10), .funct3(3'b001)); //FSGNJN.S (get negated +)
         doRTYPE(.funct7(7'b0010000), .rs1(6), .rs2(6), .rd(10), .funct3(3'b010)); //FSGNJX.S (0 xor 0)
@@ -136,11 +127,10 @@ program automatic testPr_rvfpm #(
         doRTYPE(.funct7(7'b0010000), .rs1(1), .rs2(6), .rd(13), .funct3(3'b000)); //FSGNJ.S (get from -)
         doRTYPE(.funct7(7'b0010000), .rs1(1), .rs2(6), .rd(13), .funct3(3'b001)); //FSGNJN.S (get negated-)
         doRTYPE(.funct7(7'b0010000), .rs1(1), .rs2(6), .rd(13), .funct3(3'b010)); //FSGNJX.S (0 xor 1)
-        @(posedge uin_rvfpm.ck)
-        // uin_rvfpm.instruction = 0;
-        // uin_rvfpm.id=0;
         repeat(PIPELINE_STAGES*4) @(posedge uin_rvfpm.ck);
 
+        $display("--- FINISHED ---");
+        $display("Error count: %0d", uin_rvfpm.errorCntPr);
 end
 
 
@@ -151,6 +141,7 @@ end
         uin_rvfpm.rst = 0;
         uin_xif.issue_valid = 0;
         uin_xif.issue_req ={};
+        uin_xif.mem_ready = 0;
         uin_xif.mem_result_valid = 0;
         uin_xif.mem_result ={};
         @(posedge uin_rvfpm.ck);
@@ -295,6 +286,7 @@ end
 
                     #1000; //some timeout to release s. and raise some error
                     $error("Timeout on issue instruction");
+                    uin_rvfpm.errorCntPr++;
                     uin_xif.issue_valid = 0;
                     uin_xif.issue_req ={};
                     nextId();
