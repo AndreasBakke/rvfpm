@@ -12,7 +12,7 @@ package pa_rvfpm;
   parameter FLEN              = 32;
 
   //CORE-V-XIF parameters for coprocessor
-  parameter X_NUM_RS          = 2; //Read ports //TODO: not used
+  parameter X_NUM_RS          = 3; //Read ports
   parameter X_ID_WIDTH        = 4;
   parameter X_MEM_WIDTH       = 32; //TODO: dependent on extension
   parameter X_RFR_WIDTH       = 32; //Read acces width //TODO: not used

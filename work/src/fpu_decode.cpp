@@ -69,6 +69,9 @@ FpuPipeObj decode_RTYPE(uint32_t instr, unsigned int operand_a, unsigned int ope
   result.instr = instr; //Save instruction
   result.operand_a.f = operand_a; //Overwritten for relevant functions
   result.operand_b.f = operand_b; //Overwritten for relevant functions
+  result.use_rs_i[0] = false;
+  result.use_rs_i[1] = false;
+  result.use_rs_i[2] = false;
   //Override relevant parameters based on function
   switch (dec_instr.parts.funct7)
   {
@@ -105,7 +108,7 @@ FpuPipeObj decode_RTYPE(uint32_t instr, unsigned int operand_a, unsigned int ope
     {
       result.fromXReg = true;
       result.use_rs_i[0] = true;
-      result.operand_a.s = operand_a;
+      result.operand_a.bitpattern = operand_a;
       break;
     }
   }

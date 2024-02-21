@@ -18,12 +18,13 @@ class FpuPredecoder {
     unsigned int current_decode_id;
     x_issue_resp_t resp;
     bool& fpuReady;
+    bool use_rs_i[3];
 
   public:
   FpuPredecoder(bool& fpuReady);
   ~FpuPredecoder();
 
   void predecodeInstruction(uint32_t instruction, unsigned int id);
-  //TODO: add some logic that resets internal state of predecoder when not used
-  void pollPredecoderResult(x_issue_resp_t& resp_ref);
+  void pollPredecoderResult(x_issue_resp_t& resp_ref, bool& use_rs_a, bool& use_rs_b, bool& use_rs_c);
+  void reset();
 };

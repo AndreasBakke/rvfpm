@@ -32,14 +32,19 @@ extern "C" {
     fpu->addAcceptedInstruction(instruction, id, operand_a, operand_b, operand_c);
   };
 
+  void reset_predecoder(void* fpu_ptr){
+    FPU* fpu = static_cast<FPU*>(fpu_ptr);
+    fpu->resetPredecoder();
+  };
+
   void predecode_instruction(void* fpu_ptr, uint32_t instruction, unsigned int id){
     FPU* fpu = static_cast<FPU*>(fpu_ptr);
     fpu->predecodeInstruction(instruction, id);
   };
 
-  void poll_predecoder_result(void* fpu_ptr, x_issue_resp_t& resp){
+  void poll_predecoder_result(void* fpu_ptr, x_issue_resp_t& resp, bool& use_rs_a, bool& use_rs_b, bool& use_rs_c){
     FPU* fpu = static_cast<FPU*>(fpu_ptr);
-    fpu->pollPredecoderResult(resp);
+    fpu->pollPredecoderResult(resp, use_rs_a, use_rs_b, use_rs_c);
   };
 
   void poll_mem_req(void* fpu_ptr, bool& mem_valid, unsigned int& id,  unsigned int& addr, unsigned int& wdata){
@@ -51,9 +56,9 @@ extern "C" {
     wdata = mem_req.wdata;
   };
 
-  void write_mem_res(void* fpu_ptr, bool mem_result_valid, unsigned int id, unsigned int rdata, bool err, bool dbg){
+  void write_mem_res(void* fpu_ptr, bool mem_ready, bool mem_result_valid, unsigned int id, unsigned int rdata, bool err, bool dbg){
     FPU* fpu = static_cast<FPU*>(fpu_ptr);
-    fpu->writeMemRes(mem_result_valid, id, rdata, err, dbg);
+    fpu->writeMemRes(mem_ready, mem_result_valid, id, rdata, err, dbg);
   };
 
 

@@ -19,22 +19,6 @@ void executeOp(FpuPipeObj& op, FpuRf* registerFile, bool& mem_valid, x_mem_req_t
     }
   #endif
 
-  //Set outputs to zero -> Overwritten in ex.
-  // if (toMem != nullptr) {
-  //   *toMem = 0;
-  // }
-  // if (toXReg != nullptr) {
-  //   *toXReg = 0;
-  // }
-  // if (toMem_valid != nullptr) {
-  //   *toMem_valid = false;
-  // }
-  // if (toXReg_valid != nullptr) {
-  //   *toXReg_valid = false;
-  // }
-  // if (id_out != nullptr) {
-  //   *id_out = 0;
-  // }
 
   switch (op.instr_type)
     {
@@ -122,7 +106,7 @@ void execute_R4TYPE(FpuPipeObj& op, FpuRf* registerFile){
 
 
 
-void execute_RTYPE(FpuPipeObj& op, FpuRf* registerFile){ //, int fromXReg, unsigned int* id_out, uint32_t* toXReg, bool* toXReg_valid){
+void execute_RTYPE(FpuPipeObj& op, FpuRf* registerFile){
   std::feclearexcept(FE_ALL_EXCEPT); //Clear all flags
   RTYPE dec_instr = {.instr = op.instr}; //"Decode" into ITYPE
   FPNumber data1 = registerFile->read(op.addrFrom[0]);
@@ -271,7 +255,7 @@ void execute_RTYPE(FpuPipeObj& op, FpuRf* registerFile){ //, int fromXReg, unsig
     {
     case 0b00000: //FCVT.S.W
     {
-      op.data.f = static_cast<float>(op.operand_a.s); //Needs to be requested from cpu?
+      op.data.f = static_cast<float>(op.operand_a.s);
       break;
     }
     case 0b00001: //FCVT.S.WU
@@ -291,11 +275,12 @@ void execute_RTYPE(FpuPipeObj& op, FpuRf* registerFile){ //, int fromXReg, unsig
     {
     case 0b000: //FMV_X_W
     {
-      op.dataToXreg = data1.bitpattern;
+      op.dataToXreg = data1.bitpattern; //TODO: use ResultInterface at writeback stage
       break;
     }
     case 0b001: //FCLASS.S
     {
+      std::cout << "FCLASS.S" << std::endl;
       if(isSubnormal(data1))
       {
         //subnormal number
@@ -351,7 +336,7 @@ void execute_RTYPE(FpuPipeObj& op, FpuRf* registerFile){ //, int fromXReg, unsig
   case FMV_W_X:
   {
     //Moves bitpattern from X to W(F)
-    // op.data.bitpattern =  fromXReg; //TODO: Request like mem
+    op.data.bitpattern =  op.operand_a.bitpattern;
     break;
   }
   default:

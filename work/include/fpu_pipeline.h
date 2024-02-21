@@ -32,6 +32,7 @@ class FpuPipeline {
     //Memory request interface
     bool mem_valid; //set by core, polled in rvfpm.sv
     x_mem_req_t mem_req; //set by core, polled in rvfpm.sv
+    bool mem_ready; //set by rvfpm.sv, polled in core
 
     //Memory result interface
     bool memoryResultValid; //Set during memory result transaction
@@ -46,7 +47,7 @@ class FpuPipeline {
     void addOpToQueue(FpuPipeObj op);
     void setWaitingOp(FpuPipeObj op);
     void pollMemReq(bool& mem_valid, x_mem_req_t& mem_req);
-    void writeMemRes(bool mem_result_valid, unsigned int id, unsigned int rdata, bool err, bool dbg);
+    void writeMemRes(bool mem_ready, bool mem_result_valid, unsigned int id, unsigned int rdata, bool err, bool dbg);
 
     void flush();
     int getNumStages();

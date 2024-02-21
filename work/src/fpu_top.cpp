@@ -26,6 +26,8 @@ void FPU::resetFPU(){
   #endif
   //TODO: reset new features aswell
   pipeline.flush();
+  predecoder.reset(); //TODO: should this be deleted?
+  //Reset pipeline queue (update flush)
 };
 
 
@@ -39,8 +41,12 @@ void FPU::predecodeInstruction(uint32_t instruction, unsigned int id){ //TODO: w
   predecoder.predecodeInstruction(instruction, id);
 };
 
-void FPU::pollPredecoderResult(x_issue_resp_t& resp_ref){
-  predecoder.pollPredecoderResult(resp_ref);
+void FPU::pollPredecoderResult(x_issue_resp_t& resp_ref, bool& use_rs_a, bool& use_rs_b, bool& use_rs_c){
+  predecoder.pollPredecoderResult(resp_ref, use_rs_a, use_rs_b, use_rs_c);
+};
+
+void FPU::resetPredecoder(){
+  predecoder.reset();
 };
 
 FpuPipeObj FPU::testFloatOp(){
@@ -63,8 +69,8 @@ void FPU::pollMemReq(bool& mem_valid, x_mem_req_t& mem_req){
   pipeline.pollMemReq(mem_valid, mem_req);
 };
 
-void FPU::writeMemRes(bool mem_result_valid, unsigned int id, unsigned int rdata, bool err, bool dbg){
-  pipeline.writeMemRes(mem_result_valid, id, rdata, err, dbg);
+void FPU::writeMemRes(bool mem_ready, bool mem_result_valid, unsigned int id, unsigned int rdata, bool err, bool dbg){
+  pipeline.writeMemRes(mem_ready, mem_result_valid, id, rdata, err, dbg);
 };
 
 

@@ -25,6 +25,9 @@ FpuPipeline::~FpuPipeline() {
 }
 
 FpuPipeObj FpuPipeline::step(){
+
+  std::cout << "Step" << std::endl;
+  std::cout << "MemStall: " << mem_stalled << " ExStall: " << ex_stalled << " stalled: " << stalled << std::endl;
   //Operations are decoded before adding to the pipeline
   //Check for memory dependencies and request throough interface
   //stall here untill memory is ready (or reorder)
@@ -42,10 +45,11 @@ FpuPipeObj FpuPipeline::step(){
   }
 
   //Do some stall checking here
+  //TODO:if load/store. Execute takes 2 cycles. Set valid, next cycle, ready=1 and valid should be 0 at next cycle
   if (!stalled){
-      mem_valid = 0;
-      this->mem_req = {};
-      executeOp(pipeline.at(EXECUTE_STEP), registerFilePtr, mem_valid, this->mem_req); //Compute operation at execute stage. //Issue memory request to CPU at this stage
+    mem_valid = 0;
+    this->mem_req = {};
+    executeOp(pipeline.at(EXECUTE_STEP), registerFilePtr, mem_valid, this->mem_req); //Compute operation at execute stage. //Issue memory request to CPU at this stage
     if (pipeline.at(EXECUTE_STEP).remaining_ex_cycles > 0){
       ex_stalled = true;
     } else {
@@ -76,9 +80,10 @@ FpuPipeObj FpuPipeline::step(){
   //WB
   //TODO: check for stall
   if (!pipeline.at(WRITEBACK_STEP).toMem && !pipeline.at(WRITEBACK_STEP).toXReg){ //if writing to rf, write to register file
-
     registerFilePtr->write(pipeline.at(WRITEBACK_STEP).addrTo, pipeline.at(WRITEBACK_STEP).data);
   }
+
+  //TODO: Write to result interface if toXReg or ZFINX
 
   //TODO: Check for hazards underway, dependant on if OOO/fowarding is 1
 
@@ -110,7 +115,8 @@ void FpuPipeline::pollMemReq(bool& mem_valid, x_mem_req_t& mem_req){
   mem_req = this->mem_req;
 };
 
-void FpuPipeline::writeMemRes(bool mem_result_valid, unsigned int id, unsigned int rdata, bool err, bool dbg){
+void FpuPipeline::writeMemRes(bool mem_ready, bool mem_result_valid, unsigned int id, unsigned int rdata, bool err, bool dbg){
+  this->mem_ready = mem_ready;
   memoryResultValid = mem_result_valid;
   memoryResults.id = id;
   memoryResults.rdata = rdata;
@@ -132,6 +138,14 @@ void FpuPipeline::setWaitingOp(FpuPipeObj op){
 
 void FpuPipeline::flush(){
   pipeline = std::deque<FpuPipeObj>(NUM_PIPELINE_STAGES, FpuPipeObj({}));
+  //Reset all internal data
+  operationQueue = std::deque<FpuPipeObj>(QUEUE_DEPTH, FpuPipeObj({}));
+  mem_valid = 0;
+  mem_req = {};
+  ex_stalled = false;
+  mem_stalled = false;
+  stalled = false;
+  pipelineFull = false;
 };
 
 int FpuPipeline::getNumStages(){

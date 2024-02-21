@@ -19,7 +19,7 @@
 
 void executeOp(FpuPipeObj& op, FpuRf* registerFile, bool& mem_valid, x_mem_req_t& mem_req);
 
-void execute_RTYPE(FpuPipeObj& op, FpuRf* registerFile);//, int fromXReg, unsigned int* id_out, uint32_t* toXReg, bool* toXReg_valid);
+void execute_RTYPE(FpuPipeObj& op, FpuRf* registerFile);
 void execute_R4TYPE(FpuPipeObj& op, FpuRf* registerFile);
 void execute_ITYPE(FpuPipeObj& op, FpuRf* registerFile, bool& mem_valid, x_mem_req_t& mem_req);
 void execute_STYPE(FpuPipeObj& op, FpuRf* registerFile, bool& mem_valid, x_mem_req_t& mem_req);

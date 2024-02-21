@@ -17,7 +17,7 @@ program automatic testPr_rvfpm #(
 );
     import "DPI-C" function int unsigned randomFloat(); //C++ function for random float generation
 
-    localparam NUM_TESTS = 100;
+    localparam NUM_TESTS = 10;
 
     initial begin
         $display("--- Starting simulation ---");
@@ -35,24 +35,23 @@ program automatic testPr_rvfpm #(
         // repeat(PIPELINE_STAGES*2) @(posedge uin_rvfpm.ck);
         // repeat(10) @(posedge uin_rvfpm.ck); //Wait a bit
 
+
+        $display("--- %t: started FMW.X:W ---", $time);
         // init();
         // fillRF();
         // repeat(NUM_TESTS) begin //test FMV.X:W (move to integer).
         //    doRTYPE(.funct7(7'b1110000), .rs2(0), .funct3(0));
-        //    @(posedge uin_rvfpm.ck) uin_rvfpm.instruction = 0; //Set instr to 0 to toggle toXReg_valid.
         // end
-        // init();
-        // fillRF();
-        // repeat(NUM_TESTS) begin //test FMV.W:X (move from integer).
-        //     doRTYPE(.funct7(7'b1111000), .rs2(0), .funct3(0));
-        //     fork
-        //         begin
-        //             repeat(PIPELINE_STAGES) @(posedge uin_rvfpm.ck);
-        //             uin_rvfpm.data_fromXReg = randomFloat(); //set data at appropriate time
-        //         end
-        //     join_none
-        // end
+
+        init();
+        fillRF();
+        repeat(NUM_TESTS) begin //test FMV.W:X (move from integer).
+        doRTYPE(.funct7(7'b1111000), .rs2(0), .funct3(0), .operand_a(123), .rs_valid_i(3'b001));
+        end
+
         // uin_rvfpm.data_fromXReg = 0;
+        $display("--- %t: started classify and stuff ---", $time);
+
         init();
         fillRF();
         repeat(NUM_TESTS) begin //test NUM_TESTS number of min-operations using random registers
@@ -66,44 +65,59 @@ program automatic testPr_rvfpm #(
         init();
         fillRF();
 
-        // repeat(NUM_TESTS) begin //test NUM_TESTS number of FSGNJ-operations using random registers
-        //     doRTYPE(.funct7(7'b0010000), .funct3(3'b000));
-        // end
-        // init();
-        // fillRF();
-        // repeat(NUM_TESTS) begin //test NUM_TESTS number of FSGNJN-operations using random registers
-        //     doRTYPE(.funct7(7'b0010000), .funct3(3'b001));
-        // end
-        // init();
-        // fillRF();
+        repeat(NUM_TESTS) begin //test NUM_TESTS number of FSGNJ-operations using random registers
+            doRTYPE(.funct7(7'b0010000), .funct3(3'b000));
+        end
+        init();
+        fillRF();
+        repeat(NUM_TESTS) begin //test NUM_TESTS number of FSGNJN-operations using random registers
+            doRTYPE(.funct7(7'b0010000), .funct3(3'b001));
+        end
+        init();
+        fillRF();
 
-        // repeat(NUM_TESTS) begin //test NUM_TESTS number of FSGNJX-operations using random registers
-        //     doRTYPE(.funct7(7'b0010000), .funct3(3'b010));
-        // end
+        repeat(NUM_TESTS) begin //test NUM_TESTS number of FSGNJX-operations using random registers
+            doRTYPE(.funct7(7'b0010000), .funct3(3'b010));
+        end
 
-        // repeat(10) @(posedge uin_rvfpm.ck);
-        // doRTYPE(.funct7(7'b0000100), .rs1(3), .rs2(2), .rd(4));
-        // @(posedge uin_rvfpm.ck);
-        // uin_rvfpm.instruction = 0;
-        // repeat(PIPELINE_STAGES*2) @(posedge uin_rvfpm.ck);
+        repeat(10) @(posedge uin_rvfpm.ck);
+        doRTYPE(.funct7(7'b0000100), .rs1(3), .rs2(2), .rd(4));
+        repeat(PIPELINE_STAGES*2) @(posedge uin_rvfpm.ck);
+        $display("--- %t: started Classify-load ---", $time);
 
-        // //Classify
-        // doITYPE(.rd(0), .data(32'b11111111100000000000000000000000)); //-inf
-        // doITYPE(.rd(1), .data($shortrealtobits(-1.4125))); //Negative normal
-        // doITYPE(.rd(2), .data(32'b10000000000001000010000100000000)); //Negative subnormal
-        // doITYPE(.rd(3), .data(32'b10000000000000000000000000000000)); //-0
-        // doITYPE(.rd(4), .data(0)); //positive 0
-        // doITYPE(.rd(5), .data(32'b00000000000001000010000100000000)); //Positive subnormal
-        // doITYPE(.rd(6), .data($shortrealtobits(1.4125))); //positive normal (12.125)
-        // doITYPE(.rd(7), .data(32'b01111111100000000000000000000000)); //inf
-        // doITYPE(.rd(8), .data(32'b01111111101000000000000000000000)); //Signaling NaN
-        // doITYPE(.rd(9), .data(32'b01111111110000000000000000000000)); //qNaN
-        // for (int i=0; i<10; ++i) begin
-        //     doRTYPE(.funct7(7'b1110000), .rs1(i), .rs2(0), .rd(0), .funct3(3'b001)); //Class
-        // end
-        // @(posedge uin_rvfpm.ck);
-        // uin_rvfpm.instruction = 0;
-        // repeat(PIPELINE_STAGES*2) @(posedge uin_rvfpm.ck);
+        //Classify
+
+        //Vi mem-staller her.
+        doITYPE(.rd(0), .data(32'b11111111100000000000000000000000)); //-inf
+        @(negedge uin_xif.issue_valid);
+        doITYPE(.rd(1), .data($shortrealtobits(-1.4125))); //Negative normal
+        @(negedge uin_xif.issue_valid);
+        doITYPE(.rd(2), .data(32'b10000000000001000010000100000000)); //Negative subnormal
+        @(negedge uin_xif.issue_valid);
+        doITYPE(.rd(3), .data(32'b10000000000000000000000000000000)); //-0
+        @(negedge uin_xif.issue_valid);
+        doITYPE(.rd(4), .data(0)); //positive 0
+        @(negedge uin_xif.issue_valid);
+        doITYPE(.rd(5), .data(32'b00000000000001000010000100000000)); //Positive subnormal
+        @(negedge uin_xif.issue_valid);
+        doITYPE(.rd(6), .data($shortrealtobits(1.4125))); //positive normal (12.125)
+        @(negedge uin_xif.issue_valid);
+        doITYPE(.rd(7), .data(32'b01111111100000000000000000000000)); //inf
+        @(negedge uin_xif.issue_valid);
+        doITYPE(.rd(8), .data(32'b01111111101000000000000000000000)); //Signaling NaN
+        @(negedge uin_xif.issue_valid);
+        doITYPE(.rd(9), .data(32'b01111111110000000000000000000000)); //qNaN
+        @(negedge uin_xif.issue_valid);
+        $display("--- %t: started Classify2 ---", $time);
+        //Her stopper vi
+        for (int i=0; i<10; ++i) begin
+            $display("i: %0d", i);
+            doRTYPE(.funct7(7'b1110000), .rs1(i), .rs2(0), .rd(0), .funct3(3'b001)); //Class
+        end
+        @(posedge uin_rvfpm.ck);
+        repeat(PIPELINE_STAGES*2) @(posedge uin_rvfpm.ck);
+        $display("--- %t: started Sign Testing ---", $time);
+
 
         //Sign testing //For waveforms
         // + and  +
@@ -135,6 +149,10 @@ end
         uin_rvfpm.rst = 1;
         @(posedge uin_rvfpm.ck);
         uin_rvfpm.rst = 0;
+        uin_xif.issue_valid = 0;
+        uin_xif.issue_req ={};
+        uin_xif.mem_result_valid = 0;
+        uin_xif.mem_result ={};
         @(posedge uin_rvfpm.ck);
     endtask
 
@@ -145,12 +163,9 @@ end
 
     task init();
         reset();
-        //TODO: init all signals
-        uin_xif.issue_valid = 0;
-        uin_xif.mem_result_valid = 0;
-        uin_xif.mem_result ={};
         @(posedge uin_rvfpm.ck);
         uin_rvfpm.enable = 1;
+        // uin_xif.issue_req.rs_valid = 3'b111;
     endtask
 
     task fillRF();
@@ -162,7 +177,7 @@ end
         repeat(PIPELINE_STAGES) @(posedge uin_rvfpm.ck); //wait for all operations to finish
     endtask
 
-    task doRTYPE(input int funct7 = 0, input int rs2 = $urandom_range(0, NUM_REGS-1), input int rs1 = $urandom_range(0, NUM_REGS-1), input int funct3 = 0, input int rd = $urandom_range(0, NUM_REGS-1));
+    task doRTYPE(input int funct7 = 0, input int rs2 = $urandom_range(0, NUM_REGS-1), input int rs1 = $urandom_range(0, NUM_REGS-1), input int funct3 = 0, input int rd = $urandom_range(0, NUM_REGS-1), input int unsigned operand_a = 0, input int unsigned operand_b = 0, input int unsigned operand_c = 0, input logic[2:0] rs_valid_i = 3'b000);
         automatic logic[31:0]  instr_r = 0;
         @(posedge uin_rvfpm.ck)
         uin_xif.issue_valid = 1;
@@ -172,7 +187,7 @@ end
         instr_r[14:12] = funct3; //RM
         instr_r[11:7] = rd;  //rd (dest)
         instr_r[6:0] = 7'b1010011;  //OPCODE
-        doIssueInst(instr_r, id);
+        doIssueInst(instr_r, id, operand_a, operand_b, operand_c, rs_valid_i);
     endtask
 
     task doSTYPE(input int imm = 17, input int rs2 = $urandom_range(0, NUM_REGS-1), input int rs1 = 0, input int offset = 0); //Default get value from random register
@@ -239,27 +254,46 @@ end
         join_none
     endtask;
 
-    task automatic doIssueInst(input logic[31:0] instruction = 0, input logic[X_ID_WIDTH-1:0] id = 0); //Issue instruction to coproc
+    task automatic doIssueInst(input logic[31:0] instruction = 0, input logic[X_ID_WIDTH-1:0] id = 0, input int unsigned operand_a = 0, input int unsigned operand_b = 0, input int unsigned operand_c = 0, input logic[2:0] rs_valid_i = 3'b000); //Issue instruction to coproc
+        //TODO: add operands to the issue request
         static semaphore s = new(1);
         while (!s.try_get) @(posedge uin_rvfpm.ck);
             uin_xif.issue_valid = 1;
             uin_xif.issue_req.instr = instruction;
             uin_xif.issue_req.id = id;
+            uin_xif.issue_req.rs[0] = operand_a;
+            uin_xif.issue_req.rs[1] = operand_b;
+            uin_xif.issue_req.rs[2] = operand_c;
+            uin_xif.issue_req.rs_valid = rs_valid_i;
             //TODO: make this compliant- what is "not accepted"
             fork: wait_for_response
                 begin
-                    @(uin_xif.issue_ready && uin_xif.issue_resp.accept)
-                    @(posedge uin_rvfpm.ck)
+                    while (uin_xif.issue_valid) begin
+                        @(posedge uin_rvfpm.ck)
+                        if(uin_xif.issue_ready && uin_xif.issue_resp.accept) begin
+                            break;
+                        end
+                    end
+                    @(posedge uin_rvfpm.ck);
                     uin_xif.issue_valid = 0;
                     uin_xif.issue_req ={};
+                    uin_xif.issue_req.rs[0] = 0;
+                    uin_xif.issue_req.rs[1] = 0;
+                    uin_xif.issue_req.rs[2] = 0;
+                    uin_xif.issue_req.rs_valid = 3'b000;
                     nextId();
                     @(posedge uin_rvfpm.ck);
                     #0 s.put();
                     disable wait_for_response;
                 end
+                // begin //If instruction is not accepted
+                //     @(negedge issue_valid && (!uin_xif.issue_resp.accept || !uin_xif.issue_ready) )
+
+
+                // end
                 begin
 
-                    #10000; //some timeout to release s. and raise some error
+                    #1000; //some timeout to release s. and raise some error
                     $error("Timeout on issue instruction");
                     uin_xif.issue_valid = 0;
                     uin_xif.issue_req ={};
