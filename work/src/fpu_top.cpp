@@ -5,8 +5,9 @@
   RISC-V Floating Point Unit Model with FP registers, and parameterized number of pipelines
 */
 #include "fpu_top.h"
+#include <iostream>
 
-FPU::FPU (int pipelineStages, int rfDepth) : pipeline(pipelineStages), registerFile(rfDepth) {
+FPU::FPU (int pipelineStages, int queueDepth, int rfDepth) : registerFile(rfDepth),  pipeline(pipelineStages, queueDepth, &registerFile), predecoder(fpuReady) {
   #ifndef ZFINX
     // registerFile(rfDepth)
   #else
@@ -23,124 +24,80 @@ void FPU::resetFPU(){
     registerFile.resetFpuRf();
   #endif
   pipeline.flush();
+  predecoder.reset();
 };
 
 
-FpuPipeObj FPU::decodeOp(uint32_t instruction, unsigned int id) {
-  //Get result of operation
-  unsigned int opcode = instruction & 127 ; //Get first 7 bit
-  FpuPipeObj result = {};
-  switch (opcode)
-  {
-  case FLW:
-    result = decode_ITYPE(instruction);
-    break;
-  case FSW:
-    result = decode_STYPE(instruction);
-    break;
-  case FMADD_S:
-    result = decode_R4TYPE(instruction);
-    break;
-  case FMSUB_S:
-    result = decode_R4TYPE(instruction);
-    break;
-  case FNMSUB_S:
-    result = decode_R4TYPE(instruction);
-    break;
-  case FNMADD_S:
-    result = decode_R4TYPE(instruction);
-    break;
-  case OP_FP:
-    result = decode_RTYPE(instruction);
-    break;
-  default:
-    break;
-  }
-  result.id = id;
-  return result;
+void FPU::clockEvent(bool& fpu_ready){
+  pipeline.step();
+  fpuReady = !pipeline.isStalled();
+  fpu_ready = fpuReady;
 };
 
-void FPU::executeOp(FpuPipeObj& op, unsigned int fromMem, int fromXReg, unsigned int* id_out, uint32_t* toMem, uint32_t* toXReg, bool* toMem_valid, bool* toXReg_valid) {
-  #ifndef NO_ROUNDING  // NO_ROUNDING uses c++ default rounding mode.
-    unsigned int rm = registerFile.readfrm();
-    if (rm == 0b111) //0b111 is dynamic rounding, and is handled for the relevant instructions later.
-    {
-      RTYPE rm_instr = {.instr = op.instr}; //Decode into RTYPE to extract rm (same field for R4Type)
-      setRoundingMode(rm_instr.parts.funct3);
-    } else {
-      setRoundingMode(rm);
-    }
-  #endif
 
-  //Set outputs to zero -> Overwritten in ex.
-  if (toMem != nullptr) {
-    *toMem = 0;
-  }
-  if (toXReg != nullptr) {
-    *toXReg = 0;
-  }
-  if (toMem_valid != nullptr) {
-    *toMem_valid = false;
-  }
-  if (toXReg_valid != nullptr) {
-    *toXReg_valid = false;
-  }
-  if (id_out != nullptr) {
-    *id_out = 0;
-  }
+//--------------------------
+// Issue interface
+//--------------------------
+void FPU::predecodeInstruction(uint32_t instruction, unsigned int id){
+  predecoder.predecodeInstruction(instruction, id);
+};
 
+void FPU::pollPredecoderResult(x_issue_resp_t& resp_ref, bool& use_rs_a, bool& use_rs_b, bool& use_rs_c){
+  predecoder.pollPredecoderResult(resp_ref, use_rs_a, use_rs_b, use_rs_c);
+};
 
-  switch (op.instr_type)
-    {
-    case it_ITYPE:
-    {
-      execute_ITYPE(op, &registerFile, fromMem);
-      break;
-    }
-    case it_STYPE:
-    {
-      execute_STYPE(op, &registerFile, id_out, toMem, toMem_valid);
-      break;
-    }
-    case it_RTYPE:
-    {
-      execute_RTYPE(op, &registerFile, fromXReg, id_out, toXReg, toXReg_valid);
-      break;
-    }
-    case it_R4TYPE:
-    {
-      execute_R4TYPE(op, &registerFile);
-      break;
-    }
-    default:
-      //If no operation is in pipeline: do nothing
-      break;
-  }
-  registerFile.raiseFlags(op.flags);
-  // if (flags_out != nullptr) {
-  //   // *flags_out = op.flags;
-  // }
+void FPU::resetPredecoder(){
+  predecoder.reset();
+};
+
+FpuPipeObj FPU::testFloatOp(){
+  return pipeline.step();
 }
 
 
-
-
-FpuPipeObj FPU::operation(uint32_t instruction, unsigned int id, int fromXReg, unsigned int fromMem, unsigned int* id_out, uint32_t* toMem, uint32_t* toXReg, bool* pipelineFull, bool* toMem_valid, bool* toXReg_valid) {
-  FpuPipeObj newOp = decodeOp(instruction, id);
-  FpuPipeObj currOp = {};
-  if(pipeline.getNumStages() == 0){ //Execute immediately
-    currOp = newOp;
-  } else
-  { //add to pipeline - check for full pipeline/stalls etc.
-    currOp = pipeline.step(newOp, pipelineFull);
+void FPU::addAcceptedInstruction(uint32_t instruction, unsigned int id, unsigned int operand_a, unsigned int operand_b, unsigned int operand_c){ //and other necessary inputs (should be somewhat close to in_xif type)
+  FpuPipeObj newOp = decodeOp(instruction, id, operand_a, operand_b, operand_c);
+  // newOp.id = id;
+  if (pipeline.getQueueDepth() > 0){
+    pipeline.addOpToQueue(newOp);
   }
-  executeOp(currOp, fromMem, fromXReg, id_out, toMem, toXReg, toMem_valid, toXReg_valid);
-  return currOp; //Only for testing
+  else {
+    pipeline.setWaitingOp(newOp); //set waitingOp (if queue=0, this will be empty given the instruction is accepted
+  }
 }
 
+//--------------------------
+// Memory interface
+//--------------------------
+void FPU::pollMemReq(bool& mem_valid, x_mem_req_t& mem_req){
+  pipeline.pollMemReq(mem_valid, mem_req);
+};
+
+void FPU::writeMemRes(bool mem_ready, bool mem_result_valid, unsigned int id, unsigned int rdata, bool err, bool dbg){
+  pipeline.writeMemRes(mem_ready, mem_result_valid, id, rdata, err, dbg);
+};
+
+//--------------------------
+// Result interface
+//--------------------------
+void FPU::writeResult(bool result_ready){
+  pipeline.writeResult(result_ready);
+};
+
+void FPU::pollResult(bool& result_valid, x_result_t& result){
+  pipeline.pollResult(result_valid, result);
+};
+
+//--------------------------
+// Backdoor functions
+//--------------------------
+void FPU::bd_load(uint32_t instruction, unsigned int dataFromMem){
+  FpuPipeObj op = decodeOp(instruction, 0, 0, 0, 0); //id is 0 for now
+  op.data.bitpattern = dataFromMem;
+  registerFile.write(op.addrTo, op.data);
+};
 
 
-//Backdoor functions
 FPNumber FPU::bd_getData(uint32_t addr){
   return registerFile.read(addr);
 };
@@ -156,13 +113,14 @@ uint32_t FPU::bd_getFcsr() {
   return registerFile.read_fcsr().v;
 }
 
-
-
-
 std::vector<float> FPU::bd_getRF(){
   return registerFile.getRf();
 };
 
 unsigned int FPU::bd_getPipeStageId(int stage) {
-  return pipeline.getId(stage);
+  return pipeline.getId_pipeline(stage);
+}
+
+unsigned int FPU::bd_getQueueStageId(int stage) {
+  return pipeline.getId_operationQueue(stage);
 }

@@ -8,23 +8,17 @@ ifneq (,$(findstring clang,$(COMPILER)))
 	ARCH = arm
 	TININESS = -tininessbefore
 else
-	CXXFLAGS := $(CXXFLAGS) -frounding-math -fsignaling-nans -ffloat-store  -static-libstdc++
+	CXXFLAGS := $(CXXFLAGS) -Wattributes -frounding-math -fsignaling-nans -ffloat-store  -static-libstdc++
 	ARCH = x86
 	TININESS = -tininessafter
 endif
 
-
-test:  #run using args="-D EXT_D/Q" to test with D/Q
-	$(CXX) $(CXXFLAGS) -fno-fast-math -I ./include src/test.cpp src/fpu_top.cpp src/fpu_rf.cpp src/fpu_operations.cpp src/fp_number.cpp  -o bin/rvfpm_test $(args)
-	./bin/rvfpm_test
-
-test_no_rounding:  #run using args="-D EXT_D/Q" to test with D/Q
-	$(CXX) $(CXXFLAGS) -fno-fast-math -I ./include src/test.cpp src/fpu_top.cpp src/fpu_rf.cpp src/fpu_operations.cpp src/fp_number.cpp  -o bin/rvfpm_test -D NO_ROUNDING
-	./bin/rvfpm_test
+#Filepaths for the c++ core
+COREFILES = src/fpu_top.cpp src/fpu_predecoder.cpp src/fpu_decode.cpp src/fpu_execute.cpp src/fpu_pipeline.cpp src/fpu_rf.cpp  src/fp_number.cpp
 
 TestFloat: #Compile and test for IEEE754 compliance
 	make clean
-	$(CXX) $(CXXFLAGS) -I ./include src/in_TestFloat.cpp src/fpu_top.cpp src/fpu_pipeline.cpp src/fpu_rf.cpp src/fpu_operations.cpp src/fp_number.cpp  -o bin/rvfpm_testFloat -D TESTFLOAT
+	$(CXX) $(CXXFLAGS) -I ./include src/in_TestFloat.cpp $(COREFILES)  -o bin/rvfpm_testFloat -D TESTFLOAT
 	chmod a+x,g+x ./bin/testfloat_ver_$(ARCH)
 	chmod a+x,g+x ./bin/testfloat_gen_$(ARCH)
 	make -i TestFloat_all args="-rnear_even"
@@ -51,11 +45,13 @@ TestFloat_all:
 
 
 sharedLib: #Only tested for x86_64
-	$(CXX) $(CXXFLAGS) -shared -fPIC -o bin/lib_rvfpm.so -I ./include src/dpi_wrapper.cpp src/fpu_top.cpp src/fpu_pipeline.cpp src/fpu_rf.cpp src/fpu_operations.cpp src/fp_number.cpp
+	$(CXX) $(CXXFLAGS) -shared -fPIC -o bin/lib_rvfpm.so -I ./include src/dpi_wrapper.cpp $(COREFILES)
 
 sim_full:
 	make clean
 	make sharedLib
+	vlog -work work /work/anb7/prosjektoppgave/rvfpm/work/src/in_xif.sv
+	vlog -work work /work/anb7/prosjektoppgave/rvfpm/work/src/pa_rvfpm.sv
 	vlog -work work /work/anb7/prosjektoppgave/rvfpm/work/src/rvfpm.sv
 	vlog -work work /work/anb7/prosjektoppgave/rvfpm/work/sim/inTest_rvfpm.sv
 	vlog -work work /work/anb7/prosjektoppgave/rvfpm/work/sim/assertions_rvfpm.sv

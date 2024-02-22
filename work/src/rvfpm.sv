@@ -9,94 +9,132 @@
 */
 
 
-`define FLEN 32
-`define XLEN 32
 `define NUM_FPU_REGS 32
+`include "pa_rvfpm.sv"
+import pa_rvfpm::*;
 
 
 module rvfpm #(
-  parameter NUM_REGS          = 32,
-  parameter XLEN              = `XLEN,
-    //Pipeline parameters
+  parameter NUM_REGS          = pa_rvfpm::NUM_REGS,
+  parameter XLEN              = pa_rvfpm::XLEN,
+  //System parameters
+  //Pipeline parameters
   parameter PIPELINE_STAGES   = 4,
-    //CORE-V-XIF parameters
-  parameter X_NUM_RS          = 2, //Read ports //TODO: not used
-  parameter X_ID_WIDTH        = 4,
-  parameter X_MEM_WIDTH       = `FLEN, //TODO: dependent on extension
-  parameter X_RFR_WIDTH       = `FLEN, //Read acces width //TODO: not used
-  parameter X_RFW_WIDTH       = `FLEN, //Write acces width //TODO: not used
-  parameter X_MISA            = 'h0000_0000, //TODO: not used
-  parameter X_ECS_XS          = 2'b0,        //TODO: not used
-  parameter X_DUALREAD        = 0, //TODO: not implemented
-  parameter X_DUALWRITE       = 0 //TODO: not implemented
+  parameter QUEUE_DEPTH       = 0, //Size of operation queue
+  parameter FORWARDING        = 0, //Set to 1 to enable forwarding, not implemented
+  parameter OUT_OF_ORDER      = 0, //Set to 1 to enable out of order execution, not implemented
 
+  //CORE-V-XIF parameters for coprocessor
+  parameter X_NUM_RS          = pa_rvfpm::X_NUM_RS, //Read ports
+  parameter X_ID_WIDTH        = pa_rvfpm::X_ID_WIDTH,
+  parameter X_MEM_WIDTH       = pa_rvfpm::FLEN, //TODO: dependent on extension
+  parameter X_RFR_WIDTH       = pa_rvfpm::FLEN, //Read acces width
+  parameter X_RFW_WIDTH       = pa_rvfpm::FLEN, //Write acces width
+  parameter X_MISA            = pa_rvfpm::X_MISA, //TODO: not used
+  parameter X_ECS_XS          = pa_rvfpm::X_ECS_XS,        //TODO: not used
+  parameter X_DUALREAD        = pa_rvfpm::X_DUALREAD, //TODO: not implemented
+  parameter X_DUALWRITE       = pa_rvfpm::X_DUALWRITE //TODO: not implemented
 )
 
 (
   input logic ck,
   input logic rst,
   input logic enable,
-  //TODO: expand for other formats to correct num of bits.
-  input logic[31:0] instruction,
-  input logic [X_ID_WIDTH-1:0] id,
-  input logic[XLEN-1:0] data_fromXReg, //Todo: when does this data need to be present in the pipeline?
-  input int unsigned data_fromMem, //Todo: use logic[FLEN-1:0] instead?
+  output logic fpu_ready,
 
-  //TODO: if ZFinx - have operands as inputs, and output
+  //eXtension interface for coprocessor
+  in_xif.coproc_issue xif_issue_if,
+  in_xif.coproc_mem  xif_mem_if,
+  in_xif.coproc_mem_result xif_mem_result_if,
+  in_xif.coproc_result xif_result_if
 
-  output logic[XLEN-1:0] data_toXReg,
-  output int unsigned  data_toMem,
-  output logic toXReg_valid, //valid flags for outputs
-  output logic toMem_valid,
-  output logic [X_ID_WIDTH-1:0] id_out,
-  output logic fpu_ready //Indicate stalls
 );
   //-----------------------
   //-- DPI-C Imports
   //-----------------------
-  import "DPI-C" function chandle create_fpu_model(input int pipelineStages, input int rfDepth);
-  import "DPI-C" function void fpu_operation(
-    input chandle fpu_ptr,
-    input int unsigned instruction,
-    input int unsigned id,
-    input int unsigned fromXReg,
-    input int unsigned fromMem,
-    output int unsigned id_out,
-    output int unsigned toMem,
-    output int unsigned toXReg,
-    output logic pipelineFull,
-    output logic toMem_valid,
-    output logic toXReg_valid
-    );
+  import "DPI-C" function chandle create_fpu_model(input int pipelineStages, input int queueDepth, input int rfDepth);
   import "DPI-C" function void reset_fpu(input chandle fpu_ptr);
+  import "DPI-C" function void clock_event(input chandle fpu_ptr, output logic fpu_ready);
   import "DPI-C" function void destroy_fpu(input chandle fpu_ptr);
   import "DPI-C" function int unsigned getRFContent(input chandle fpu_ptr, input int addr);
+  import "DPI-C" function void add_accepted_instruction(input chandle fpu_ptr, input int instr, input int unsigned id, input int unsigned operand_a, input int unsigned operand_b, input int unsigned operand_c);
+  import "DPI-C" function void reset_predecoder(input chandle fpu_ptr);
+  import "DPI-C" function void poll_predecoder_result(input chandle fpu_ptr, output x_issue_resp_t resp, output logic use_rs_a, output logic use_rs_b, output logic use_rs_c);
+  import "DPI-C" function void predecode_instruction(input chandle fpu_ptr, input int instr, input int unsigned id);
+  import "DPI-C" function void poll_mem_req(input chandle fpu_ptr, output logic mem_valid, output int unsigned id, output int unsigned addr, output int unsigned wdata);
+  import "DPI-C" function void write_sv_state(input chandle fpu_ptr, input logic mem_ready, input logic mem_result_valid, input int unsigned id, input int unsigned rdata, input logic err, input logic dbg, input logic result_ready);
+  import "DPI-C" function void poll_res(input chandle fpu_ptr, output logic result_valid, output int unsigned id, output int unsigned data, output int unsigned rd); //TODO: add remaining signals in interface
+
 
   //-----------------------
   //-- Local parameters
   //-----------------------
-  logic pipelineFull; //status signal
+  logic fpu_ready_s; //status signal
+  logic [X_NUM_RS-1:0] use_rs_i; //Which operands are used
+  logic new_instruction_accepted; //Indicates that a new instruction is accepted
+  x_issue_resp_t issue_resp; //To recieve issue response
+  x_mem_result_t mem_res;
   //-----------------------
   //-- Initialization
   //-----------------------
+  assign new_instruction_accepted = xif_issue_if.issue_valid && xif_issue_if.issue_ready && xif_issue_if.issue_resp.accept; //Signal that a new instruction is accepted
   chandle fpu;
   initial begin
-    fpu = create_fpu_model(PIPELINE_STAGES, NUM_REGS);
+    fpu = create_fpu_model(PIPELINE_STAGES, QUEUE_DEPTH, NUM_REGS);
   end
+
+  assign fpu_ready = fpu_ready_s;
+  assign xif_mem_if.mem_req.mode = 0; //TODO: Set to 0 for now
+  assign xif_mem_if.mem_req.we = 0; //TODO: Set to 0 for now
+  assign xif_mem_if.mem_req.size = 0; //TODO: Set to 0 for now
+  assign xif_mem_if.mem_req.be = 0; //TODO: Set to 0 for now
+  assign xif_mem_if.mem_req.attr = 0; //TODO: Set to 0 for now
+  assign xif_mem_if.mem_req.last = 1; //TODO: Set to 1 for now
+  assign xif_mem_if.mem_req.spec = 0; //TODO: Set to 0 for now
+
+  //Need to switch byte order, first for the whole struct, then for each part. Only for incoming structs. Outgoing structs need to be passed part by part
+  assign xif_issue_if.issue_resp = {<< {issue_resp}};
+  assign mem_res = xif_mem_result_if.mem_result;
 
 
   always_ff @(posedge ck) begin: la_main
     if (rst) begin
+      $display("%t:  Resetting FPU", $time);
       reset_fpu(fpu);
+      fpu_ready_s <= 0;
+      //Reset the rest of the signals aswell
+
     end
-    else if (enable) begin //TODO: if implemented as coprosessor, follow CORE-V-XIF conventions
-      fpu_operation(fpu, instruction, id, data_fromXReg, data_fromMem, id_out, data_toMem, data_toXReg, pipelineFull, toMem_valid, toXReg_valid);
-    end begin
+    else if (enable) begin
+      //Call clocked functions
+      write_sv_state(fpu, xif_mem_if.mem_ready, xif_mem_result_if.mem_result_valid, mem_res.id, mem_res.rdata, mem_res.err, mem_res.dbg, xif_result_if.result_ready);
+      clock_event(fpu, fpu_ready_s);
+      poll_predecoder_result(fpu, issue_resp, use_rs_i[0], use_rs_i[1], use_rs_i[2]);
+      poll_mem_req(fpu, xif_mem_if.mem_valid, xif_mem_if.mem_req.id, xif_mem_if.mem_req.addr, xif_mem_if.mem_req.wdata); //TODO: should this be polled more often to more closely resemble internal signals?
+      poll_res(fpu, xif_result_if.result_valid, xif_result_if.result.id, xif_result_if.result.data, xif_result_if.result.rd); //TODO: add remaining signals in interface
+
+
+      if (xif_issue_if.issue_valid) begin
+        xif_issue_if.issue_ready = fpu_ready_s
+        & ((use_rs_i[0] & xif_issue_if.issue_req.rs_valid[0]) | !use_rs_i[0])
+        & ((use_rs_i[1] & xif_issue_if.issue_req.rs_valid[1]) | !use_rs_i[1])
+        & ((use_rs_i[2] & xif_issue_if.issue_req.rs_valid[2]) | !use_rs_i[2]) ; //TODO: and if RS_valid is true for all used operands (find out in predecoder) (Could predictivly do it in case of ZFINX aswell)
+      end else begin
+        xif_issue_if.issue_ready = 0;
+      end
+      if (new_instruction_accepted && fpu_ready_s) begin
+        add_accepted_instruction(fpu, xif_issue_if.issue_req.instr, xif_issue_if.issue_req.id, xif_issue_if.issue_req.rs[0], xif_issue_if.issue_req.rs[1], xif_issue_if.issue_req.rs[2]);
+        reset_predecoder(fpu); //or something
+      end
+
     end
   end
 
+
   always_comb begin
-    fpu_ready <= !pipelineFull;
+    if (xif_issue_if.issue_valid && fpu_ready_s) begin
+      predecode_instruction(fpu, xif_issue_if.issue_req.instr, xif_issue_if.issue_req.id); //TODO: add issue_transaction_active?
+    end
   end
 
 

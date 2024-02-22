@@ -7,23 +7,14 @@
 
 
 #include "fpu_top.h"
+// #include "svdpi.h"
 #include <iostream>
 // #include <svdpi.h>
 
 extern "C" {
-  void* create_fpu_model(int pipelineStages, int rfDepth){
-    std::cout << "pipelineStages: " << pipelineStages << "  rfDepth: " << rfDepth <<std::endl;
-    return new FPU(pipelineStages, rfDepth); //Return pointer to FPU
-  };
-
-  void fpu_operation(void* fpu_ptr, uint32_t instruction, unsigned int id, uint32_t fromXReg, unsigned int fromMem, unsigned int* id_out, uint32_t* toMem, uint32_t* toXReg, bool* pipelineFull, bool* toMem_valid, bool* toXReg_valid){ //data only passed for operations using int(X)-registers
-	  FPU* fpu = static_cast<FPU*>(fpu_ptr); //from generic pointer to FPU pointer
-    fpu->operation(instruction, id, fromXReg, fromMem, id_out, toMem, toXReg, pipelineFull, toMem_valid, toXReg_valid);
-  }
-
-  void reset_fpu(void* fpu_ptr){
-    FPU* fpu = static_cast<FPU*>(fpu_ptr); //from generic pointer to FPU pointer
-    fpu->resetFPU();
+  void* create_fpu_model(int pipelineStages, int queueDepth, int rfDepth){
+    std::cout << "pipelineStages: " << pipelineStages << " queueDepth: " << queueDepth << "  rfDepth: " << rfDepth <<std::endl;
+    return new FPU(pipelineStages, queueDepth, rfDepth); //Return pointer to FPU
   };
 
   void destroy_fpu(void* fpu_ptr) {
@@ -31,19 +22,95 @@ extern "C" {
     delete fpu;
   }
 
-  unsigned int getRFContent(void* fpu_ptr, int reg) { //Backdoor to read content of the entire fp_register
+  void reset_fpu(void* fpu_ptr){
+    FPU* fpu = static_cast<FPU*>(fpu_ptr); //from generic pointer to FPU pointer
+    fpu->resetFPU();
+  };
+
+  void clock_event(void* fpu_ptr, bool& fpu_ready){
+    FPU* fpu = static_cast<FPU*>(fpu_ptr); //from generic pointer to FPU pointer
+    fpu->clockEvent(fpu_ready);
+  };
+
+  //-----------------------
+  // ISSUE INTERFACE
+  //-----------------------
+
+
+  void add_accepted_instruction(void* fpu_ptr, uint32_t instruction, unsigned int id, unsigned int operand_a, unsigned int operand_b, unsigned int operand_c){
+    FPU* fpu = static_cast<FPU*>(fpu_ptr);
+    fpu->addAcceptedInstruction(instruction, id, operand_a, operand_b, operand_c);
+  };
+
+  void reset_predecoder(void* fpu_ptr){
+    FPU* fpu = static_cast<FPU*>(fpu_ptr);
+    fpu->resetPredecoder();
+  };
+
+  void predecode_instruction(void* fpu_ptr, uint32_t instruction, unsigned int id){
+    FPU* fpu = static_cast<FPU*>(fpu_ptr);
+    fpu->predecodeInstruction(instruction, id);
+  };
+
+  void poll_predecoder_result(void* fpu_ptr, x_issue_resp_t& resp, bool& use_rs_a, bool& use_rs_b, bool& use_rs_c){
+    FPU* fpu = static_cast<FPU*>(fpu_ptr);
+    fpu->pollPredecoderResult(resp, use_rs_a, use_rs_b, use_rs_c);
+  };
+
+  //-----------------------
+  // MEM REQ/RES INTERFACE
+  //-----------------------
+
+  void poll_mem_req(void* fpu_ptr, bool& mem_valid, unsigned int& id,  unsigned int& addr, unsigned int& wdata){
+    FPU* fpu = static_cast<FPU*>(fpu_ptr);
+    x_mem_req_t mem_req = {};
+    fpu->pollMemReq(mem_valid, mem_req);
+    id = mem_req.id;
+    addr = mem_req.addr;
+    wdata = mem_req.wdata;
+  };
+
+  void write_sv_state(void* fpu_ptr, bool mem_ready, bool mem_result_valid, unsigned int id, unsigned int rdata, bool err, bool dbg, bool result_ready){
+    FPU* fpu = static_cast<FPU*>(fpu_ptr);
+    fpu->writeMemRes(mem_ready, mem_result_valid, id, rdata, err, dbg);
+    fpu->writeResult(result_ready);
+  };
+
+  //-----------------------
+  // RESULT INTERFACE
+  //-----------------------
+
+  void poll_res(void* fpu_ptr, bool& result_valid, unsigned int& id, unsigned int& data, unsigned int& rd){
+    FPU* fpu = static_cast<FPU*>(fpu_ptr);
+    x_result_t result = {};
+    fpu->pollResult(result_valid, result);
+    id = result.id;
+    data = result.data;
+    rd = result.rd;
+  };
+
+  //-----------------------
+  // BACKDOOR FUNCTIONS
+  //-----------------------
+
+  unsigned int getRFContent(void* fpu_ptr, int reg) { //Backdoor to read content of register file
     FPU* fpu = static_cast<FPU*>(fpu_ptr);
     return  fpu->bd_getData(reg).bitpattern;
   }
 
-  unsigned int getPipeStageId(void* fpu_ptr, int stage) {
+  unsigned int getPipeStageId(void* fpu_ptr, int stage) { //Get id of instruction in pipeline stage
     FPU* fpu = static_cast<FPU*>(fpu_ptr);
     return fpu->bd_getPipeStageId(stage);
   }
 
-  unsigned int randomFloat() { //Generate pseudorandom float (not available in SV.)
+  unsigned int getQueueStageId(void* fpu_ptr, int stage) { //Get id of instruction in queue stage
+    FPU* fpu = static_cast<FPU*>(fpu_ptr);
+    return fpu->bd_getQueueStageId(stage);
+  }
+
+  unsigned int randomFloat() { //Generate pseudorandom float
     uint32_t randomInt = random();
     int sign = rand()%2;
-    return randomInt; //Generate random float
+    return sign ? -randomInt : randomInt;
   }
 }

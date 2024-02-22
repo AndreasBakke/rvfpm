@@ -1,7 +1,7 @@
-/*  
+/*
   rvfpm - 2023
   Andreas S. Bakke
-  
+
   Description:
   CORE-V-XIF interface
   Adapted from https://github.com/openhwgroup/cv32e40x/blob/master/rtl/cv32e40x_if_xif.sv
@@ -26,11 +26,11 @@
 */
 
 
-interface if_xif
+interface in_xif
 #(
-  parameter int XLEN = 32, 
+  parameter int XLEN = 32,
   parameter int FLEN = 32,
-  parameter int unsigned X_NUM_RS        =  2,  // Number of register file read ports that can be used by the eXtension interface
+  parameter int unsigned X_NUM_RS        =  3,  // Number of register file read ports that can be used by the eXtension interface
   parameter int unsigned X_ID_WIDTH      =  4,  // Width of ID field.
   parameter int unsigned X_MEM_WIDTH     =  32, // Memory access width for loads/stores via the eXtension interface
   parameter int unsigned X_RFR_WIDTH     =  32, // Register file read access width for the eXtension interface
@@ -38,17 +38,6 @@ interface if_xif
   parameter logic [31:0] X_MISA          =  '0, // MISA extensions implemented on the eXtension interface
   parameter logic [ 1:0] X_ECS_XS        =  '0  // Default value for mstatus.XS
 );
-
-  typedef struct packed {
-    logic [          15:0] instr; // Offloaded compressed instruction
-    logic [           1:0] mode;  // Privilege level
-    logic [X_ID_WIDTH-1:0] id;    // Identification number of the offloaded compressed instruction
-  } x_compressed_req_t;
-
-  typedef struct packed {
-    logic [31:0] instr;   // Uncompressed instruction
-    logic        accept;  // Is the offloaded compressed instruction (id) accepted by the coprocessor?
-  } x_compressed_resp_t;
 
   typedef struct packed {
     logic [          31:0]                  instr;     // Offloaded instruction
@@ -70,10 +59,10 @@ interface if_xif
     logic       exc;        // Can the offloaded instruction possibly cause a synchronous exception in the coprocessor itself?
   } x_issue_resp_t;
 
-  typedef struct packed {
-    logic [X_ID_WIDTH-1:0] id;          // Identification of the offloaded instruction
-    logic                  commit_kill; // Shall an offloaded instruction be killed?
-  } x_commit_t;
+  // typedef struct packed {
+  //   logic [X_ID_WIDTH-1:0] id;          // Identification of the offloaded instruction
+  //   logic                  commit_kill; // Shall an offloaded instruction be killed?
+  // } x_commit_t;
 
   typedef struct packed {
     logic [X_ID_WIDTH   -1:0] id;    // Identification of the offloaded instruction
@@ -105,20 +94,14 @@ interface if_xif
     logic [X_ID_WIDTH      -1:0] id;      // Identification of the offloaded instruction
     logic [X_RFW_WIDTH     -1:0] data;    // Register file write data value(s)
     logic [                 4:0] rd;      // Register file destination address(es)
-    logic [X_RFW_WIDTH/XLEN-1:0] we;      // Register file write enable(s)
-    logic [                 5:0] ecsdata; // Write data value for {mstatus.xs, mstatus.fs, mstatus.vs}
-    logic [                 2:0] ecswe;   // Write enables for {mstatus.xs, mstatus.fs, mstatus.vs}
-    logic                        exc;     // Did the instruction cause a synchronous exception?
-    logic [                 5:0] exccode; // Exception code
-    logic                        err;     // Did the instruction cause a bus error?
-    logic                        dbg;     // Did the instruction cause a debug trigger match with ``mcontrol.timing`` = 0?
+    // logic [X_RFW_WIDTH/XLEN-1:0] we;      // Register file write enable(s)
+    // logic [                 5:0] ecsdata; // Write data value for {mstatus.xs, mstatus.fs, mstatus.vs}
+    // logic [                 2:0] ecswe;   // Write enables for {mstatus.xs, mstatus.fs, mstatus.vs}
+    // logic                        exc;     // Did the instruction cause a synchronous exception?
+    // logic [                 5:0] exccode; // Exception code
+    // logic                        err;     // Did the instruction cause a bus error?
+    // logic                        dbg;     // Did the instruction cause a debug trigger match with ``mcontrol.timing`` = 0?
   } x_result_t;
-
-  // Compressed interface
-  logic               compressed_valid;
-  logic               compressed_ready;
-  x_compressed_req_t  compressed_req;
-  x_compressed_resp_t compressed_resp;
 
   // Issue interface
   logic               issue_valid;
@@ -126,9 +109,9 @@ interface if_xif
   x_issue_req_t       issue_req;
   x_issue_resp_t      issue_resp;
 
-  // Commit interface
-  logic               commit_valid;
-  x_commit_t          commit;
+  // // Commit interface
+  // logic               commit_valid;
+  // x_commit_t          commit;
 
   // Memory (request/response) interface
   logic               mem_valid;
@@ -146,22 +129,16 @@ interface if_xif
   x_result_t          result;
 
   // Port directions for host CPU
-  modport cpu_compressed (
-    output compressed_valid,
-    input  compressed_ready,
-    output compressed_req,
-    input  compressed_resp
-  );
   modport cpu_issue (
     output issue_valid,
     input  issue_ready,
     output issue_req,
     input  issue_resp
   );
-  modport cpu_commit (
-    output commit_valid,
-    output commit
-  );
+  // modport cpu_commit (
+  //   output commit_valid,
+  //   output commit
+  // );
   modport cpu_mem (
     input  mem_valid,
     output mem_ready,
@@ -179,22 +156,16 @@ interface if_xif
   );
 
   // Port directions for extension
-  modport coproc_compressed (
-    input  compressed_valid,
-    output compressed_ready,
-    input  compressed_req,
-    output compressed_resp
-  );
   modport coproc_issue (
     input  issue_valid,
     output issue_ready,
     input  issue_req,
     output issue_resp
   );
-  modport coproc_commit (
-    input  commit_valid,
-    input  commit
-  );
+  // modport coproc_commit (
+  //   input  commit_valid,
+  //   input  commit
+  // );
   modport coproc_mem (
     output mem_valid,
     input  mem_ready,
@@ -212,22 +183,16 @@ interface if_xif
   );
 
   // Monitor port directions
-  modport monitor_compressed (
-    input  compressed_valid,
-    input  compressed_ready,
-    input  compressed_req,
-    input  compressed_resp
-  );
   modport monitor_issue (
     input  issue_valid,
     input  issue_ready,
     input  issue_req,
     input  issue_resp
   );
-  modport monitor_commit (
-    input  commit_valid,
-    input  commit
-  );
+  // modport monitor_commit (
+  //   input  commit_valid,
+  //   input  commit
+  // );
   modport monitor_mem (
     input  mem_valid,
     input  mem_ready,
@@ -244,4 +209,4 @@ interface if_xif
     input  result
   );
 
-endinterface : if_xif
+endinterface : in_xif
