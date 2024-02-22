@@ -18,6 +18,7 @@ COREFILES = src/fpu_top.cpp src/fpu_predecoder.cpp src/fpu_decode.cpp src/fpu_ex
 
 TestFloat: #Compile and test for IEEE754 compliance
 	make clean
+	python3 run/setup.py run/testfloat_config.yaml
 	$(CXX) $(CXXFLAGS) -I ./include src/in_TestFloat.cpp $(COREFILES)  -o bin/rvfpm_testFloat -D TESTFLOAT
 	chmod a+x,g+x ./bin/testfloat_ver_$(ARCH)
 	chmod a+x,g+x ./bin/testfloat_gen_$(ARCH)
@@ -49,8 +50,10 @@ sharedLib: #Only tested for x86_64
 
 sim_full:
 	make clean
+	python3 run/setup.py
 	make sharedLib
 	vlog -work work /work/anb7/prosjektoppgave/rvfpm/work/src/in_xif.sv
+	vlog -work work /work/anb7/prosjektoppgave/rvfpm/work/src/pa_defines.sv
 	vlog -work work /work/anb7/prosjektoppgave/rvfpm/work/src/pa_rvfpm.sv
 	vlog -work work /work/anb7/prosjektoppgave/rvfpm/work/src/rvfpm.sv
 	vlog -work work /work/anb7/prosjektoppgave/rvfpm/work/sim/inTest_rvfpm.sv

@@ -9,31 +9,30 @@
 */
 
 
-`define NUM_FPU_REGS 32
+`include "pa_defines.sv"
 `include "pa_rvfpm.sv"
 import pa_rvfpm::*;
 
 
 module rvfpm #(
-  parameter NUM_REGS          = pa_rvfpm::NUM_REGS,
-  parameter XLEN              = pa_rvfpm::XLEN,
+  parameter NUM_F_REGS        = pa_defines::NUM_F_REGS,
+  parameter XLEN              = pa_defines::XLEN,
   //System parameters
+
   //Pipeline parameters
-  parameter PIPELINE_STAGES   = 4,
-  parameter QUEUE_DEPTH       = 0, //Size of operation queue
-  parameter FORWARDING        = 0, //Set to 1 to enable forwarding, not implemented
-  parameter OUT_OF_ORDER      = 0, //Set to 1 to enable out of order execution, not implemented
+  parameter PIPELINE_STAGES   = pa_defines::NUM_PIPELINE_STAGES,
+  parameter QUEUE_DEPTH       = pa_defines::QUEUE_DEPTH, //Size of operation queue
+  parameter FORWARDING        = pa_defines::FORWARDING, //Set to 1 to enable forwarding, not implemented
+  parameter OUT_OF_ORDER      = pa_defines::OOO, //Set to 1 to enable out of order execution, not implemented
 
   //CORE-V-XIF parameters for coprocessor
-  parameter X_NUM_RS          = pa_rvfpm::X_NUM_RS, //Read ports
-  parameter X_ID_WIDTH        = pa_rvfpm::X_ID_WIDTH,
-  parameter X_MEM_WIDTH       = pa_rvfpm::FLEN, //TODO: dependent on extension
-  parameter X_RFR_WIDTH       = pa_rvfpm::FLEN, //Read acces width
-  parameter X_RFW_WIDTH       = pa_rvfpm::FLEN, //Write acces width
-  parameter X_MISA            = pa_rvfpm::X_MISA, //TODO: not used
-  parameter X_ECS_XS          = pa_rvfpm::X_ECS_XS,        //TODO: not used
-  parameter X_DUALREAD        = pa_rvfpm::X_DUALREAD, //TODO: not implemented
-  parameter X_DUALWRITE       = pa_rvfpm::X_DUALWRITE //TODO: not implemented
+  parameter X_NUM_RS          = pa_defines::X_NUM_RS, //Read ports
+  parameter X_ID_WIDTH        = pa_defines::X_ID_WIDTH,
+  parameter X_MEM_WIDTH       = pa_defines::FLEN, //TODO: dependent on extension
+  parameter X_RFR_WIDTH       = pa_defines::FLEN, //Read acces width
+  parameter X_RFW_WIDTH       = pa_defines::FLEN, //Write acces width
+  parameter X_MISA            = pa_defines::X_MISA, //TODO: not used
+  parameter X_ECS_XS          = pa_defines::X_ECS_XS        //TODO: not used
 )
 
 (
@@ -80,7 +79,7 @@ module rvfpm #(
   assign new_instruction_accepted = xif_issue_if.issue_valid && xif_issue_if.issue_ready && xif_issue_if.issue_resp.accept; //Signal that a new instruction is accepted
   chandle fpu;
   initial begin
-    fpu = create_fpu_model(PIPELINE_STAGES, QUEUE_DEPTH, NUM_REGS);
+    fpu = create_fpu_model(PIPELINE_STAGES, QUEUE_DEPTH, NUM_F_REGS);
   end
 
   assign fpu_ready = fpu_ready_s;
@@ -138,4 +137,4 @@ module rvfpm #(
   end
 
 
-endmodule;
+endmodule

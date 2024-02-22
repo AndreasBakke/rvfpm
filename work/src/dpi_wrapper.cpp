@@ -12,9 +12,9 @@
 // #include <svdpi.h>
 
 extern "C" {
-  void* create_fpu_model(int pipelineStages, int queueDepth, int rfDepth){
-    std::cout << "pipelineStages: " << pipelineStages << " queueDepth: " << queueDepth << "  rfDepth: " << rfDepth <<std::endl;
-    return new FPU(pipelineStages, queueDepth, rfDepth); //Return pointer to FPU
+  void* create_fpu_model(){
+    std::cout << "pipelineStages: " << NUM_PIPELINE_STAGES << " queueDepth: " << QUEUE_DEPTH << "  rfDepth: " << NUM_F_REGS <<std::endl;
+    return new FPU(); //Return pointer to FPU
   };
 
   void destroy_fpu(void* fpu_ptr) {

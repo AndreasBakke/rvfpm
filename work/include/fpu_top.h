@@ -19,7 +19,7 @@ class FPU {
 
 
   public:
-    FPU(int pipelineStages=4, int queueDepth=0, int rfDepth=32);
+    FPU();
     ~FPU();
     void resetFPU();
     void clockEvent(bool& fpu_ready);

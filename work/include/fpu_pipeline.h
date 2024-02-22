@@ -17,8 +17,6 @@
 
 class FpuPipeline {
   private:
-    int NUM_PIPELINE_STAGES;
-    int QUEUE_DEPTH;
     std::deque<FpuPipeObj> pipeline;
     std::deque<FpuPipeObj> operationQueue;
     FpuRf* registerFilePtr;
@@ -46,7 +44,7 @@ class FpuPipeline {
     bool result_ready; //set by rvfpm.sv, polled in core
 
   public:
-    FpuPipeline(int pipelineStages, int queueDepth, FpuRf* rf_pointer);
+    FpuPipeline(FpuRf* rf_pointer);
     ~FpuPipeline();
     FpuPipeObj step(); //Advance pipeline by one step (called by clock in interface)
     bool isStalled();

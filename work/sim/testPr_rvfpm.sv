@@ -7,7 +7,7 @@
 
 `timescale 1ns/1ps
 program automatic testPr_rvfpm #(
-  parameter NUM_REGS,
+  parameter NUM_F_REGS,
   parameter PIPELINE_STAGES,
   parameter X_ID_WIDTH
 )
@@ -161,14 +161,14 @@ program automatic testPr_rvfpm #(
 
   task fillRF();
     //Fills register file with random value
-    for (int i=0; i<NUM_REGS; ++i) begin
+    for (int i=0; i<NUM_F_REGS; ++i) begin
       doITYPE(.rd(i), .data(randomFloat()));
       @(negedge uin_xif.issue_valid);
     end
     repeat(PIPELINE_STAGES) @(posedge uin_rvfpm.ck); //wait for all operations to finish
   endtask
 
-  task doRTYPE(input int funct7 = 0, input int rs2 = $urandom_range(0, NUM_REGS-1), input int rs1 = $urandom_range(0, NUM_REGS-1), input int funct3 = 0, input int rd = $urandom_range(0, NUM_REGS-1), input int unsigned operand_a = 0, input int unsigned operand_b = 0, input int unsigned operand_c = 0, input logic[2:0] rs_valid_i = 3'b000);
+  task doRTYPE(input int funct7 = 0, input int rs2 = $urandom_range(0, NUM_F_REGS-1), input int rs1 = $urandom_range(0, NUM_F_REGS-1), input int funct3 = 0, input int rd = $urandom_range(0, NUM_F_REGS-1), input int unsigned operand_a = 0, input int unsigned operand_b = 0, input int unsigned operand_c = 0, input logic[2:0] rs_valid_i = 3'b000);
     automatic logic[31:0]  instr_r = 0;
     @(posedge uin_rvfpm.ck)
     uin_xif.issue_valid = 1;
@@ -181,7 +181,7 @@ program automatic testPr_rvfpm #(
     doIssueInst(instr_r, id, operand_a, operand_b, operand_c, rs_valid_i);
   endtask
 
-  task doSTYPE(input int imm = 17, input int rs2 = $urandom_range(0, NUM_REGS-1), input int rs1 = 0, input int offset = 0); //Default get value from random register
+  task doSTYPE(input int imm = 17, input int rs2 = $urandom_range(0, NUM_F_REGS-1), input int rs1 = 0, input int offset = 0); //Default get value from random register
     automatic logic [31:0] instr_s = 0;
     automatic logic[X_ID_WIDTH-1:0] issue_id = 0;
     @(posedge uin_rvfpm.ck)
@@ -211,7 +211,7 @@ program automatic testPr_rvfpm #(
 
   endtask
 
-  task doITYPE(input int imm = 17, input int rs1 = 6, input int funct3 = 0, input int rd = $urandom_range(0, NUM_REGS-1), input int unsigned data = randomFloat()); //Default: Store random value into random register
+  task doITYPE(input int imm = 17, input int rs1 = 6, input int funct3 = 0, input int rd = $urandom_range(0, NUM_F_REGS-1), input int unsigned data = randomFloat()); //Default: Store random value into random register
     automatic logic [31:0] instr_i = 0;
     automatic logic[X_ID_WIDTH-1:0] issue_id = 0;
     @(posedge uin_rvfpm.ck)
