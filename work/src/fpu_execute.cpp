@@ -277,7 +277,7 @@ void execute_RTYPE(FpuPipeObj& op, FpuRf* registerFile){
     case 0b000: //FMV_X_W
     {
       op.data_signed = true;
-      op.data.s = data1.bitpattern; //TODO: use ResultInterface at writeback stage
+      op.data.s = data1.bitpattern;
       break;
     }
     case 0b001: //FCLASS.S

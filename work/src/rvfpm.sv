@@ -25,11 +25,11 @@ module rvfpm #(
   parameter OUT_OF_ORDER      = 0, //Set to 1 to enable out of order execution, not implemented
 
   //CORE-V-XIF parameters for coprocessor
-  parameter X_NUM_RS          = pa_rvfpm::X_NUM_RS, //Read ports //TODO: not used
+  parameter X_NUM_RS          = pa_rvfpm::X_NUM_RS, //Read ports
   parameter X_ID_WIDTH        = pa_rvfpm::X_ID_WIDTH,
   parameter X_MEM_WIDTH       = pa_rvfpm::FLEN, //TODO: dependent on extension
-  parameter X_RFR_WIDTH       = pa_rvfpm::FLEN, //Read acces width //TODO: not used
-  parameter X_RFW_WIDTH       = pa_rvfpm::FLEN, //Write acces width //TODO: not used
+  parameter X_RFR_WIDTH       = pa_rvfpm::FLEN, //Read acces width
+  parameter X_RFW_WIDTH       = pa_rvfpm::FLEN, //Write acces width
   parameter X_MISA            = pa_rvfpm::X_MISA, //TODO: not used
   parameter X_ECS_XS          = pa_rvfpm::X_ECS_XS,        //TODO: not used
   parameter X_DUALREAD        = pa_rvfpm::X_DUALREAD, //TODO: not implemented
@@ -40,11 +40,10 @@ module rvfpm #(
   input logic ck,
   input logic rst,
   input logic enable,
-  output logic fpu_ready, //0 if not accepting instructions
+  output logic fpu_ready,
 
-//eXtension interface for coprocessor
+  //eXtension interface for coprocessor
   in_xif.coproc_issue xif_issue_if,
-  in_xif.coproc_commit xif_commit_if,
   in_xif.coproc_mem  xif_mem_if,
   in_xif.coproc_mem_result xif_mem_result_if,
   in_xif.coproc_result xif_result_if
@@ -64,9 +63,9 @@ module rvfpm #(
   import "DPI-C" function void predecode_instruction(input chandle fpu_ptr, input int instr, input int unsigned id);
   import "DPI-C" function void poll_mem_req(input chandle fpu_ptr, output logic mem_valid, output int unsigned id, output int unsigned addr, output int unsigned wdata);
   import "DPI-C" function void write_mem_res(input chandle fpu_ptr, input logic mem_ready, input logic mem_result_valid, input int unsigned id, input int unsigned rdata, input logic err, input logic dbg);
-
   import "DPI-C" function void poll_res(input chandle fpu_ptr, output logic result_valid, output int unsigned id, output int unsigned data, output int unsigned rd); //TODO: add remaining signals in interface
-  //Something to issue response from predecoder
+
+
   //-----------------------
   //-- Local parameters
   //-----------------------

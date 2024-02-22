@@ -248,7 +248,6 @@ end
     endtask;
 
     task automatic doIssueInst(input logic[31:0] instruction = 0, input logic[X_ID_WIDTH-1:0] id = 0, input int unsigned operand_a = 0, input int unsigned operand_b = 0, input int unsigned operand_c = 0, input logic[2:0] rs_valid_i = 3'b000); //Issue instruction to coproc
-        //TODO: add operands to the issue request
         static semaphore s = new(1);
         while (!s.try_get) @(posedge uin_rvfpm.ck);
             uin_xif.issue_valid = 1;

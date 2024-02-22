@@ -93,7 +93,7 @@ module rvfpm_tb;
     .enable(uin_rvfpm.enable),
     .fpu_ready(uin_rvfpm.fpu_ready),
     .xif_issue_if(uin_xif.coproc_issue),
-    .xif_commit_if(uin_xif.coproc_commit),
+    // .xif_commit_if(uin_xif.coproc_commit),
     .xif_mem_if(uin_xif.coproc_mem),
     .xif_mem_result_if(uin_xif.coproc_mem_result),
     .xif_result_if(uin_xif.coproc_result)

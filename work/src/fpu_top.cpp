@@ -22,12 +22,9 @@ FPU::~FPU(){
 void FPU::resetFPU(){
   #ifndef ZFINX
     registerFile.resetFpuRf();
-    //reset queue
   #endif
-  //TODO: reset new features aswell
   pipeline.flush();
-  predecoder.reset(); //TODO: should this be deleted?
-  //Reset pipeline queue (update flush)
+  predecoder.reset();
 };
 
 
@@ -37,7 +34,7 @@ void FPU::clockEvent(bool& fpu_ready){
   fpu_ready = fpuReady;
 };
 
-void FPU::predecodeInstruction(uint32_t instruction, unsigned int id){ //TODO: wait for opready
+void FPU::predecodeInstruction(uint32_t instruction, unsigned int id){
   predecoder.predecodeInstruction(instruction, id);
 };
 

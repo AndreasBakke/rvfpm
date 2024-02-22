@@ -26,7 +26,7 @@ FpuPredecoder::FpuPredecoder(bool& fpuReady) : fpuReady(fpuReady) {
 FpuPredecoder::~FpuPredecoder() {
 }
 
-void FpuPredecoder::predecodeInstruction(uint32_t instruction, unsigned int id) { //TODO: reset respo when new instruction is accepted
+void FpuPredecoder::predecodeInstruction(uint32_t instruction, unsigned int id) {
   current_decode_id = id;
   FpuPipeObj res = {};
   res = decodeOp(instruction, id, 0, 0, 0);
@@ -35,17 +35,13 @@ void FpuPredecoder::predecodeInstruction(uint32_t instruction, unsigned int id) 
   this->use_rs_i[2] = res.use_rs_i[2];
   if (res.valid && fpuReady) { // And the fpu is ready
     resp.accept = true;
-    resp.writeback = res.toXReg; //TODO: this should be writeback to XREG
-    resp.dualwrite = false; //Not used by any instructions in F-extension
-    resp.dualread = 0; //TODO: Not used
+    resp.writeback = res.toXReg;
     resp.loadstore = res.toMem || res.fromMem;
     resp.ecswrite = false; //Todo: understand this
     resp.exc = false; //Todo: understand this
   } else {
     resp.accept = false;
     resp.writeback = false;
-    resp.dualwrite = false;
-    resp.dualread = 0;
     resp.loadstore = false;
     resp.ecswrite = false;
     resp.exc = false;
@@ -62,8 +58,6 @@ void FpuPredecoder::pollPredecoderResult(x_issue_resp_t& resp_ref, bool& use_rs_
 void FpuPredecoder::reset() {
   this->resp.accept = false;
   this->resp.writeback = false;
-  this->resp.dualwrite = false;
-  this->resp.dualread = 0;
   this->resp.loadstore = false;
   this->resp.ecswrite = false;
   this->resp.exc = false;

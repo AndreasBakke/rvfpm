@@ -25,17 +25,10 @@ FpuPipeline::~FpuPipeline() {
 }
 
 FpuPipeObj FpuPipeline::step(){
-
   //Operations are decoded before adding to the pipeline
   //Check for memory dependencies and request throough interface
-  //stall here untill memory is ready (or reorder)
+  //Pipeline stucture set in run/setup.yaml TODO:actually make it set in run/setup.yaml
 
- //Execute operation in execute step (get from pa_....)
- //If multicycle, stall pipeline, and decrement cycle counter
-
- //Return result if Zfinx or similar
-
-  //Decode is already done when adding to queue
   if (NUM_PIPELINE_STAGES == 0) {
     executeOp(waitingOp, registerFilePtr, mem_valid, mem_req);
     registerFilePtr->write(waitingOp.addrTo, waitingOp.data); //only if not mem
@@ -43,7 +36,7 @@ FpuPipeObj FpuPipeline::step(){
   }
 
   //Do some stall checking here
-  //TODO:if load/store. Execute takes 2 cycles. Set valid, next cycle, ready=1 and valid should be 0 at next cycle
+  //TODO:if load/store. keep mem_valid 1 until mem_ready is 1.
   if (!stalled){
     mem_valid = 0;
     this->mem_req = {};
@@ -53,7 +46,7 @@ FpuPipeObj FpuPipeline::step(){
     } else {
       ex_stalled = false;
     }
-  } else { //TODO: add check fordependencies with the operation in the memory step
+  } else { //TODO: add check fordependencies with the operation in the memory/WB step
     pipeline.at(EXECUTE_STEP).remaining_ex_cycles--;
     if (pipeline.at(EXECUTE_STEP).remaining_ex_cycles > 0){
       ex_stalled = true;
@@ -75,8 +68,7 @@ FpuPipeObj FpuPipeline::step(){
     } else {
       mem_stalled = true;
     }
-    //TODO: Move all stall checking to the end.
-    //checkHazards();
+    //TODO: checkHazards();
   }
 
   //WB
@@ -94,9 +86,6 @@ FpuPipeObj FpuPipeline::step(){
     result_valid = 0;
     result = {};
   }
-
-  //TODO: Write to result interface if toXReg or ZFINX
-
   //TODO: Check for hazards underway, dependant on if OOO/fowarding is 1
 
   stalled = mem_stalled || ex_stalled; //TODO: check stalling if we are waiting for result-ready

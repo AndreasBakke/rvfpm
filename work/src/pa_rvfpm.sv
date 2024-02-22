@@ -15,12 +15,12 @@ package pa_rvfpm;
   parameter X_NUM_RS          = 3; //Read ports
   parameter X_ID_WIDTH        = 4;
   parameter X_MEM_WIDTH       = 32; //TODO: dependent on extension
-  parameter X_RFR_WIDTH       = 32; //Read acces width //TODO: not used
-  parameter X_RFW_WIDTH       = 32; //Write acces width //TODO: not used
+  parameter X_RFR_WIDTH       = 32; //Read acces width
+  parameter X_RFW_WIDTH       = 32; //Write acces width
   parameter X_MISA            = 'h0000_0000; //TODO: not used
   parameter X_ECS_XS          = 2'b0;        //TODO: not used
-  parameter X_DUALREAD        = 0; //TODO: not implemented
-  parameter X_DUALWRITE       = 0; //TODO: not implemented
+  parameter X_DUALREAD        = 0; // No F-extension instructions require dual reads to r1+1, r2+1, r3+1 etc.
+  parameter X_DUALWRITE       = 0; // No F-extension instructions require dual writes to r1+1, r2+1, r3+1 etc.
 
   typedef struct packed {
     logic [          31:0]                  instr;     // Offloaded instruction

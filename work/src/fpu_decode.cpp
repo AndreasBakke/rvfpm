@@ -37,7 +37,7 @@ FpuPipeObj decodeOp(uint32_t instruction, unsigned int id, unsigned int operand_
     result = decode_RTYPE(instruction, operand_a, operand_b);
     break;
   default:
-    result.valid = 0; //TODO: add tests for validity in each decode aswell
+    result.valid = 0;
     break;
   }
   result.id = id;
