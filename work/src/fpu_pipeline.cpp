@@ -78,7 +78,7 @@ FpuPipeObj FpuPipeline::step(){
     result = {};
   } else if (pipeline.at(WRITEBACK_STEP).toXReg && !pipeline.at(WRITEBACK_STEP).isEmpty()){ //if writing to xreg, write to xreg
     //Use result interface to write to xreg
-    result_valid = 1; //TODO: add wait for result ready
+    result_valid = 1; //TODO: add wait for result ready bedore setting this to 0
     result.id = pipeline.at(WRITEBACK_STEP).id;
     result.data = pipeline.at(WRITEBACK_STEP).data.u;
     result.rd = pipeline.at(WRITEBACK_STEP).addrTo;
@@ -86,9 +86,18 @@ FpuPipeObj FpuPipeline::step(){
     result_valid = 0;
     result = {};
   }
-  //TODO: Check for hazards underway, dependant on if OOO/fowarding is 1
 
-  stalled = mem_stalled || ex_stalled; //TODO: check stalling if we are waiting for result-ready
+  // if (result_valid && !result_ready){
+  //   result_stalled = true;
+  //   std::cout << "result_stalled" << std::endl;
+  // } else {
+  //   result_stalled = false;
+  // }
+  //TODO: Check for hazards underway, dependant on if OOO/fowarding is 1
+  //TODO: If there is no instruction at step-1, do not stall. (As long as there is no dependencies.)
+  //Solution, a "stallcheck function" that evaluates the whole pipeline. We can then advance stages that does not need to be stalled.!
+
+  stalled = mem_stalled || ex_stalled || result_stalled; //TODO: check stalling if we are waiting for result-ready
   //advance pipeline
   if (!stalled){
     pipeline.push_back(waitingOp);
@@ -110,7 +119,9 @@ bool FpuPipeline::isStalled(){
   return stalled;
 };
 
-
+//--------------------------
+// Memory interface
+//--------------------------
 void FpuPipeline::pollMemReq(bool& mem_valid, x_mem_req_t& mem_req){
   mem_valid = this->mem_valid;
   mem_req = this->mem_req;
@@ -126,6 +137,12 @@ void FpuPipeline::writeMemRes(bool mem_ready, bool mem_result_valid, unsigned in
 
 };
 
+//--------------------------
+// Result interface
+//--------------------------
+void FpuPipeline::writeResult(bool result_ready){
+  this->result_ready = result_ready;
+};
 
 void FpuPipeline::pollResult(bool& result_valid, x_result_t& result){
   result_valid = this->result_valid;
@@ -133,6 +150,9 @@ void FpuPipeline::pollResult(bool& result_valid, x_result_t& result){
 };
 
 
+//--------------------------
+// Pipeline functions
+//--------------------------
 void FpuPipeline::addOpToQueue(FpuPipeObj op){
   operationQueue.pop_back();
   operationQueue.push_back(op);//Replace empty op at the back with op. Safety is handeled in predecoder

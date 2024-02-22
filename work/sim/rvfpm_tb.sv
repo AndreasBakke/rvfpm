@@ -117,6 +117,14 @@ module rvfpm_tb;
       uin_rvfpm.queueIds[i] = getQueueStageId(dut.fpu, i);
     end
 
+    if (uin_xif.result_valid) begin
+      #5;
+      uin_xif.result_ready = 1;
+      @(posedge uin_rvfpm.ck);
+      #10;
+      uin_xif.result_ready = 0;
+    end
+
   end
 
   //-----------------------

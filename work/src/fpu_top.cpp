@@ -34,6 +34,10 @@ void FPU::clockEvent(bool& fpu_ready){
   fpu_ready = fpuReady;
 };
 
+
+//--------------------------
+// Issue interface
+//--------------------------
 void FPU::predecodeInstruction(uint32_t instruction, unsigned int id){
   predecoder.predecodeInstruction(instruction, id);
 };
@@ -62,6 +66,9 @@ void FPU::addAcceptedInstruction(uint32_t instruction, unsigned int id, unsigned
   }
 }
 
+//--------------------------
+// Memory interface
+//--------------------------
 void FPU::pollMemReq(bool& mem_valid, x_mem_req_t& mem_req){
   pipeline.pollMemReq(mem_valid, mem_req);
 };
@@ -70,12 +77,20 @@ void FPU::writeMemRes(bool mem_ready, bool mem_result_valid, unsigned int id, un
   pipeline.writeMemRes(mem_ready, mem_result_valid, id, rdata, err, dbg);
 };
 
+//--------------------------
+// Result interface
+//--------------------------
+void FPU::writeResult(bool result_ready){
+  pipeline.writeResult(result_ready);
+};
+
 void FPU::pollResult(bool& result_valid, x_result_t& result){
   pipeline.pollResult(result_valid, result);
 };
 
-//Backdoor functions
-
+//--------------------------
+// Backdoor functions
+//--------------------------
 void FPU::bd_load(uint32_t instruction, unsigned int dataFromMem){
   FpuPipeObj op = decodeOp(instruction, 0, 0, 0, 0); //id is 0 for now
   op.data.bitpattern = dataFromMem;
@@ -97,9 +112,6 @@ void FPU::bd_setFcsr(uint32_t data) {
 uint32_t FPU::bd_getFcsr() {
   return registerFile.read_fcsr().v;
 }
-
-
-
 
 std::vector<float> FPU::bd_getRF(){
   return registerFile.getRf();

@@ -35,8 +35,8 @@ class FPU {
     void pollMemReq(bool& mem_valid, x_mem_req_t& mem_req);
     void writeMemRes(bool mem_ready, bool mem_result_valid, unsigned int id, unsigned int rdata, bool err, bool dbg);
 
-
     //Result interface
+    void writeResult(bool result_ready);
     void pollResult(bool& result_valid, x_result_t& result);
 
     //Backdoor functions

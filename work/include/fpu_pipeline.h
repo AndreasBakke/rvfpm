@@ -27,6 +27,7 @@ class FpuPipeline {
     bool pipelineFull;
     bool ex_stalled; //Stalled due to ex?
     bool mem_stalled; //stalled due to mem?
+    bool result_stalled; //stalled due to result?
     bool stalled;
 
     //Memory request interface
@@ -42,6 +43,7 @@ class FpuPipeline {
     //Result interface
     bool result_valid; //set by core, polled in rvfpm.sv
     x_result_t result; //set by core, polled in rvfpm.sv
+    bool result_ready; //set by rvfpm.sv, polled in core
 
   public:
     FpuPipeline(int pipelineStages, int queueDepth, FpuRf* rf_pointer);
@@ -57,6 +59,7 @@ class FpuPipeline {
     void writeMemRes(bool mem_ready, bool mem_result_valid, unsigned int id, unsigned int rdata, bool err, bool dbg);
 
     //Resultinterface
+    void writeResult(bool result_ready);
     void pollResult(bool& result_valid, x_result_t& result);
 
     void flush();

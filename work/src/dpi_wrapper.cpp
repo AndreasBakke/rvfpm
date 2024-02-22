@@ -70,9 +70,10 @@ extern "C" {
     wdata = mem_req.wdata;
   };
 
-  void write_mem_res(void* fpu_ptr, bool mem_ready, bool mem_result_valid, unsigned int id, unsigned int rdata, bool err, bool dbg){
+  void write_sv_state(void* fpu_ptr, bool mem_ready, bool mem_result_valid, unsigned int id, unsigned int rdata, bool err, bool dbg, bool result_ready){
     FPU* fpu = static_cast<FPU*>(fpu_ptr);
     fpu->writeMemRes(mem_ready, mem_result_valid, id, rdata, err, dbg);
+    fpu->writeResult(result_ready);
   };
 
   //-----------------------
