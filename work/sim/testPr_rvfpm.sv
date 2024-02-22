@@ -32,25 +32,22 @@ program automatic testPr_rvfpm #(
     repeat(NUM_TESTS) doSTYPE();
     doSTYPE(.rs2(4)); //Read register 4.
     repeat(4*PIPELINE_STAGES) @(posedge uin_rvfpm.ck); //Wait for all operations to finish
+
+
     $display("--- %t: started FMW.X:W ---", $time);
-
-    // init();
-    // fillRF();
-    // repeat(NUM_TESTS) begin //test FMV.X:W (move to integer).
-    //  doRTYPE(.funct7(7'b1110000), .rs2(0), .funct3(0));
-    // end
-
     init();
     fillRF();
-    repeat(NUM_TESTS) begin //test FMV.W:X (move from integer).
-    doRTYPE(.funct7(7'b1111000), .rs2(0), .funct3(0), .operand_a(123), .rs_valid_i(3'b001));
+    repeat(NUM_TESTS) begin //test FMV.X:W (move to integer).
+     doRTYPE(.funct7(7'b1110000), .rs2(0), .funct3(0));
     end
 
-    // uin_rvfpm.data_fromXReg = 0;
-    $display("--- %t: started classify and stuff ---", $time);
+    $display("--- %t: started FMW.W:X ---", $time);
+    repeat(NUM_TESTS) begin //test FMV.W:X (move from integer).
+    doRTYPE(.funct7(7'b1111000), .rs2(0), .funct3(0), .operand_a(randomFloat()), .rs_valid_i(3'b001));
+    end
 
-    init();
-    fillRF();
+
+    $display("--- %t: started min/max/sign ---", $time);
     repeat(NUM_TESTS) begin //test NUM_TESTS number of min-operations using random registers
       doRTYPE(.funct7(7'b0010100), .funct3(0));
     end
@@ -80,10 +77,9 @@ program automatic testPr_rvfpm #(
     repeat(10) @(posedge uin_rvfpm.ck);
     doRTYPE(.funct7(7'b0000100), .rs1(3), .rs2(2), .rd(4));
     repeat(PIPELINE_STAGES*2) @(posedge uin_rvfpm.ck);
+
+
     $display("--- %t: started Classify-load ---", $time);
-
-    //Classify
-
     doITYPE(.rd(0), .data(32'b11111111100000000000000000000000)); //-inf
     @(negedge uin_xif.issue_valid);
     doITYPE(.rd(1), .data($shortrealtobits(-1.4125))); //Negative normal
@@ -104,7 +100,8 @@ program automatic testPr_rvfpm #(
     @(negedge uin_xif.issue_valid);
     doITYPE(.rd(9), .data(32'b01111111110000000000000000000000)); //qNaN
     @(negedge uin_xif.issue_valid);
-    $display("--- %t: started Classify2 ---", $time);
+
+    $display("--- %t: started Classify Op ---", $time);
     //Her stopper vi og venter på operands. Men vi skal ikke bruke operands?
     for (int i=0; i<10; ++i) begin
       doRTYPE(.funct7(7'b1110000), .rs1(i), .rs2(0), .rd(0), .funct3(3'b001)); //Class
@@ -275,7 +272,6 @@ program automatic testPr_rvfpm #(
           uin_xif.issue_req.rs[2] = 0;
           uin_xif.issue_req.rs_valid = 3'b000;
           nextId();
-          @(posedge uin_rvfpm.ck);
           #0 s.put();
           disable wait_for_response;
         end

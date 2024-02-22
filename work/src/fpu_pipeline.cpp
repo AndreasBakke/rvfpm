@@ -97,7 +97,7 @@ FpuPipeObj FpuPipeline::step(){
   //TODO: If there is no instruction at step-1, do not stall. (As long as there is no dependencies.)
   //Solution, a "stallcheck function" that evaluates the whole pipeline. We can then advance stages that does not need to be stalled.!
 
-  stalled = mem_stalled || ex_stalled || result_stalled; //TODO: check stalling if we are waiting for result-ready
+  stalled = mem_stalled || ex_stalled;// || result_stalled; //TODO: check stalling if we are waiting for result-ready
   //advance pipeline
   if (!stalled){
     pipeline.push_back(waitingOp);
