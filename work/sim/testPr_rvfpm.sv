@@ -100,6 +100,10 @@ program automatic testPr_rvfpm #(
     @(negedge uin_xif.issue_valid);
     doITYPE(.rd(9), .data(32'b01111111110000000000000000000000)); //qNaN
     @(negedge uin_xif.issue_valid);
+    doITYPE(.rd(14), .data($shortrealtobits(18.3))); //for later
+    @(negedge uin_xif.issue_valid);
+    doITYPE(.rd(15), .data($shortrealtobits(9.0))); //for later
+    @(negedge uin_xif.issue_valid);
 
     $display("--- %t: started Classify Op ---", $time);
     //Her stopper vi og venter på operands. Men vi skal ikke bruke operands?
@@ -129,6 +133,15 @@ program automatic testPr_rvfpm #(
     doRTYPE(.funct7(7'b0010000), .rs1(1), .rs2(6), .rd(13), .funct3(3'b010)); //FSGNJX.S (0 xor 1)
     repeat(PIPELINE_STAGES*4) @(posedge uin_rvfpm.ck);
 
+
+    $display("--- %t: started FDIV.S ---", $time);
+    doRTYPE(.funct7(12), .rs1(14), .rs2(6), .rd(16));
+    $display("--- %t: started FSQRT.S ---", $time);
+    doRTYPE(.funct7(44), .rs1(15), .rd(17));
+
+
+
+    repeat(PIPELINE_STAGES*128) @(posedge uin_rvfpm.ck);//Wait a long time.
     $display("--- FINISHED ---");
     $display("Error count: %0d", uin_rvfpm.errorCntPr);
   end
@@ -231,6 +244,8 @@ program automatic testPr_rvfpm #(
           if (uin_xif.mem_valid && uin_xif.mem_req.id == issue_id) begin
             @(posedge uin_rvfpm.ck)
             uin_xif.mem_ready = 1;//Todo: add response (dbg etc)
+            @(posedge uin_rvfpm.ck)
+            uin_xif.mem_ready = 0;
             uin_xif.mem_result_valid = 1;
             uin_xif.mem_result.id = issue_id;//TODO: read as 8 in core
             uin_xif.mem_result.rdata = data;
@@ -285,7 +300,7 @@ program automatic testPr_rvfpm #(
         // end
         begin
 
-          #1000; //some timeout to release s. and raise some error
+          repeat(64) @(posedge uin_rvfpm.ck); //some timeout to release s. and raise some error
           $error("Timeout on issue instruction");
           uin_rvfpm.errorCntPr++;
           uin_xif.issue_valid = 0;

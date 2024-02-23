@@ -16,9 +16,14 @@ FpuPipeline::FpuPipeline(FpuRf* rf_pointer) : pipeline(NUM_PIPELINE_STAGES), ope
   registerFilePtr = rf_pointer;
   waitingOp = FpuPipeObj({}); //Initialize empty waiting op
   pipelineFull = false;
+  execute_done = false;
+  mem_done = false;
+  wb_done = false;
   stalled = false;
-  mem_stalled = false;
-  ex_stalled = false;
+  mem_valid = 0;
+  mem_req = {};
+  result_valid = 0;
+  result = {};
 }
 
 FpuPipeline::~FpuPipeline() {
@@ -35,86 +40,106 @@ FpuPipeObj FpuPipeline::step(){
     return waitingOp;
   }
 
-  //Do some stall checking here
-  //TODO:if load/store. keep mem_valid 1 until mem_ready is 1.
-  //TODO: stall if the operation at memory-step is speculative!
 
-  //
+  if(!execute_done) { //If we are not done executing the op in execute step. Flag reset by stallCheck() if we advance
+    bool speculative = false;
+    bool wait_for_mem = false;
+    bool more_cycles_rem = false;
 
-
-  //We need to know if we are actually stalled here.
-
-
-
-  if (!stalled){ //This may lead to some operations beeing skipped. If stalled, then not stalled the next. The operation is moved on.
-    mem_valid = 0;
-    this->mem_req = {};
-    executeOp(pipeline.at(EXECUTE_STEP), registerFilePtr, mem_valid, this->mem_req); //Compute operation at execute stage. //Issue memory request to CPU at this stage
-    std::cout << "speculative: " << pipeline.at(EXECUTE_STEP).speculative << std::endl;
-    if (pipeline.at(EXECUTE_STEP).remaining_ex_cycles > 0){
-      ex_stalled = true;
-    } else {
-      ex_stalled = false;
+    wait_for_mem = mem_valid && (pipeline.at(EXECUTE_STEP).toMem || pipeline.at(EXECUTE_STEP).fromMem); //Should be 0 if a memory op has not been done last cycle
+    if(pipeline.at(EXECUTE_STEP).speculative){
+      speculative = true;
     }
-  } else { //TODO: add check fordependencies with the operation in the memory/WB step
-    pipeline.at(EXECUTE_STEP).remaining_ex_cycles--;
-    if (pipeline.at(EXECUTE_STEP).remaining_ex_cycles > 0){
-      ex_stalled = true;
-    } else {
-      ex_stalled = false;
+    else if (wait_for_mem){
+      wait_for_mem = !mem_ready;
+      mem_valid = wait_for_mem; //set to 0 if done
     }
-  };
+    else if (pipeline.at(EXECUTE_STEP).remaining_ex_cycles > 1){
+      pipeline.at(EXECUTE_STEP).remaining_ex_cycles--;
+      more_cycles_rem = true;
+    }
+    else{ //If we reach this point, we can assume that this operation has not been executed yet (or have been decremented enugh).
+      executeOp(pipeline.at(EXECUTE_STEP), registerFilePtr, mem_valid, mem_req);
+      wait_for_mem = pipeline.at(EXECUTE_STEP).toMem || pipeline.at(EXECUTE_STEP).fromMem; //Should be 0 if a memory op has not been done last cycle
+    }
+    execute_done = !speculative && !wait_for_mem && !more_cycles_rem;
+    if(!wait_for_mem){
+      mem_valid =0;
+      this->mem_req = {};
+    }
+
+  } else {
+    execute_done = true;
+    //Wait - means we are stalled by some other step
+  }
+
 
   //Mem
-  if (pipeline.at(MEMORY_STEP).fromMem){ //wait for memory if the operation is dependant on memory
-    //wait for memory result, stall if it has not come yet.
+  if (pipeline.at(MEMORY_STEP).fromMem){ //Only need to check for mem_done if we are reading from emm
+    mem_done = false; //Start by setting to false
     if (memoryResultValid && memoryResults.id == pipeline.at(MEMORY_STEP).id){
-      mem_stalled = false;
-      if (pipeline.at(MEMORY_STEP).fromMem){
-        pipeline.at(MEMORY_STEP).data.bitpattern = memoryResults.rdata;
-      }
+      pipeline.at(MEMORY_STEP).data.bitpattern = memoryResults.rdata;
       memoryResults = x_mem_result_t({0, 0, 0, 0});
       memoryResultValid = false;
-    } else {
-      mem_stalled = true;
+      mem_done = true;
     }
-    //TODO: checkHazards();
+  } else {
+    mem_done = true;
   }
 
   //WB
-  if (!pipeline.at(WRITEBACK_STEP).toMem && !pipeline.at(WRITEBACK_STEP).toXReg && !pipeline.at(WRITEBACK_STEP).isEmpty()){ //if writing to rf, write to register file
-    registerFilePtr->write(pipeline.at(WRITEBACK_STEP).addrTo, pipeline.at(WRITEBACK_STEP).data);
-    result_valid = 0;
-    result = {};
-  } else if (pipeline.at(WRITEBACK_STEP).toXReg && !pipeline.at(WRITEBACK_STEP).isEmpty()){ //if writing to xreg, write to xreg
-    //Use result interface to write to xreg
-    result_valid = 1; //TODO: add wait for result ready bedore setting this to 0
-    result.id = pipeline.at(WRITEBACK_STEP).id;
-    result.data = pipeline.at(WRITEBACK_STEP).data.u;
-    result.rd = pipeline.at(WRITEBACK_STEP).addrTo;
+  if(!wb_done){
+    //If not to xreg, or not memory, and not empty. Just write to register file and set done = 1
+    if (!pipeline.at(WRITEBACK_STEP).toMem && !pipeline.at(WRITEBACK_STEP).toXReg && !pipeline.at(WRITEBACK_STEP).isEmpty()){
+      registerFilePtr->write(pipeline.at(WRITEBACK_STEP).addrTo, pipeline.at(WRITEBACK_STEP).data);
+      wb_done = true;
+    } else if (result_valid) {
+      wb_done = result_ready;
+    } else if (pipeline.at(WRITEBACK_STEP).toXReg) {
+      result_valid = 1; //TODO: add wait for result ready bedore setting this to 0
+      result.id = pipeline.at(WRITEBACK_STEP).id;
+      result.data = pipeline.at(WRITEBACK_STEP).data.u;
+      result.rd = pipeline.at(WRITEBACK_STEP).addrTo;
+      wb_done = false;
+    } else {
+      wb_done = true;
+    }
+    if (wb_done){
+      result_valid = 0;
+      result = {};
+    }
   } else {
-    result_valid = 0;
-    result = {};
+    wb_done = true;
   }
 
-  // if (result_valid && !result_ready){
-  //   result_stalled = true;
-  //   std::cout << "result_stalled" << std::endl;
-  // } else {
-  //   result_stalled = false;
-  // }
-  //TODO: Check for hazards underway, dependant on if OOO/fowarding is 1
-  //TODO: If there is no instruction at step-1, do not stall. (As long as there is no dependencies.)
-  //Solution, a "stallcheck function" that evaluates the whole pipeline. We can then advance stages that does not need to be stalled.!
+  stallCheck();
+  //for testfloat
+  return pipeline.at(2);
+};
 
-  stalled = mem_stalled || ex_stalled;// || result_stalled; //TODO: check stalling if we are waiting for result-ready
-  //advance pipeline
+void FpuPipeline::stallCheck(){
+  bool all_done = execute_done || mem_done || wb_done;
+  //Check if writeback if finished:
+  if (wb_done){
+    wb_done = false;
+    pipeline.at(WRITEBACK_STEP) = FpuPipeObj({});
+  }
 
-  //Pipeline advance function
-  //This can move forward operations that does not need to stall.
-  if (!stalled){
+  if (mem_done && pipeline.at(WRITEBACK_STEP).isEmpty()){
+    mem_done = false;
+    pipeline.at(WRITEBACK_STEP) = pipeline.at(MEMORY_STEP);
+    pipeline.at(MEMORY_STEP) = FpuPipeObj({});
+  }
+
+  if (execute_done && pipeline.at(MEMORY_STEP).isEmpty()){
+    execute_done = false;
+    pipeline.at(MEMORY_STEP) = pipeline.at(EXECUTE_STEP);
+    pipeline.at(EXECUTE_STEP) = FpuPipeObj({});
+  }
+
+  if (pipeline.at(EXECUTE_STEP).isEmpty()){
+    pipeline.erase(pipeline.begin()+EXECUTE_STEP); //removes the empty op
     pipeline.push_back(waitingOp);
-    pipeline.pop_front();//should be dependent on what the front op is
     if (QUEUE_DEPTH > 0){
       setWaitingOp(operationQueue.front());
       operationQueue.pop_front();
@@ -123,10 +148,21 @@ FpuPipeObj FpuPipeline::step(){
       setWaitingOp(FpuPipeObj({}));
     }
   }
+  if (all_done) {
+    stalled = false;
+    return; //No need to check for stall if nothing have stalled us this cycle
+  }
+  // if queue is empty, we can accept new operations
+  if (QUEUE_DEPTH > 0) {
+    if (!operationQueue.back().isEmpty()){
+      stalled = true;
+    }
+  } else if (!waitingOp.isEmpty()){
+    stalled = true;
+  }
 
-  //for testfloat
-  return pipeline.at(2);
-};
+
+}
 
 bool FpuPipeline::isStalled(){
   return stalled;
@@ -134,7 +170,6 @@ bool FpuPipeline::isStalled(){
 
 
 void FpuPipeline::commitInstruction(unsigned int id, bool kill){
-  std::cout << "commitInstruction, kill : " << kill << std::endl;
   for (auto& op : pipeline) {
     if (op.id == id) {
       if (kill) {
@@ -207,10 +242,15 @@ void FpuPipeline::flush(){
   operationQueue = std::deque<FpuPipeObj>(QUEUE_DEPTH, FpuPipeObj({}));
   mem_valid = 0;
   mem_req = {};
-  ex_stalled = false;
-  mem_stalled = false;
+  execute_done = false;
+  mem_done = false;
+  wb_done = false;
   stalled = false;
   pipelineFull = false;
+  mem_valid = 0;
+  mem_req = {};
+  result_valid = 0;
+  result = {};
 };
 
 int FpuPipeline::getNumStages(){

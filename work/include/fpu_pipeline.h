@@ -22,11 +22,13 @@ class FpuPipeline {
     FpuRf* registerFilePtr;
 
     FpuPipeObj waitingOp; //Next in line to pipeline
+
+    //Pipeline status
     bool pipelineFull;
-    bool ex_stalled; //Stalled due to ex?
-    bool mem_stalled; //stalled due to mem?
-    bool result_stalled; //stalled due to result?
-    bool stalled;
+    bool execute_done;
+    bool mem_done;
+    bool wb_done;
+    bool stalled; //Do not accept new operations
 
     //Memory request interface
     bool mem_valid; //set by core, polled in rvfpm.sv
@@ -47,6 +49,7 @@ class FpuPipeline {
     FpuPipeline(FpuRf* rf_pointer);
     ~FpuPipeline();
     FpuPipeObj step(); //Advance pipeline by one step (called by clock in interface)
+    void stallCheck();
     bool isStalled();
 
     //Issue/Commit interface

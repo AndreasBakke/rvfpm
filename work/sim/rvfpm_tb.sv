@@ -130,6 +130,11 @@ module rvfpm_tb;
       uin_xif.commit_valid = 0;
       uin_xif.commit = {};
     end
+
+    uin_xif.result_ready = 0;
+    if (uin_xif.result_valid) begin
+      uin_xif.result_ready = 1;
+    end
   end
 
   //-----------------------

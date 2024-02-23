@@ -138,7 +138,6 @@ module rvfpm #(
       predecode_instruction(fpu, xif_issue_if.issue_req.instr, xif_issue_if.issue_req.id); //TODO: add issue_transaction_active?
     end
     if (xif_commit_if.commit_valid) begin
-      $display("%t:  Committing instruction %d", $time, xif_commit_if.commit.id);
       commit_instruction(fpu, xif_commit_if.commit.id,  xif_commit_if.commit.commit_kill);
     end
   end
