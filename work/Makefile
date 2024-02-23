@@ -16,9 +16,13 @@ endif
 #Filepaths for the c++ core
 COREFILES = src/fpu_top.cpp src/fpu_predecoder.cpp src/fpu_decode.cpp src/fpu_execute.cpp src/fpu_pipeline.cpp src/fpu_rf.cpp  src/fp_number.cpp
 
+default: #Run simulation using default configuration
+	make sim_full CONFIGPATH=""
+
 TestFloat: #Compile and test for IEEE754 compliance
 	make clean
-	$(CXX) $(CXXFLAGS) -I ./include src/in_TestFloat.cpp $(COREFILES)  -o bin/rvfpm_testFloat -D TESTFLOAT
+	python3 run/setup.py run/testfloat_config.yaml
+	$(CXX) $(CXXFLAGS) -I ./include src/in_TestFloat.cpp $(COREFILES)  -o bin/rvfpm_testFloat
 	chmod a+x,g+x ./bin/testfloat_ver_$(ARCH)
 	chmod a+x,g+x ./bin/testfloat_gen_$(ARCH)
 	make -i TestFloat_all args="-rnear_even"
@@ -47,10 +51,13 @@ TestFloat_all:
 sharedLib: #Only tested for x86_64
 	$(CXX) $(CXXFLAGS) -shared -fPIC -o bin/lib_rvfpm.so -I ./include src/dpi_wrapper.cpp $(COREFILES)
 
+CONFIGPATH := ""
 sim_full:
 	make clean
+	python3 run/setup.py $(CONFIGPATH)
 	make sharedLib
 	vlog -work work /work/anb7/prosjektoppgave/rvfpm/work/src/in_xif.sv
+	vlog -work work /work/anb7/prosjektoppgave/rvfpm/work/src/pa_defines.sv
 	vlog -work work /work/anb7/prosjektoppgave/rvfpm/work/src/pa_rvfpm.sv
 	vlog -work work /work/anb7/prosjektoppgave/rvfpm/work/src/rvfpm.sv
 	vlog -work work /work/anb7/prosjektoppgave/rvfpm/work/sim/inTest_rvfpm.sv

@@ -7,7 +7,7 @@
 #include "fpu_top.h"
 #include <iostream>
 
-FPU::FPU (int pipelineStages, int queueDepth, int rfDepth) : registerFile(rfDepth),  pipeline(pipelineStages, queueDepth, &registerFile), predecoder(fpuReady) {
+FPU::FPU () : registerFile(NUM_F_REGS),  pipeline(&registerFile), predecoder(fpuReady) {
   #ifndef ZFINX
     // registerFile(rfDepth)
   #else

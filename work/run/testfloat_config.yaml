@@ -1,0 +1,14 @@
+---
+
+fpu_pipeline:
+  num_pipeline_stages: 0 #Number of stages in the FPU pipeline
+  queue_depth: 0 #Depth of the FPU instruction queue
+  steps:  #step 0 is the last step in the pipeline
+    execute_step: 0
+    memory_step: 0
+    writeback_step: 0
+
+execute_cycles:
+  default: 0
+  fdiv: 0
+  fsqrt: 0

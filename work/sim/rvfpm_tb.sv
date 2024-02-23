@@ -6,37 +6,35 @@
   Prerequisites: Compile c++ model using make sharedLib (macSL not tested/verified)
   Then run vsim using -sv_lib bin/lib_rvfpm -novopt work.rvfpm_tb -suppress 12110
 */
-
+// `include "pa_defines.sv"
 `timescale 1ns/1ps
 module rvfpm_tb;
   //-----------------------
   //-- Parameters
   //-----------------------
   //System parameters
-  parameter TB_FORWARDING     = 0; //Set to 1 to enable forwarding; not implemented
-  parameter TB_OUT_OF_ORDER   = 0; //Set to 1 to enable out of order execution, not implemented
-  parameter TB_X_ID_WIDTH     = 4;  // Width of ID field.
-
-  //RF parameters
-  parameter TB_FLEN = 32;
-  parameter TB_XLEN = 32;
-  parameter TB_NUM_FPU_REGS = 32;
+  parameter TB_NUM_F_REGS        = pa_defines::NUM_F_REGS;
+  parameter TB_XLEN              = pa_defines::XLEN;
+  parameter TB_FLEN              = pa_defines::FLEN;
+  //System parameters
 
   //Pipeline parameters
-  parameter TB_PIPELINE_STAGES = 4; // Example value
-  parameter TB_QUEUE_DEPTH = 4; // Example value
+  parameter TB_PIPELINE_STAGES   = pa_defines::NUM_PIPELINE_STAGES;
+  parameter TB_QUEUE_DEPTH       = pa_defines::QUEUE_DEPTH; //Size of operation queue
+  parameter TB_FORWARDING        = pa_defines::FORWARDING; //Set to 1 to enable forwarding; not implemented
+  parameter TB_OUT_OF_ORDER      = pa_defines::OOO; //Set to 1 to enable out of order execution; not implemented
 
-  //eXtension interface parameters
-  parameter TB_X_NUM_RS         =  3;  // Number of register file read ports that can be used by the eXtension interface
-  parameter TB_X_MEM_WIDTH      =  32; // Memory access width for loads/stores via the eXtension interface
-  parameter TB_X_RFR_WIDTH      =  TB_FLEN; // Register file read access width for the eXtension interface
-  parameter TB_X_RFW_WIDTH      =  TB_FLEN; // Register file write access width for the eXtension interface
-  parameter logic [31:0] TB_X_MISA  =  '0; // MISA extensions implemented on the eXtension interface
-  parameter logic [ 1:0] TB_X_ECS_XS  =  '0;  // Default value for mstatus.XS
+  //CORE-V-XIF parameters for coprocessor
+  parameter TB_X_NUM_RS          = pa_defines::X_NUM_RS; //Read ports
+  parameter TB_X_ID_WIDTH        = pa_defines::X_ID_WIDTH;
+  parameter TB_X_MEM_WIDTH       = pa_defines::FLEN; //TODO: dependent on extension
+  parameter TB_X_RFR_WIDTH       = pa_defines::FLEN; //Read acces width
+  parameter TB_X_RFW_WIDTH       = pa_defines::FLEN; //Write acces width
+  parameter TB_X_MISA            = pa_defines::X_MISA; //TODO: not used
+  parameter TB_X_ECS_XS          = pa_defines::X_ECS_XS;        //TODO: not used
 
   //Clock
   localparam time ck_period = 40ns;
-
 
   //-----------------------
   //-- Declarations
@@ -45,7 +43,7 @@ module rvfpm_tb;
   //Test interface
   inTest_rvfpm #(
     .X_ID_WIDTH(TB_X_ID_WIDTH),
-    .NUM_REGS(TB_NUM_FPU_REGS),
+    .NUM_F_REGS(TB_NUM_F_REGS),
     .PIPELINE_STAGES(TB_PIPELINE_STAGES),
     .QUEUE_DEPTH(TB_QUEUE_DEPTH),
     .XLEN(TB_XLEN)
@@ -82,7 +80,7 @@ module rvfpm_tb;
   rvfpm #(
     .FORWARDING(TB_FORWARDING),
     .OUT_OF_ORDER(TB_OUT_OF_ORDER),
-    .NUM_REGS(TB_NUM_FPU_REGS),
+    .NUM_F_REGS(TB_NUM_F_REGS),
     .PIPELINE_STAGES(TB_PIPELINE_STAGES),
     .QUEUE_DEPTH(TB_QUEUE_DEPTH),
     .X_ID_WIDTH(TB_X_ID_WIDTH),
@@ -103,19 +101,25 @@ module rvfpm_tb;
   import "DPI-C" function int unsigned getQueueStageId(input chandle fpu_ptr, input int stage);
 
   always @(posedge uin_rvfpm.ck) begin
-    //Get entire rf for verification
-    for (int i=0; i < TB_NUM_FPU_REGS; ++i) begin
+    //Get entire rf for verification`
+    `ifndef ZFINX
+    for (int i=0; i < TB_NUM_F_REGS; ++i) begin
       uin_rvfpm.registerFile[i] = getRFContent(dut.fpu, i);
     end
-    //Get entire pipeline for verification
-    for (int i=0; i < TB_PIPELINE_STAGES; ++i) begin
-      uin_rvfpm.pipelineIds[i] = getPipeStageId(dut.fpu, i);
-    end
+    `endif
 
-    //Get entire queue for verification
-    for (int i=0; i < TB_QUEUE_DEPTH; ++i) begin
-      uin_rvfpm.queueIds[i] = getQueueStageId(dut.fpu, i);
-    end
+    //Get entire pipeline for verification
+    `ifdef PIPELINE
+      for (int i=0; i < TB_PIPELINE_STAGES; ++i) begin
+        uin_rvfpm.pipelineIds[i] = getPipeStageId(dut.fpu, i);
+      end
+    `endif
+    `ifdef QUEUE
+      //Get entire queue for verification
+      for (int i=0; i < TB_QUEUE_DEPTH; ++i) begin
+        uin_rvfpm.queueIds[i] = getQueueStageId(dut.fpu, i);
+      end
+    `endif
 
     // if (uin_xif.result_valid) begin
     //   #5;
@@ -131,7 +135,7 @@ module rvfpm_tb;
   //-- Assertions
   //-----------------------
   assertions_rvfpm #(
-    .NUM_REGS(TB_NUM_FPU_REGS),
+    .NUM_F_REGS(TB_NUM_F_REGS),
     .PIPELINE_STAGES(TB_PIPELINE_STAGES)
   ) u_assertions_rvfpm (
     .uin_rvfpm(uin_rvfpm)
@@ -141,7 +145,7 @@ module rvfpm_tb;
   //-- Test Program
   //-----------------------
   testPr_rvfpm #(
-    .NUM_REGS(TB_NUM_FPU_REGS),
+    .NUM_F_REGS(TB_NUM_F_REGS),
     .PIPELINE_STAGES(TB_PIPELINE_STAGES),
     .X_ID_WIDTH(TB_X_ID_WIDTH)
   ) u_testPr(

@@ -6,7 +6,7 @@
     Assertions for rvfpm testPr
 */
 module assertions_rvfpm #(
-    parameter int NUM_REGS,
+    parameter int NUM_F_REGS,
     parameter int PIPELINE_STAGES
 )(
     inTest_rvfpm uin_rvfpm

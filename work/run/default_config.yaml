@@ -1,0 +1,39 @@
+---
+# Add your YAML content here
+#TODO: noe som dette - så: bruke python til å parse og skrive pa_rvfpm og fpu_config.h
+# Da sikrer vi like definisjoner i begge filer (og enklere å sette opp andre strukturer.)
+#Andrepri etter å fullføre interface og timing.
+
+fpu:
+  num_f_regs : 32  #Number of registers in the FPU register file
+  extensions:
+    # - ZFINX
+    # - ZFMin
+
+
+xif:
+  XLEN: 32
+  FLEN: 32
+  X_NUM_RS: 3       #Number of register file read ports that can be used by the eXtension interface
+  X_ID_WIDTH: 4     #Width of ID field.
+  X_MEM_WIDTH:  32  #Memory access width for loads/stores via the eXtension interface
+  X_RFR_WIDTH:  32  #Register file read access width for the eXtension interface
+  X_RFW_WIDTH:  32  #Register file write access width for the eXtension interface
+  X_MISA:  0        #MISA extensions implemented on the eXtension interface
+  X_ECS_XS:  0      #Default value for mstatus.XS
+
+fpu_pipeline:
+  num_pipeline_stages: 4 #Number of stages in the FPU pipeline
+  queue_depth: 4 #Depth of the FPU instruction queue - set to 0 to disable
+
+  OOO: false #Out of order execution - Not yet implemented
+  forwarding: false #Forward/bypass result to next operation - Not yet implemented
+  steps:  #step 0 is the last step in the pipeline
+    execute_step: 2
+    memory_step: 1
+    writeback_step: 0
+
+execute_cycles:
+  default: 1
+  fdiv: 16
+  fsqrt: 19

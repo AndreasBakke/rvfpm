@@ -106,8 +106,7 @@ std::string convFlags(unsigned int flags) {
 
 
 //Initialize testFPU
-static int rfDepth = 32;
-FPU testFPU(0, 0, rfDepth); //0 pipeline stages & queue -> instant execution
+FPU testFPU = FPU();
 
 
 int main(int argc, char** argv) {

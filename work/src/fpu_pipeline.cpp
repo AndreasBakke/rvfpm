@@ -10,7 +10,7 @@
 #include <iostream>
 
 
-FpuPipeline::FpuPipeline(int pipelineStages, int queueDepth, FpuRf* rf_pointer) : NUM_PIPELINE_STAGES(pipelineStages), QUEUE_DEPTH(queueDepth), pipeline(pipelineStages), operationQueue(queueDepth) {
+FpuPipeline::FpuPipeline(FpuRf* rf_pointer) : pipeline(NUM_PIPELINE_STAGES), operationQueue(QUEUE_DEPTH) {
   pipeline = std::deque<FpuPipeObj>(NUM_PIPELINE_STAGES, FpuPipeObj({}));//Initialize empty pipeline
   operationQueue = std::deque<FpuPipeObj>(QUEUE_DEPTH, FpuPipeObj({}));//Initialize empty queue
   registerFilePtr = rf_pointer;
@@ -29,7 +29,7 @@ FpuPipeObj FpuPipeline::step(){
   //Check for memory dependencies and request throough interface
   //Pipeline stucture set in run/setup.yaml TODO:actually make it set in run/setup.yaml
 
-  if (NUM_PIPELINE_STAGES == 0) {
+  if (NUM_PIPELINE_STAGES == 0) { //TODO: add stall-checking and interface usage
     executeOp(waitingOp, registerFilePtr, mem_valid, mem_req);
     registerFilePtr->write(waitingOp.addrTo, waitingOp.data); //only if not mem
     return waitingOp;
