@@ -16,8 +16,20 @@ endif
 #Filepaths for the c++ core
 COREFILES = src/fpu_top.cpp src/fpu_predecoder.cpp src/fpu_decode.cpp src/fpu_execute.cpp src/fpu_pipeline.cpp src/fpu_rf.cpp  src/fp_number.cpp
 
-default: #Run simulation using default configuration
-	make sim_full CONFIGPATH=""
+CONFIGPATH:=""
+sim_full:
+	make clean
+	python3 run/setup.py $(CONFIGPATH)
+	make sharedLib
+	vlog -work work /work/anb7/prosjektoppgave/rvfpm/work/src/in_xif.sv
+	vlog -work work /work/anb7/prosjektoppgave/rvfpm/work/src/pa_defines.sv
+	vlog -work work /work/anb7/prosjektoppgave/rvfpm/work/src/pa_rvfpm.sv
+	vlog -work work /work/anb7/prosjektoppgave/rvfpm/work/src/rvfpm.sv
+	vlog -work work /work/anb7/prosjektoppgave/rvfpm/work/sim/inTest_rvfpm.sv
+	vlog -work work /work/anb7/prosjektoppgave/rvfpm/work/sim/assertions_rvfpm.sv
+	vlog -work work /work/anb7/prosjektoppgave/rvfpm/work/sim/testPr_rvfpm.sv
+	vlog -work work /work/anb7/prosjektoppgave/rvfpm/work/sim/rvfpm_tb.sv
+	vsim -sv_lib bin/lib_rvfpm -novopt work.rvfpm_tb -suppress 12110
 
 TestFloat: #Compile and test for IEEE754 compliance
 	make clean
@@ -50,21 +62,6 @@ TestFloat_all:
 
 sharedLib: #Only tested for x86_64
 	$(CXX) $(CXXFLAGS) -shared -fPIC -o bin/lib_rvfpm.so -I ./include src/dpi_wrapper.cpp $(COREFILES)
-
-CONFIGPATH := ""
-sim_full:
-	make clean
-	python3 run/setup.py $(CONFIGPATH)
-	make sharedLib
-	vlog -work work /work/anb7/prosjektoppgave/rvfpm/work/src/in_xif.sv
-	vlog -work work /work/anb7/prosjektoppgave/rvfpm/work/src/pa_defines.sv
-	vlog -work work /work/anb7/prosjektoppgave/rvfpm/work/src/pa_rvfpm.sv
-	vlog -work work /work/anb7/prosjektoppgave/rvfpm/work/src/rvfpm.sv
-	vlog -work work /work/anb7/prosjektoppgave/rvfpm/work/sim/inTest_rvfpm.sv
-	vlog -work work /work/anb7/prosjektoppgave/rvfpm/work/sim/assertions_rvfpm.sv
-	vlog -work work /work/anb7/prosjektoppgave/rvfpm/work/sim/testPr_rvfpm.sv
-	vlog -work work /work/anb7/prosjektoppgave/rvfpm/work/sim/rvfpm_tb.sv
-	vsim -sv_lib bin/lib_rvfpm -novopt work.rvfpm_tb -suppress 12110
 
 clean:
 	rm -f bin/rvfpm
