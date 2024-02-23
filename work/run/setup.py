@@ -71,6 +71,8 @@ def write_sv_params(data):
   try:
     write_data(sv_path, "\n//Pipeline-parameters\n")
     for param in data["fpu_pipeline"]:
+      if param == "num_pipeline_stages" and data["fpu_pipeline"][param] != 0:
+        write_data(sv_path, "  `define PIPELINE\n")
       if param == "queue_depth" and data["fpu_pipeline"][param] != 0:
         write_data(sv_path, "  `define QUEUE\n")
 

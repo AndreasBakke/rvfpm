@@ -29,7 +29,7 @@ FpuPipeObj FpuPipeline::step(){
   //Check for memory dependencies and request throough interface
   //Pipeline stucture set in run/setup.yaml TODO:actually make it set in run/setup.yaml
 
-  if (NUM_PIPELINE_STAGES == 0) {
+  if (NUM_PIPELINE_STAGES == 0) { //TODO: add stall-checking and interface usage
     executeOp(waitingOp, registerFilePtr, mem_valid, mem_req);
     registerFilePtr->write(waitingOp.addrTo, waitingOp.data); //only if not mem
     return waitingOp;

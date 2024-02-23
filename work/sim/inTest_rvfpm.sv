@@ -31,8 +31,9 @@ interface inTest_rvfpm #(
     `ifndef ZFINX
         logic [FLEN-1:0] registerFile[NUM_F_REGS]; //For verification
     `endif
-
-    logic unsigned pipelineIds[PIPELINE_STAGES];
+    `ifdef PIPELINE
+        logic unsigned pipelineIds[PIPELINE_STAGES];
+    `endif
     `ifdef QUEUE
         logic unsigned queueIds[QUEUE_DEPTH];
     `endif

@@ -109,11 +109,11 @@ module rvfpm_tb;
     `endif
 
     //Get entire pipeline for verification
-    if (TB_PIPELINE_STAGES > 0) begin
+    `ifdef PIPELINE
       for (int i=0; i < TB_PIPELINE_STAGES; ++i) begin
         uin_rvfpm.pipelineIds[i] = getPipeStageId(dut.fpu, i);
       end
-    end
+    `endif
     `ifdef QUEUE
       //Get entire queue for verification
       for (int i=0; i < TB_QUEUE_DEPTH; ++i) begin
