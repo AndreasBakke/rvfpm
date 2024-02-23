@@ -33,7 +33,7 @@ fpu_pipeline:
     memory_step: 1
     writeback_step: 0
 
-execute_cycles:
+execute_cycles: #Number of cycles for execution of each instruction
   default: 1
   fdiv: 16
   fsqrt: 19

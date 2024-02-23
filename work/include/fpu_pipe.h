@@ -28,7 +28,7 @@ struct FpuPipeObj {
   bool fromXReg = 0;
   bool fromMem = 0;
   bool data_signed = 0;
-  int remaining_ex_cycles: 1; //1 cycle for execution as standard
+  int remaining_ex_cycles= NUM_CYCLES_DEFAULT; //1 cycle for execution as standard
   bool valid = 0; //Is the instruction valid?
   bool speculative = 0; //Set to 1 in decode, so empty operations isn't speculative. Set to 0 when commited do not execute if 1
 

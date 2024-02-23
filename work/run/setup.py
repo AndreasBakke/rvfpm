@@ -95,14 +95,14 @@ def write_cpp_params(data):
     for param in data["fpu"]:
       if param == "extensions" and data["fpu"][param] == None:
         continue
-      write_data(cpp_path, "#define "+str(param).upper()+" "+str(data["fpu"][param])+"\n")
+      write_data(cpp_path, "const int "+str(param).upper()+"="+str(data["fpu"][param])+";\n")
   except Exception as e:
     print(f"Failed writing cpp system-parameters: {e}")
 
   try:
     write_data(cpp_path, "\n//CORE-V-XIF-parameters\n")
     for param in data["xif"]:
-      write_data(cpp_path, "#define "+str(param).upper()+" "+str(data["xif"][param]).lower()+"\n")
+      write_data(cpp_path, "const int "+str(param).upper()+"="+str(data["xif"][param]).lower()+";\n")
   except Exception as e:
     print(f"Failed writing cpp interface-parameters: {e}")
 
@@ -116,13 +116,20 @@ def write_cpp_params(data):
         write_data(cpp_path, "};\n") if len(data["fpu_pipeline"]["steps"])>0 else None
         continue
       if data["fpu_pipeline"][param] == True:
-        write_data(cpp_path, "#define "+str(param).upper()+" 1\n")
+        write_data(cpp_path, "const bool"+str(param).upper()+"= 1;\n")
       elif data["fpu_pipeline"][param] == False:
-        write_data(cpp_path, "#define "+str(param).upper()+" 0\n")
+        write_data(cpp_path, "const bool "+str(param).upper()+"= 0;\n")
       else:
-        write_data(cpp_path, "#define "+str(param).upper()+" "+str(data["fpu_pipeline"][param]).lower()+"\n")
+        write_data(cpp_path, "const int "+str(param).upper()+"="+str(data["fpu_pipeline"][param]).lower()+";\n")
   except Exception as e:
     print(f"Failed writing cpp pipeline-parameters: {e}")
+
+  try:
+    write_data(cpp_path, "\n//Ex-cycles-parameters\n")
+    for param in data["execute_cycles"]:
+      write_data(cpp_path, "const int NUM_CYCLES_"+str(param).upper()+"="+str(data["execute_cycles"][param]).lower()+";\n")
+  except Exception as e:
+    print(f"Failed writing cpp ex-cycles-parameters: {e}")
 
 
 

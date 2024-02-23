@@ -29,7 +29,7 @@ FpuPipeline::FpuPipeline(FpuRf* rf_pointer) : pipeline(NUM_PIPELINE_STAGES), ope
 FpuPipeline::~FpuPipeline() {
 }
 
-FpuPipeObj FpuPipeline::step(){
+FpuPipeObj FpuPipeline::step(){ //TODO: add special handling if multiple stages are done in one step. (We can use execute done etc for this.)
   //Operations are decoded before adding to the pipeline
   //Check for memory dependencies and request throough interface
   //Pipeline stucture set in run/setup.yaml TODO:actually make it set in run/setup.yaml
@@ -45,7 +45,7 @@ FpuPipeObj FpuPipeline::step(){
     bool speculative = false;
     bool wait_for_mem = false;
     bool more_cycles_rem = false;
-
+    std::cout << pipeline.at(EXECUTE_STEP).remaining_ex_cycles << std::endl;
     wait_for_mem = mem_valid && (pipeline.at(EXECUTE_STEP).toMem || pipeline.at(EXECUTE_STEP).fromMem); //Should be 0 if a memory op has not been done last cycle
     if(pipeline.at(EXECUTE_STEP).speculative){
       speculative = true;
@@ -117,7 +117,7 @@ FpuPipeObj FpuPipeline::step(){
   return pipeline.at(2);
 };
 
-void FpuPipeline::stallCheck(){
+void FpuPipeline::stallCheck(){ //TODO: also check for hazards.
   bool all_done = execute_done || mem_done || wb_done;
   //Check if writeback if finished:
   if (wb_done){
@@ -127,7 +127,7 @@ void FpuPipeline::stallCheck(){
 
   if (mem_done && pipeline.at(WRITEBACK_STEP).isEmpty()){
     mem_done = false;
-    pipeline.at(WRITEBACK_STEP) = pipeline.at(MEMORY_STEP);
+    pipeline.at(WRITEBACK_STEP) = pipeline.at(MEMORY_STEP); //TODO: better way to do this. There might be a "no operation" stage here intended by the user. EG. Execute - nothing - memory - writeback...
     pipeline.at(MEMORY_STEP) = FpuPipeObj({});
   }
 

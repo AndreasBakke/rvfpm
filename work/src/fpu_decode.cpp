@@ -61,7 +61,7 @@ FpuPipeObj decode_R4TYPE(uint32_t instr, unsigned int operand_a, unsigned int op
 }
 
 FpuPipeObj decode_RTYPE(uint32_t instr, unsigned int operand_a, unsigned int operand_b) {
-  //TODO: add execution cycles.
+  //TODO: add execution
   RTYPE dec_instr = {.instr = instr}; //"Decode" into ITYPE
   FpuPipeObj result = {};
   result.valid = 1;
@@ -75,12 +75,19 @@ FpuPipeObj decode_RTYPE(uint32_t instr, unsigned int operand_a, unsigned int ope
   result.use_rs_i[1] = false;
   result.use_rs_i[2] = false;
   result.speculative = 1;
+  result.remaining_ex_cycles = NUM_CYCLES_DEFAULT; //Default number of cycles
   //Override relevant parameters based on function
   switch (dec_instr.parts.funct7)
   {
     case FSQRT_S:
     {
+      result.remaining_ex_cycles = NUM_CYCLES_FSQRT; //TODO: we need to check if this has been added. Thats not given
       result.addrFrom = {dec_instr.parts.rs1, 999}; //sqrt only dependent on rs1
+      break;
+    }
+    case FDIV_S:
+    {
+      result.remaining_ex_cycles = NUM_CYCLES_FDIV;
       break;
     }
     case FCMP:

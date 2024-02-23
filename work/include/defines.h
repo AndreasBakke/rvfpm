@@ -9,27 +9,32 @@
 #pragma once
 
 //System-parameters
-#define NUM_F_REGS 32
+const int NUM_F_REGS=32;
 
 //CORE-V-XIF-parameters
-#define XLEN 32
-#define FLEN 32
-#define X_NUM_RS 3
-#define X_ID_WIDTH 4
-#define X_MEM_WIDTH 32
-#define X_RFR_WIDTH 32
-#define X_RFW_WIDTH 32
-#define X_MISA 0
-#define X_ECS_XS 0
+const int XLEN=32;
+const int FLEN=32;
+const int X_NUM_RS=3;
+const int X_ID_WIDTH=4;
+const int X_MEM_WIDTH=32;
+const int X_RFR_WIDTH=32;
+const int X_RFW_WIDTH=32;
+const int X_MISA=0;
+const int X_ECS_XS=0;
 
 //Pipeline-parameters
-#define NUM_PIPELINE_STAGES 4
-#define QUEUE_DEPTH 4
-#define OOO 0
-#define FORWARDING 0
+const int NUM_PIPELINE_STAGES=4;
+const int QUEUE_DEPTH=4;
+const bool OOO= 0;
+const bool FORWARDING= 0;
 
 enum pipelineConfig {
   EXECUTE_STEP = 2,
   MEMORY_STEP = 1,
   WRITEBACK_STEP = 0,
 };
+
+//Ex-cycles-parameters
+const int NUM_CYCLES_DEFAULT=1;
+const int NUM_CYCLES_FDIV=16;
+const int NUM_CYCLES_FSQRT=19;
