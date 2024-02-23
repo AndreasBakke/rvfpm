@@ -50,6 +50,10 @@ void FPU::resetPredecoder(){
   predecoder.reset();
 };
 
+void FPU::commitInstruction(unsigned int id, bool kill){
+  pipeline.commitInstruction(id, kill);
+};
+
 FpuPipeObj FPU::testFloatOp(){
   return pipeline.step();
 }

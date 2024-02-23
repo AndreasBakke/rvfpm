@@ -37,10 +37,20 @@ FpuPipeObj FpuPipeline::step(){
 
   //Do some stall checking here
   //TODO:if load/store. keep mem_valid 1 until mem_ready is 1.
-  if (!stalled){
+  //TODO: stall if the operation at memory-step is speculative!
+
+  //
+
+
+  //We need to know if we are actually stalled here.
+
+
+
+  if (!stalled){ //This may lead to some operations beeing skipped. If stalled, then not stalled the next. The operation is moved on.
     mem_valid = 0;
     this->mem_req = {};
     executeOp(pipeline.at(EXECUTE_STEP), registerFilePtr, mem_valid, this->mem_req); //Compute operation at execute stage. //Issue memory request to CPU at this stage
+    std::cout << "speculative: " << pipeline.at(EXECUTE_STEP).speculative << std::endl;
     if (pipeline.at(EXECUTE_STEP).remaining_ex_cycles > 0){
       ex_stalled = true;
     } else {
@@ -53,7 +63,7 @@ FpuPipeObj FpuPipeline::step(){
     } else {
       ex_stalled = false;
     }
-  }
+  };
 
   //Mem
   if (pipeline.at(MEMORY_STEP).fromMem){ //wait for memory if the operation is dependant on memory
@@ -99,6 +109,9 @@ FpuPipeObj FpuPipeline::step(){
 
   stalled = mem_stalled || ex_stalled;// || result_stalled; //TODO: check stalling if we are waiting for result-ready
   //advance pipeline
+
+  //Pipeline advance function
+  //This can move forward operations that does not need to stall.
   if (!stalled){
     pipeline.push_back(waitingOp);
     pipeline.pop_front();//should be dependent on what the front op is
@@ -118,6 +131,31 @@ FpuPipeObj FpuPipeline::step(){
 bool FpuPipeline::isStalled(){
   return stalled;
 };
+
+
+void FpuPipeline::commitInstruction(unsigned int id, bool kill){
+  std::cout << "commitInstruction, kill : " << kill << std::endl;
+  for (auto& op : pipeline) {
+    if (op.id == id) {
+      if (kill) {
+        op = FpuPipeObj({});
+      } else {
+        op.speculative = 0;
+      }
+    }
+  }
+  for (auto& op : operationQueue) { //if the operation is in the queue, commit it
+    if (op.id == id) {
+      if (kill) {
+        op = FpuPipeObj({});
+      } else {
+        op.speculative = 0;
+      }
+    }
+  }
+};
+
+
 
 //--------------------------
 // Memory interface

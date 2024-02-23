@@ -73,6 +73,7 @@ FpuPipeObj decode_RTYPE(uint32_t instr, unsigned int operand_a, unsigned int ope
   result.use_rs_i[0] = false;
   result.use_rs_i[1] = false;
   result.use_rs_i[2] = false;
+  result.speculative = 1;
   //Override relevant parameters based on function
   switch (dec_instr.parts.funct7)
   {

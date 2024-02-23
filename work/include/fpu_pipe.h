@@ -30,6 +30,7 @@ struct FpuPipeObj {
   bool data_signed = 0;
   int remaining_ex_cycles: 1; //1 cycle for execution as standard
   bool valid = 0; //Is the instruction valid?
+  bool speculative = 0; //Set to 1 in decode, so empty operations isn't speculative. Set to 0 when commited do not execute if 1
 
 
   bool isEmpty() const {
@@ -41,7 +42,9 @@ struct FpuPipeObj {
         !toMem &&
         !fromXReg &&
         !fromMem &&
-        !data_signed;
+        !data_signed &&
+        !valid &&
+        !speculative;
         // uDataToXreg == 0 &&
         // dataToXreg == 0;
   }

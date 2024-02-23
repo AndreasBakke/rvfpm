@@ -4,6 +4,7 @@
     Description:
     Signal interface for rvfpm_tb
 */
+`include "../src/defines.svh"
 interface inTest_rvfpm #(
     parameter int X_ID_WIDTH = 4,
     parameter int NUM_F_REGS = 32,
@@ -31,12 +32,14 @@ interface inTest_rvfpm #(
     `ifndef ZFINX
         logic [FLEN-1:0] registerFile[NUM_F_REGS]; //For verification
     `endif
-    `ifdef PIPELINE
-        logic unsigned pipelineIds[PIPELINE_STAGES];
+    `ifdef INCLUDE_PIPELINE
+        int unsigned pipelineIds[PIPELINE_STAGES];
     `endif
-    `ifdef QUEUE
-        logic unsigned queueIds[QUEUE_DEPTH];
+    `ifdef INCLUDE_QUEUE
+        int unsigned queueIds[QUEUE_DEPTH];
     `endif
+
+    int speculative_ids [$];
 
     //-----------------------
     //-- Error count

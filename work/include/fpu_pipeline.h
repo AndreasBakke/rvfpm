@@ -49,8 +49,11 @@ class FpuPipeline {
     FpuPipeObj step(); //Advance pipeline by one step (called by clock in interface)
     bool isStalled();
 
+    //Issue/Commit interface
     void addOpToQueue(FpuPipeObj op);
     void setWaitingOp(FpuPipeObj op);
+    void commitInstruction(unsigned int id, bool kill);
+
 
     //Memory request/result interface
     void pollMemReq(bool& mem_valid, x_mem_req_t& mem_req);

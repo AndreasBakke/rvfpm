@@ -13,7 +13,7 @@ import os
 import yaml
 
 #TODO: add path variable to enable run from multiple folders
-sv_path = "src/pa_defines.sv"
+sv_path = "src/defines.svh"
 cpp_path = "include/defines.h"
 
 header  = "//####################################################################\n"
@@ -57,14 +57,14 @@ def write_sv_params(data):
     for param in data["fpu"]:
       if param == "extensions" and data["fpu"][param] == None:
         continue
-      write_data(sv_path, "  parameter "+str(param).upper()+" = "+str(data["fpu"][param])+";\n")
+      write_data(sv_path, "  `define "+str(param).upper()+" "+str(data["fpu"][param])+"\n")
   except Exception as e:
     print(f"Failed writing sv system-parameters: {e}")
 
   try:
     write_data(sv_path, "\n//CORE-V-XIF-parameters\n")
     for param in data["xif"]:
-      write_data(sv_path, "  parameter "+str(param).upper()+" = "+str(data["xif"][param]).lower()+";\n")
+      write_data(sv_path, "  `define "+str(param).upper()+" "+str(data["xif"][param]).lower()+"\n")
   except Exception as e:
     print(f"Failed writing sv interface-parameters: {e}")
 
@@ -72,18 +72,18 @@ def write_sv_params(data):
     write_data(sv_path, "\n//Pipeline-parameters\n")
     for param in data["fpu_pipeline"]:
       if param == "num_pipeline_stages" and data["fpu_pipeline"][param] != 0:
-        write_data(sv_path, "  `define PIPELINE\n")
+        write_data(sv_path, "  `define INCLUDE_PIPELINE\n")
       if param == "queue_depth" and data["fpu_pipeline"][param] != 0:
-        write_data(sv_path, "  `define QUEUE\n")
+        write_data(sv_path, "  `define INCLUDE_QUEUE\n")
 
       if param == "steps":  #Not needed in pa_rvfpm as of yet
         continue
       if data["fpu_pipeline"][param] == True:
-        write_data(sv_path, "  parameter "+str(param).upper()+" = 1;\n")
+        write_data(sv_path, "  `define "+str(param).upper()+" 1\n")
       elif data["fpu_pipeline"][param] == False:
-        write_data(sv_path, "  parameter "+str(param).upper()+" = 0;\n")
+        write_data(sv_path, "  `define "+str(param).upper()+" 0\n")
       else:
-        write_data(sv_path, "  parameter "+str(param).upper()+" = "+str(data["fpu_pipeline"][param]).lower()+";\n")
+        write_data(sv_path, "  `define "+str(param).upper()+" "+str(data["fpu_pipeline"][param]).lower()+"\n")
   except Exception as e:
     print(f"Failed writing sv pipeline-parameters: {e}")
 
@@ -164,12 +164,14 @@ if __name__ == "__main__":
   print(f"  User config given: {yaml_path}\n  Overwriting default_config.yaml") if yaml_path != "" else print("  No user config given, using default_config.yaml\n")
 
   write_both(header, "w+")
-  write_data(sv_path, "package pa_defines;\n")
+  # write_data(sv_path, "package pa_defines;\n")
+  write_data(sv_path, "`ifndef MY_DEFINES_SV\n`define MY_DEFINES_SV")
   write_data(cpp_path, "#pragma once\n")
   config = parse_yaml(yaml_path)
   write_sv_params(config)
   write_cpp_params(config)
-  write_data(sv_path,"endpackage: pa_defines")
+  write_data(sv_path, "`endif")
+  # write_data(sv_path,"endpackage: pa_defines")
 
   print("----------------------------")
   print("-- Finished setup parsing --")

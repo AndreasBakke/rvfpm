@@ -141,6 +141,8 @@ program automatic testPr_rvfpm #(
     uin_rvfpm.rst = 0;
     uin_xif.issue_valid = 0;
     uin_xif.issue_req ={};
+    uin_xif.commit_valid = 0;
+    uin_xif.commit ={};
     uin_xif.mem_ready = 0;
     uin_xif.mem_result_valid = 0;
     uin_xif.mem_result ={};
@@ -265,6 +267,7 @@ program automatic testPr_rvfpm #(
             end
           end
           @(posedge uin_rvfpm.ck);
+          uin_rvfpm.speculative_ids.push_back(id);
           uin_xif.issue_valid = 0;
           uin_xif.issue_req ={};
           uin_xif.issue_req.rs[0] = 0;

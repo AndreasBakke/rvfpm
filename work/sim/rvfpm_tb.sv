@@ -6,32 +6,32 @@
   Prerequisites: Compile c++ model using make sharedLib (macSL not tested/verified)
   Then run vsim using -sv_lib bin/lib_rvfpm -novopt work.rvfpm_tb -suppress 12110
 */
-// `include "pa_defines.sv"
 `timescale 1ns/1ps
+`include "../src/defines.svh"
 module rvfpm_tb;
   //-----------------------
   //-- Parameters
   //-----------------------
   //System parameters
-  parameter TB_NUM_F_REGS        = pa_defines::NUM_F_REGS;
-  parameter TB_XLEN              = pa_defines::XLEN;
-  parameter TB_FLEN              = pa_defines::FLEN;
+  parameter TB_NUM_F_REGS        = `NUM_F_REGS;
+  parameter TB_XLEN              = `XLEN;
+  parameter TB_FLEN              = `FLEN;
   //System parameters
 
   //Pipeline parameters
-  parameter TB_PIPELINE_STAGES   = pa_defines::NUM_PIPELINE_STAGES;
-  parameter TB_QUEUE_DEPTH       = pa_defines::QUEUE_DEPTH; //Size of operation queue
-  parameter TB_FORWARDING        = pa_defines::FORWARDING; //Set to 1 to enable forwarding; not implemented
-  parameter TB_OUT_OF_ORDER      = pa_defines::OOO; //Set to 1 to enable out of order execution; not implemented
+  parameter TB_PIPELINE_STAGES   = `NUM_PIPELINE_STAGES;
+  parameter TB_QUEUE_DEPTH       = `QUEUE_DEPTH; //Size of operation queue
+  parameter TB_FORWARDING        = `FORWARDING; //Set to 1 to enable forwarding; not implemented
+  parameter TB_OUT_OF_ORDER      = `OOO; //Set to 1 to enable out of order execution; not implemented
 
   //CORE-V-XIF parameters for coprocessor
-  parameter TB_X_NUM_RS          = pa_defines::X_NUM_RS; //Read ports
-  parameter TB_X_ID_WIDTH        = pa_defines::X_ID_WIDTH;
-  parameter TB_X_MEM_WIDTH       = pa_defines::FLEN; //TODO: dependent on extension
-  parameter TB_X_RFR_WIDTH       = pa_defines::FLEN; //Read acces width
-  parameter TB_X_RFW_WIDTH       = pa_defines::FLEN; //Write acces width
-  parameter TB_X_MISA            = pa_defines::X_MISA; //TODO: not used
-  parameter TB_X_ECS_XS          = pa_defines::X_ECS_XS;        //TODO: not used
+  parameter TB_X_NUM_RS          = `X_NUM_RS; //Read ports
+  parameter TB_X_ID_WIDTH        = `X_ID_WIDTH;
+  parameter TB_X_MEM_WIDTH       = `FLEN; //TODO: dependent on extension
+  parameter TB_X_RFR_WIDTH       = `FLEN; //Read acces width
+  parameter TB_X_RFW_WIDTH       = `FLEN; //Write acces width
+  parameter TB_X_MISA            = `X_MISA; //TODO: not used
+  parameter TB_X_ECS_XS          = `X_ECS_XS;        //TODO: not used
 
   //Clock
   localparam time ck_period = 40ns;
@@ -91,7 +91,7 @@ module rvfpm_tb;
     .enable(uin_rvfpm.enable),
     .fpu_ready(uin_rvfpm.fpu_ready),
     .xif_issue_if(uin_xif.coproc_issue),
-    // .xif_commit_if(uin_xif.coproc_commit),
+    .xif_commit_if(uin_xif.coproc_commit),
     .xif_mem_if(uin_xif.coproc_mem),
     .xif_mem_result_if(uin_xif.coproc_mem_result),
     .xif_result_if(uin_xif.coproc_result)
@@ -109,26 +109,27 @@ module rvfpm_tb;
     `endif
 
     //Get entire pipeline for verification
-    `ifdef PIPELINE
+    `ifdef INCLUDE_PIPELINE
       for (int i=0; i < TB_PIPELINE_STAGES; ++i) begin
         uin_rvfpm.pipelineIds[i] = getPipeStageId(dut.fpu, i);
       end
     `endif
-    `ifdef QUEUE
+    `ifdef INCLUDE_QUEUE
       //Get entire queue for verification
       for (int i=0; i < TB_QUEUE_DEPTH; ++i) begin
         uin_rvfpm.queueIds[i] = getQueueStageId(dut.fpu, i);
       end
     `endif
 
-    // if (uin_xif.result_valid) begin
-    //   #5;
-    //   uin_xif.result_ready = 1;
-    //   @(posedge uin_rvfpm.ck);
-    //   #10;
-    //   uin_xif.result_ready = 0;
-    // end
 
+    if (uin_rvfpm.speculative_ids.size() > 0) begin
+      uin_xif.commit_valid = 1;
+      uin_xif.commit.id = uin_rvfpm.speculative_ids.pop_front();
+      uin_xif.commit.commit_kill = 0;
+      @(posedge uin_rvfpm.ck);
+      uin_xif.commit_valid = 0;
+      uin_xif.commit = {};
+    end
   end
 
   //-----------------------

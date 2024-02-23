@@ -22,7 +22,7 @@ sim_full:
 	python3 run/setup.py $(CONFIGPATH)
 	make sharedLib
 	vlog -work work /work/anb7/prosjektoppgave/rvfpm/work/src/in_xif.sv
-	vlog -work work /work/anb7/prosjektoppgave/rvfpm/work/src/pa_defines.sv
+	vlog -work work /work/anb7/prosjektoppgave/rvfpm/work/src/defines.svh
 	vlog -work work /work/anb7/prosjektoppgave/rvfpm/work/src/pa_rvfpm.sv
 	vlog -work work /work/anb7/prosjektoppgave/rvfpm/work/src/rvfpm.sv
 	vlog -work work /work/anb7/prosjektoppgave/rvfpm/work/sim/inTest_rvfpm.sv
