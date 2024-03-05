@@ -30,6 +30,5 @@ fpu_pipeline:
 
 execute_cycles: #Number of cycles for execution of each instruction
   default: 1
-  FADD: 4
   FSQRT: 19
   FDIV: 16

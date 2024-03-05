@@ -10,5 +10,5 @@ fpu_pipeline:
 
 execute_cycles:
   default: 0
-  fdiv: 0
-  fsqrt: 0
+  FDIV: 0
+  FSQRT: 0
