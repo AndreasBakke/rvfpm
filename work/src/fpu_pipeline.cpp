@@ -45,7 +45,6 @@ FpuPipeObj FpuPipeline::step(){ //TODO: add special handling if multiple stages 
     bool speculative = false;
     bool wait_for_mem = false;
     bool more_cycles_rem = false;
-    std::cout << pipeline.at(EXECUTE_STEP).remaining_ex_cycles << std::endl;
     wait_for_mem = mem_valid && (pipeline.at(EXECUTE_STEP).toMem || pipeline.at(EXECUTE_STEP).fromMem); //Should be 0 if a memory op has not been done last cycle
     if(pipeline.at(EXECUTE_STEP).speculative){
       speculative = true;
@@ -55,6 +54,7 @@ FpuPipeObj FpuPipeline::step(){ //TODO: add special handling if multiple stages 
       mem_valid = wait_for_mem; //set to 0 if done
     }
     else if (pipeline.at(EXECUTE_STEP).remaining_ex_cycles > 1){
+      std::cout << pipeline.at(EXECUTE_STEP).remaining_ex_cycles << std::endl;
       pipeline.at(EXECUTE_STEP).remaining_ex_cycles--;
       more_cycles_rem = true;
     }
@@ -74,7 +74,7 @@ FpuPipeObj FpuPipeline::step(){ //TODO: add special handling if multiple stages 
   }
 
 
-  //Mem
+  //Mem TODO: add check if steps overlap
   if (pipeline.at(MEMORY_STEP).fromMem){ //Only need to check for mem_done if we are reading from emm
     mem_done = false; //Start by setting to false
     if (memoryResultValid && memoryResults.id == pipeline.at(MEMORY_STEP).id){

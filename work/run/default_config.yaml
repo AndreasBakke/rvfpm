@@ -1,9 +1,4 @@
 ---
-# Add your YAML content here
-#TODO: noe som dette - så: bruke python til å parse og skrive pa_rvfpm og fpu_config.h
-# Da sikrer vi like definisjoner i begge filer (og enklere å sette opp andre strukturer.)
-#Andrepri etter å fullføre interface og timing.
-
 fpu:
   num_f_regs : 32  #Number of registers in the FPU register file
   extensions:
@@ -35,5 +30,6 @@ fpu_pipeline:
 
 execute_cycles: #Number of cycles for execution of each instruction
   default: 1
-  fdiv: 16
-  fsqrt: 19
+  FADD: 4
+  FSQRT: 19
+  FDIV: 16

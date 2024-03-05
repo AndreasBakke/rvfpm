@@ -127,7 +127,7 @@ def write_cpp_params(data):
   try:
     write_data(cpp_path, "\n//Ex-cycles-parameters\n")
     for param in data["execute_cycles"]:
-      write_data(cpp_path, "const int NUM_CYCLES_"+str(param).upper()+"="+str(data["execute_cycles"][param]).lower()+";\n")
+      write_data(cpp_path, "#define NUM_CYCLES_"+str(param).upper()+" "+str(data["execute_cycles"][param]).lower()+"\n")
   except Exception as e:
     print(f"Failed writing cpp ex-cycles-parameters: {e}")
 

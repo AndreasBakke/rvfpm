@@ -35,6 +35,7 @@ enum pipelineConfig {
 };
 
 //Ex-cycles-parameters
-const int NUM_CYCLES_DEFAULT=1;
-const int NUM_CYCLES_FDIV=16;
-const int NUM_CYCLES_FSQRT=19;
+#define NUM_CYCLES_DEFAULT 1
+#define NUM_CYCLES_FADD 4
+#define NUM_CYCLES_FSQRT 19
+#define NUM_CYCLES_FDIV 16

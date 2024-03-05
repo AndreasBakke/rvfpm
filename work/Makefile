@@ -21,14 +21,14 @@ sim_full:
 	make clean
 	python3 run/setup.py $(CONFIGPATH)
 	make sharedLib
-	vlog -work work /work/anb7/prosjektoppgave/rvfpm/work/src/in_xif.sv
-	vlog -work work /work/anb7/prosjektoppgave/rvfpm/work/src/defines.svh
-	vlog -work work /work/anb7/prosjektoppgave/rvfpm/work/src/pa_rvfpm.sv
-	vlog -work work /work/anb7/prosjektoppgave/rvfpm/work/src/rvfpm.sv
-	vlog -work work /work/anb7/prosjektoppgave/rvfpm/work/sim/inTest_rvfpm.sv
-	vlog -work work /work/anb7/prosjektoppgave/rvfpm/work/sim/assertions_rvfpm.sv
-	vlog -work work /work/anb7/prosjektoppgave/rvfpm/work/sim/testPr_rvfpm.sv
-	vlog -work work /work/anb7/prosjektoppgave/rvfpm/work/sim/rvfpm_tb.sv
+	vlog -work work src/in_xif.sv
+	vlog -work work src/defines.svh
+	vlog -work work src/pa_rvfpm.sv
+	vlog -work work src/rvfpm.sv
+	vlog -work work sim/inTest_rvfpm.sv
+	vlog -work work sim/assertions_rvfpm.sv
+	vlog -work work sim/testPr_rvfpm.sv
+	vlog -work work sim/rvfpm_tb.sv
 	vsim -sv_lib bin/lib_rvfpm -novopt work.rvfpm_tb -suppress 12110
 
 TestFloat: #Compile and test for IEEE754 compliance
