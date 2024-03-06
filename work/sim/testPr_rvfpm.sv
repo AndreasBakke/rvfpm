@@ -17,7 +17,7 @@ program automatic testPr_rvfpm #(
 );
   import "DPI-C" function int unsigned randomFloat(); //C++ function for random float generation
 
-  localparam NUM_TESTS = 10;
+  localparam NUM_TESTS = 100;
 
   initial begin
     $display("--- Starting simulation ---");
@@ -214,9 +214,18 @@ program automatic testPr_rvfpm #(
           @(posedge uin_rvfpm.ck) //Wait for memory request from CPU
           if (uin_xif.mem_valid && uin_xif.mem_req.id == issue_id) begin
             @(posedge uin_rvfpm.ck)
-            uin_xif.mem_ready = 1;//Todo: add response (dbg etc)
+            uin_xif.mem_ready = 1;
             @(posedge uin_rvfpm.ck)
-            uin_xif.mem_ready = 0;//Todo: add response (dbg etc)
+            uin_xif.mem_ready = 0;
+            uin_xif.mem_result_valid = 1;
+            uin_xif.mem_result.id = issue_id;
+            uin_xif.mem_result.rdata = 0;
+            uin_xif.mem_result.err = 0;
+            uin_xif.mem_result.dbg = 0;
+            @(posedge uin_rvfpm.ck)
+            uin_xif.mem_result_valid = 0;
+            uin_xif.mem_ready = 0;
+            uin_xif.mem_result = {};
             break;
           end
         end

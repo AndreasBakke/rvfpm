@@ -36,6 +36,8 @@ class FpuPipeline {
     bool mem_ready; //set by rvfpm.sv, polled in core
 
     //Memory result interface
+    bool wait_for_mem_resp;
+    bool wait_for_mem_result; //For pipeline stalls
     bool memoryResultValid; //Set during memory result transaction
     x_mem_result_t memoryResults; //Set during memory result transaction
 

@@ -16,10 +16,10 @@ endif
 #Filepaths for the c++ core
 COREFILES = src/fpu_top.cpp src/fpu_predecoder.cpp src/fpu_decode.cpp src/fpu_execute.cpp src/fpu_pipeline.cpp src/fpu_rf.cpp  src/fp_number.cpp
 
-CONFIGPATH:=""
+CONFIG:=""
 sim_full:
 	make clean
-	python3 run/setup.py $(CONFIGPATH)
+	python3 run/setup.py $(CONFIG)
 	make sharedLib
 	vlog -work work src/in_xif.sv
 	vlog -work work src/defines.svh

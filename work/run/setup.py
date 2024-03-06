@@ -116,9 +116,9 @@ def write_cpp_params(data):
         write_data(cpp_path, "};\n") if len(data["fpu_pipeline"]["steps"])>0 else None
         continue
       if data["fpu_pipeline"][param] == True:
-        write_data(cpp_path, "const bool"+str(param).upper()+"= 1;\n")
+        write_data(cpp_path, "const int "+str(param).upper()+"=1;\n")
       elif data["fpu_pipeline"][param] == False:
-        write_data(cpp_path, "const bool "+str(param).upper()+"= 0;\n")
+        write_data(cpp_path, "const int "+str(param).upper()+"=0;\n")
       else:
         write_data(cpp_path, "const int "+str(param).upper()+"="+str(data["fpu_pipeline"][param]).lower()+";\n")
   except Exception as e:

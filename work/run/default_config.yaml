@@ -4,6 +4,7 @@ fpu:
   extensions:
     # - ZFINX
     # - ZFMin
+    # etc
 
 
 xif:

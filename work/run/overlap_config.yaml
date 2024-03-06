@@ -1,0 +1,8 @@
+---
+
+fpu_pipeline:
+  num_pipeline_stages: 5 #Number of stages in the FPU pipeline
+  steps:  #step 0 is the last step in the pipeline
+    execute_step: 0
+    memory_step: 1
+    writeback_step: 0
