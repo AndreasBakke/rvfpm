@@ -13,6 +13,16 @@ FPU::FPU () : registerFile(NUM_F_REGS),  pipeline(&registerFile), predecoder(fpu
   #else
     //Todo: Expand to support ZFINX
   #endif
+
+  //check for illegal options
+  if (WRITEBACK_STEP > EXECUTE_STEP){
+    std::cerr << "Error: WRITEBACK_STEP cannot be before EXECUTE_STEP" << std::endl;
+    exit(1);
+  }
+  if (WRITEBACK_STEP > MEMORY_STEP){
+    std::cerr << "Error: WRITEBACK_STEP cannot be before MEMORY_STEP" << std::endl;
+    exit(1);
+  }
 };
 
 FPU::~FPU(){

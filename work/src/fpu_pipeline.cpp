@@ -49,7 +49,6 @@ FpuPipeObj FpuPipeline::step(){
       speculative = true;
     }
     else if (pipeline.at(EXECUTE_STEP).remaining_ex_cycles > 1){
-      std::cout << pipeline.at(EXECUTE_STEP).remaining_ex_cycles << std::endl;
       pipeline.at(EXECUTE_STEP).remaining_ex_cycles--;
       more_cycles_rem = true;
     }
@@ -80,16 +79,12 @@ FpuPipeObj FpuPipeline::step(){
       this->mem_req = {};
     }
 
-    if(wait_for_mem_result) {
-      if (memoryResultValid && memoryResults.id == pipeline.at(MEMORY_STEP).id){
-        pipeline.at(MEMORY_STEP).data.bitpattern = memoryResults.rdata;
-        memoryResults = x_mem_result_t({0, 0, 0, 0});
-        memoryResultValid = false;
-        mem_done = true;
-        wait_for_mem_result = false;
-      } else {
-        wait_for_mem_result = true; //keep waiting (not needed)
-      }
+    if(wait_for_mem_result && memoryResultValid && memoryResults.id == pipeline.at(MEMORY_STEP).id){
+      pipeline.at(MEMORY_STEP).data.bitpattern = memoryResults.rdata;
+      memoryResults = x_mem_result_t({0, 0, 0, 0});
+      memoryResultValid = false;
+      mem_done = true;
+      wait_for_mem_result = false;
     }
   } else {
     mem_done = true;
@@ -135,6 +130,7 @@ void FpuPipeline::stallCheck(){ //TODO: also check for hazards.
       if (wb_done && (WRITEBACK_STEP != MEMORY_STEP || mem_done) && (WRITEBACK_STEP != EXECUTE_STEP || execute_done)){
         wb_done = false;
         i==0 ? pipeline.at(i) = FpuPipeObj({}) : pipeline.at(i-1) = pipeline.at(i); //Move the operation to the next stage
+        pipeline.at(i) = FpuPipeObj({}); //Clear the current stage
         i == MEMORY_STEP ? mem_done = false : mem_done = mem_done;
         i == EXECUTE_STEP ? execute_done = false : execute_done = execute_done;
       }
@@ -161,7 +157,10 @@ void FpuPipeline::stallCheck(){ //TODO: also check for hazards.
     }
 
     //If nothing happens at the step, move the operation to the next stage (if it is empty)
-    if ( i != 0 & pipeline.at(i-1).isEmpty()){
+    if (i==0) {
+      pipeline.at(i) = FpuPipeObj({});
+    }
+     else if (pipeline.at(i-1).isEmpty()){
       pipeline.at(i-1) = pipeline.at(i);
       pipeline.at(i) = FpuPipeObj({});
     }
@@ -185,7 +184,6 @@ void FpuPipeline::stallCheck(){ //TODO: also check for hazards.
       operationQueue.at(i) = FpuPipeObj({});
     }
   }
-
 
   if (all_done) {
     stalled = false;

@@ -51,22 +51,25 @@ program automatic testPr_rvfpm #(
     repeat(NUM_TESTS) begin //test NUM_TESTS number of min-operations using random registers
       doRTYPE(.funct7(7'b0010100), .funct3(0));
     end
+    repeat(PIPELINE_STAGES*2) @(posedge uin_rvfpm.ck);
     init();
     fillRF();
     repeat(NUM_TESTS) begin //test NUM_TESTS number of max-operations using random registers
       doRTYPE(.funct7(7'b0010100), .funct3(3'b001));
     end
+    repeat(PIPELINE_STAGES*2) @(posedge uin_rvfpm.ck);
     init();
     fillRF();
-
     repeat(NUM_TESTS) begin //test NUM_TESTS number of FSGNJ-operations using random registers
       doRTYPE(.funct7(7'b0010000), .funct3(3'b000));
     end
+    repeat(PIPELINE_STAGES*2) @(posedge uin_rvfpm.ck);
     init();
     fillRF();
     repeat(NUM_TESTS) begin //test NUM_TESTS number of FSGNJN-operations using random registers
       doRTYPE(.funct7(7'b0010000), .funct3(3'b001));
     end
+    repeat(PIPELINE_STAGES*2) @(posedge uin_rvfpm.ck);
     init();
     fillRF();
 
