@@ -30,23 +30,22 @@ FpuPipeline::FpuPipeline(FpuRf* rf_pointer) : pipeline(NUM_PIPELINE_STAGES), ope
 FpuPipeline::~FpuPipeline() {
 }
 
-FpuPipeObj FpuPipeline::step(){
+void FpuPipeline::step(){
   //Operations are decoded before adding to the pipeline
   //Check for memory dependencies and request throough interface
   //Pipeline stucture set in run/setup.yaml
 
-  if (NUM_PIPELINE_STAGES == 0) { //TODO: add stall-checking and interface usage
-    executeOp(waitingOp, registerFilePtr, mem_valid, mem_req);
-    registerFilePtr->write(waitingOp.addrTo, waitingOp.data); //only if not mem
-    return waitingOp;
-  }
+  #ifdef TESTFLOAT
+    executeOp(waitingOp, registerFilePtr, mem_valid, mem_req); //Values are loaded to register using bd_load
+    return;
+  #endif
 
   //EX TODO: make EX and MEM "independent" in terms of which comes first. Requires check for speculative in mem_step
   if(!execute_done) { //If we are not done executing the op in execute step. Flag reset by stallCheck() if we advance
     bool speculative = false;
     bool more_cycles_rem = false;
     if(pipeline.at(EXECUTE_STEP).speculative){
-      speculative = true;
+      speculative = true; //Wait until operation has been committed before executing
     }
     else if (pipeline.at(EXECUTE_STEP).remaining_ex_cycles > 1){
       pipeline.at(EXECUTE_STEP).remaining_ex_cycles--;
@@ -55,7 +54,7 @@ FpuPipeObj FpuPipeline::step(){
     else if (!(pipeline.at(EXECUTE_STEP).fromMem || pipeline.at(EXECUTE_STEP).toMem)){ //If we reach this point, we can assume that this operation has not been executed yet (or have been decremented enugh).
       executeOp(pipeline.at(EXECUTE_STEP), registerFilePtr, mem_valid, mem_req);
     }
-    execute_done = !speculative  && !more_cycles_rem; //&& !wait_for_mem
+    execute_done = !speculative  && !more_cycles_rem;
   } else {
     execute_done = true;
     //Wait - means we are stalled by some other step
@@ -69,7 +68,6 @@ FpuPipeObj FpuPipeline::step(){
       executeOp(pipeline.at(MEMORY_STEP), registerFilePtr, mem_valid, mem_req);
       wait_for_mem_resp = true;
     }
-
     if(wait_for_mem_resp) {
       wait_for_mem_resp = !mem_ready;
       mem_valid = wait_for_mem_resp; //set to 0 if done, keep to 1 if not
@@ -119,12 +117,11 @@ FpuPipeObj FpuPipeline::step(){
     wb_done = true;
   }
   stallCheck();
-  //for testfloat
-  return pipeline.at(EXECUTE_STEP);
 };
 
 void FpuPipeline::stallCheck(){ //TODO: also check for hazards.
   bool all_done = execute_done && mem_done && wb_done;
+  stalled = false;
   for (int i = 0; i < pipeline.size(); i++){
     if (i == WRITEBACK_STEP) {
       if (wb_done && (WRITEBACK_STEP != MEMORY_STEP || mem_done) && (WRITEBACK_STEP != EXECUTE_STEP || execute_done)){
@@ -197,8 +194,6 @@ void FpuPipeline::stallCheck(){ //TODO: also check for hazards.
   } else if (!waitingOp.isEmpty()){
     stalled = true;
   }
-
-
 }
 
 bool FpuPipeline::isStalled(){
@@ -207,6 +202,25 @@ bool FpuPipeline::isStalled(){
 
 
 //Checkforhazards
+//Hazard type?
+//Could include
+//step of pipeline
+//Addresses involved
+//IDs involved
+//ID stalled
+
+// //Return array of theese. OOO can use the information to reorder
+// bool FpuPipeLine::checkForHazards(){
+//   bool stallEx = checkExecuteHazards();
+//   bool stallMem = checkMemoryHazards(); // If write to Mem and there is a writeback to be done to the same register. Stall
+//   bool stallWB = checkWritebackHazards();//None?
+//   //Execute step:
+//   // IF addrFrom of execute step is the same as the toAddr of steps in front in pipeline
+//   // Not if forwarding is enabled
+//   // And not if its the same step
+// }
+
+
 //If addrFrom of execute step is the same as the toAddr of memory or writeback step, stall
 //But not if forwarding is enabled
 
@@ -225,6 +239,13 @@ void FpuPipeline::commitInstruction(unsigned int id, bool kill){
       } else {
         op.speculative = 0;
       }
+    }
+  }
+  if (waitingOp.id == id) {
+    if (kill) {
+      waitingOp = FpuPipeObj({});
+    } else {
+      waitingOp.speculative = 0;
     }
   }
   for (auto& op : operationQueue) { //if the operation is in the queue, commit it
@@ -282,6 +303,10 @@ void FpuPipeline::addOpToQueue(FpuPipeObj op){
 
 void FpuPipeline::setWaitingOp(FpuPipeObj op){
   waitingOp=op;
+};
+
+FpuPipeObj FpuPipeline::getWaitingOp(){
+  return waitingOp;
 };
 
 void FpuPipeline::flush(){

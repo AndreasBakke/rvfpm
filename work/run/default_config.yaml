@@ -33,3 +33,10 @@ execute_cycles: #Number of cycles for execution of each instruction
   default: 1
   FSQRT: 19
   FDIV: 16
+
+defines: #Will be added as defines
+  # - TESTFLOAT
+  - SOME_DEF 1
+
+# constInts: #Will be added as constInts
+#   #...

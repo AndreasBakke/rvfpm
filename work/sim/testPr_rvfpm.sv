@@ -113,7 +113,15 @@ program automatic testPr_rvfpm #(
     for (int i=0; i<10; ++i) begin
       doRTYPE(.funct7(7'b1110000), .rs1(i), .rs2(0), .rd(0), .funct3(3'b001)); //Class
     end
-
+    repeat(PIPELINE_STAGES*2) @(posedge uin_rvfpm.ck);
+    repeat(PIPELINE_STAGES*2) @(posedge uin_rvfpm.ck);
+    fillRF();
+    repeat(PIPELINE_STAGES*2) @(posedge uin_rvfpm.ck);
+    $display("--- %t: started R4 testing ---", $time);
+    doR4TYPE(.rs3(14), .rs2(15), .rs1(16), .rd(17)); //FMADD
+    repeat(NUM_TESTS) begin //test NUM_TESTS number of FSGNJN-operations using random registers
+      doR4TYPE();
+    end
 
     repeat(PIPELINE_STAGES*2) @(posedge uin_rvfpm.ck);
     $display("--- %t: started Sign Testing ---", $time);
@@ -144,6 +152,18 @@ program automatic testPr_rvfpm #(
 
 
 
+    $display("--- %t: started Random testing ---", $time);
+    init();
+    fillRF();
+    repeat(NUM_TESTS) doRandomInstr();
+    repeat(PIPELINE_STAGES*4) @(posedge uin_rvfpm.ck);
+    fillRF();
+    repeat(NUM_TESTS) doRandomInstr();
+
+
+
+
+
     repeat(PIPELINE_STAGES*128) @(posedge uin_rvfpm.ck);//Wait a long time.
     $display("--- FINISHED ---");
     $display("Error count: %0d", uin_rvfpm.errorCntPr);
@@ -151,7 +171,6 @@ program automatic testPr_rvfpm #(
 
 
   task reset();
-    $display("Reset");
     uin_rvfpm.rst = 1;
     @(posedge uin_rvfpm.ck);
     uin_rvfpm.rst = 0;
@@ -197,6 +216,20 @@ program automatic testPr_rvfpm #(
     instr_r[11:7] = rd;  //rd (dest)
     instr_r[6:0] = 7'b1010011;  //OPCODE
     doIssueInst(instr_r, id, operand_a, operand_b, operand_c, rs_valid_i);
+  endtask
+
+  task doR4TYPE(input int rs3 = $urandom_range(0, NUM_F_REGS-1), input int funct2 = 0,  input int rs2 = $urandom_range(0, NUM_F_REGS-1), input int rs1 = $urandom_range(0, NUM_F_REGS-1), input int funct3 = 0, input int rd = $urandom_range(0, NUM_F_REGS-1), input int unsigned opcode = 67, input int unsigned operand_a = 0, input int unsigned operand_b = 0, input int unsigned operand_c = 0, input logic[2:0] rs_valid_i = 3'b000);
+    automatic logic[31:0]  instr_r4 = 0;
+    @(posedge uin_rvfpm.ck)
+    uin_xif.issue_valid = 1;
+    instr_r4[31:27] = rs3;
+    instr_r4[26:25] = funct2; //funct2
+    instr_r4[24:20] = rs2; //rs3
+    instr_r4[19:15] = rs1; //rs2
+    instr_r4[14:12] = funct3; //RM
+    instr_r4[11:7] = rd;  //rs1 (base)
+    instr_r4[6:0] = opcode;  //OPCODE
+    doIssueInst(instr_r4, id, operand_a, operand_b, operand_c, rs_valid_i);
   endtask
 
   task doSTYPE(input int imm = 17, input int rs2 = $urandom_range(0, NUM_F_REGS-1), input int rs1 = 0, input int offset = 0); //Default get value from random register
@@ -313,7 +346,7 @@ program automatic testPr_rvfpm #(
         begin
 
           repeat(64) @(posedge uin_rvfpm.ck); //some timeout to release s. and raise some error
-          $error("Timeout on issue instruction");
+          $error("Timeout on issue instruction. ID: %0h, opcode: %d, funct7: %d", id, instruction[6:0], instruction[31:25]);
           uin_rvfpm.errorCntPr++;
           uin_xif.issue_valid = 0;
           uin_xif.issue_req ={};
@@ -324,6 +357,60 @@ program automatic testPr_rvfpm #(
       join_none
 
   endtask;
+
+
+
+  task doRandomInstr();
+    //random number from 0 to 18
+    int instr = $urandom_range(0, 26);
+    int rd = $urandom_range(0, NUM_F_REGS-1);
+    int rs1 = $urandom_range(0, NUM_F_REGS-1);
+    int rs2 = $urandom_range(0, NUM_F_REGS-1);
+    int rs3 = $urandom_range(0, NUM_F_REGS-1);
+    case (instr)
+      0: doITYPE(.imm(17), .rs1(6), .rd(rd), .data(randomFloat()));
+      1: doSTYPE(.imm(17), .rs2(rs2), .rs1(rs1), .offset(0));
+      2: doR4TYPE(.rs3(rs3), .funct2(0), .rs2(rs2), .rs1(rs1), .funct3(0), .rd(rd), .opcode(67));//FMADD
+      3: doR4TYPE(.rs3(rs3), .funct2(0), .rs2(rs2), .rs1(rs1), .funct3(0), .rd(rd), .opcode(71));//FMSUB
+      4: doR4TYPE(.rs3(rs3), .funct2(0), .rs2(rs2), .rs1(rs1), .funct3(0), .rd(rd), .opcode(75));//FNMSUB
+      5: doR4TYPE(.rs3(rs3), .funct2(0), .rs2(rs2), .rs1(rs1), .funct3(0), .rd(rd), .opcode(79));//FNMADD
+      default: begin
+        //Random RTYPE instr.
+        int instrR = $urandom_range(0, 20);
+        case(instrR)
+          0: doRTYPE(.funct7(0), .rs2(rs2), .rs1(rs1), .funct3(0), .rd(rd)); //Add
+          1: doRTYPE(.funct7(4), .rs2(rs2), .rs1(rs1), .funct3(0), .rd(rd)); //Sub
+          2: doRTYPE(.funct7(8), .rs2(rs2), .rs1(rs1), .funct3(0), .rd(rd));//Mul
+          3: doRTYPE(.funct7(12), .rs2(rs2), .rs1(rs1), .funct3(0), .rd(rd));//Div
+
+          4: doRTYPE(.funct7(16), .rs2(rs2), .rs1(rs1), .funct3(0), .rd(rd));//sgnj
+          5: doRTYPE(.funct7(16), .rs2(rs2), .rs1(rs1), .funct3(1), .rd(rd));//sgnjN
+          6: doRTYPE(.funct7(16), .rs2(rs2), .rs1(rs1), .funct3(2), .rd(rd));//sgnjX
+
+          7: doRTYPE(.funct7(20), .rs2(rs2), .rs1(rs1), .funct3(0), .rd(rd));//Min
+          8: doRTYPE(.funct7(20), .rs2(rs2), .rs1(rs1), .funct3(1), .rd(rd));//Max
+
+          9: doRTYPE(.funct7(44), .rs2(0), .rs1(rs1), .funct3(0), .rd(rd));//Sqrt
+
+          10: doRTYPE(.funct7(80), .rs2(rs2), .rs1(rs1), .funct3(2), .rd(rd));//Cmp-eq
+          11: doRTYPE(.funct7(80), .rs2(rs2), .rs1(rs1), .funct3(1), .rd(rd));//Cmp-lt
+          12: doRTYPE(.funct7(80), .rs2(rs2), .rs1(rs1), .funct3(0), .rd(rd));//Cmp-le
+
+          13: doRTYPE(.funct7(96), .rs2(0), .rs1(rs1), .funct3(0), .rd(rd));//FcvtWS
+          14: doRTYPE(.funct7(96), .rs2(1), .rs1(rs1), .funct3(0), .rd(rd));//FcvtWUS
+
+          15: doRTYPE(.funct7(104), .rs2(0), .rs1(rs1), .funct3(0), .rd(rd), .operand_a(randomFloat()), .rs_valid_i(3'b001));//FcvtSW
+          16: doRTYPE(.funct7(104), .rs2(1), .rs1(rs1), .funct3(0), .rd(rd), .operand_a(randomFloat()), .rs_valid_i(3'b001));//FcvtSWU
+
+          17: doRTYPE(.funct7(112), .rs2(0), .rs1(rs1), .funct3(0), .rd(rd));//MvXW
+          18: doRTYPE(.funct7(112), .rs2(0), .rs1(rs1), .funct3(1), .rd(rd));//Class
+
+          19: doRTYPE(.funct7(120), .rs2(0), .rs1(rs1), .funct3(0), .rd(rd), .operand_a(randomFloat()), .rs_valid_i(3'b001));//MvWX
+
+        endcase
+      end
+    endcase
+  endtask
 
 
   task doMemRes(); //Issue memoryRequest response to coproc

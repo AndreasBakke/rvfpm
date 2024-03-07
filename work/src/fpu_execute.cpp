@@ -56,7 +56,6 @@ void execute_R4TYPE(FpuPipeObj& op, FpuRf* registerFile){
   FPNumber data1 = registerFile->read(op.addrFrom[0]);
   FPNumber data2 = registerFile->read(op.addrFrom[1]);
   FPNumber data3 = registerFile->read(op.addrFrom[2]);
-
   //Compute result -- will be added to pipeline
   switch (dec_instr.parts_r4type.opcode)
   {

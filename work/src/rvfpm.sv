@@ -100,7 +100,7 @@ module rvfpm #(
 
   always_ff @(posedge ck) begin: la_main
     if (rst) begin
-      $display("%t:  Resetting FPU", $time);
+      $display("--- %t: Resetting FPU ---", $time);
       reset_fpu(fpu);
       fpu_ready_s <= 0;
       //Reset the rest of the signals aswell

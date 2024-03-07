@@ -87,6 +87,12 @@ def write_sv_params(data):
   except Exception as e:
     print(f"Failed writing sv pipeline-parameters: {e}")
 
+  try:
+    write_data(sv_path, "\n//Other\n")
+    for param in data["defines"]:
+      write_data(sv_path, "  `define "+str(param).upper()+"\n")
+  except Exception as e:
+    print(f"Failed writing sv defines: {e}")
 
 
 def write_cpp_params(data):
@@ -132,6 +138,12 @@ def write_cpp_params(data):
     print(f"Failed writing cpp ex-cycles-parameters: {e}")
 
 
+  try:
+    write_data(cpp_path, "\n//Other\n")
+    for param in data["defines"]:
+      write_data(cpp_path, "#define "+str(param).upper()+"\n")
+  except Exception as e:
+    print(f"Failed writing cpp defines: {e}")
 
 
 

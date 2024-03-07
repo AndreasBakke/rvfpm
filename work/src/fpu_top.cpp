@@ -65,7 +65,8 @@ void FPU::commitInstruction(unsigned int id, bool kill){
 };
 
 FpuPipeObj FPU::testFloatOp(){
-  return pipeline.step();
+  pipeline.step();
+  return pipeline.getWaitingOp();
 }
 
 

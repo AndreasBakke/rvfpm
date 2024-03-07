@@ -50,13 +50,14 @@ class FpuPipeline {
   public:
     FpuPipeline(FpuRf* rf_pointer);
     ~FpuPipeline();
-    FpuPipeObj step(); //Advance pipeline by one step (called by clock in interface)
+    void step(); //Advance pipeline by one step (called by clock in interface)
     void stallCheck();
     bool isStalled();
 
     //Issue/Commit interface
     void addOpToQueue(FpuPipeObj op);
     void setWaitingOp(FpuPipeObj op);
+    FpuPipeObj getWaitingOp();
     void commitInstruction(unsigned int id, bool kill);
 
 
