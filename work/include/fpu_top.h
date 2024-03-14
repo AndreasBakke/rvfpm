@@ -28,7 +28,6 @@ class FPU {
 
     //Issue/Commit interface
     void predecodeInstruction(uint32_t instruction, unsigned int id, x_issue_resp_t& resp_ref, bool& use_rs_a, bool& use_rs_b, bool& use_rs_c);
-    void pollPredecoderResult(x_issue_resp_t& resp_ref, bool& use_rs_a, bool& use_rs_b, bool& use_rs_c);
     void resetPredecoder();
     void commitInstruction(unsigned int id, bool kill);
 
