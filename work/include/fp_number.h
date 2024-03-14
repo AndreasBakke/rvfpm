@@ -9,6 +9,7 @@
 #include <cmath> //Needed for NAN
 #include <limits>
 #include <cstdint>
+#include "defines.h"
 
 //Include convertion functions here depending on ifdefs?
 #if defined(EXT_Q)

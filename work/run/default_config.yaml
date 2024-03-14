@@ -1,14 +1,10 @@
 ---
-# Add your YAML content here
-#TODO: noe som dette - så: bruke python til å parse og skrive pa_rvfpm og fpu_config.h
-# Da sikrer vi like definisjoner i begge filer (og enklere å sette opp andre strukturer.)
-#Andrepri etter å fullføre interface og timing.
-
 fpu:
   num_f_regs : 32  #Number of registers in the FPU register file
   extensions:
     # - ZFINX
     # - ZFMin
+    # etc
 
 
 xif:
@@ -33,7 +29,14 @@ fpu_pipeline:
     memory_step: 1
     writeback_step: 0
 
-execute_cycles:
+execute_cycles: #Number of cycles for execution of each instruction
   default: 1
-  fdiv: 16
-  fsqrt: 19
+  FSQRT: 19
+  FDIV: 16
+
+defines: #Will be added as defines
+  # - TESTFLOAT
+  - SOME_DEF 1
+
+# constInts: #Will be added as constInts
+#   #...

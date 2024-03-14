@@ -7,14 +7,6 @@
 
 #include "fpu_rf.h"
 
-#if defined(EXT_Q)
-  static int FLEN = 128;
-#elif defined(EXT_D)
-  static int FLEN = 64;
-#else
-  static int FLEN = 32;
-#endif
-
 
 FpuRf::FpuRf(int depth) : NUM_F_REGISTERS(depth), registerFile(depth) {
   for (auto &reg : registerFile) {

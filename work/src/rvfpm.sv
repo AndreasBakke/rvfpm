@@ -9,30 +9,30 @@
 */
 
 
-`include "pa_defines.sv"
+`include "defines.svh"
 `include "pa_rvfpm.sv"
 import pa_rvfpm::*;
 
 
 module rvfpm #(
-  parameter NUM_F_REGS        = pa_defines::NUM_F_REGS,
-  parameter XLEN              = pa_defines::XLEN,
+  parameter NUM_F_REGS        = `NUM_F_REGS,
+  parameter XLEN              = `XLEN,
   //System parameters
 
   //Pipeline parameters
-  parameter PIPELINE_STAGES   = pa_defines::NUM_PIPELINE_STAGES,
-  parameter QUEUE_DEPTH       = pa_defines::QUEUE_DEPTH, //Size of operation queue
-  parameter FORWARDING        = pa_defines::FORWARDING, //Set to 1 to enable forwarding, not implemented
-  parameter OUT_OF_ORDER      = pa_defines::OOO, //Set to 1 to enable out of order execution, not implemented
+  parameter PIPELINE_STAGES   = `NUM_PIPELINE_STAGES,
+  parameter QUEUE_DEPTH       = `QUEUE_DEPTH, //Size of operation queue
+  parameter FORWARDING        = `FORWARDING, //Set to 1 to enable forwarding, not implemented
+  parameter OUT_OF_ORDER      = `OOO, //Set to 1 to enable out of order execution, not implemented
 
   //CORE-V-XIF parameters for coprocessor
-  parameter X_NUM_RS          = pa_defines::X_NUM_RS, //Read ports
-  parameter X_ID_WIDTH        = pa_defines::X_ID_WIDTH,
-  parameter X_MEM_WIDTH       = pa_defines::FLEN, //TODO: dependent on extension
-  parameter X_RFR_WIDTH       = pa_defines::FLEN, //Read acces width
-  parameter X_RFW_WIDTH       = pa_defines::FLEN, //Write acces width
-  parameter X_MISA            = pa_defines::X_MISA, //TODO: not used
-  parameter X_ECS_XS          = pa_defines::X_ECS_XS        //TODO: not used
+  parameter X_NUM_RS          = `X_NUM_RS, //Read ports
+  parameter X_ID_WIDTH        = `X_ID_WIDTH,
+  parameter X_MEM_WIDTH       = `FLEN, //TODO: dependent on extension
+  parameter X_RFR_WIDTH       = `FLEN, //Read acces width
+  parameter X_RFW_WIDTH       = `FLEN, //Write acces width
+  parameter X_MISA            = `X_MISA, //TODO: not used
+  parameter X_ECS_XS          = `X_ECS_XS        //TODO: not used
 )
 
 (
@@ -43,6 +43,7 @@ module rvfpm #(
 
   //eXtension interface for coprocessor
   in_xif.coproc_issue xif_issue_if,
+  in_xif.coproc_commit xif_commit_if,
   in_xif.coproc_mem  xif_mem_if,
   in_xif.coproc_mem_result xif_mem_result_if,
   in_xif.coproc_result xif_result_if
@@ -60,6 +61,7 @@ module rvfpm #(
   import "DPI-C" function void reset_predecoder(input chandle fpu_ptr);
   import "DPI-C" function void poll_predecoder_result(input chandle fpu_ptr, output x_issue_resp_t resp, output logic use_rs_a, output logic use_rs_b, output logic use_rs_c);
   import "DPI-C" function void predecode_instruction(input chandle fpu_ptr, input int instr, input int unsigned id);
+  import "DPI-C" function void commit_instruction(input chandle fpu_ptr, input int unsigned id, input logic kill);
   import "DPI-C" function void poll_mem_req(input chandle fpu_ptr, output logic mem_valid, output int unsigned id, output int unsigned addr, output int unsigned wdata);
   import "DPI-C" function void write_sv_state(input chandle fpu_ptr, input logic mem_ready, input logic mem_result_valid, input int unsigned id, input int unsigned rdata, input logic err, input logic dbg, input logic result_ready);
   import "DPI-C" function void poll_res(input chandle fpu_ptr, output logic result_valid, output int unsigned id, output int unsigned data, output int unsigned rd); //TODO: add remaining signals in interface
@@ -98,7 +100,7 @@ module rvfpm #(
 
   always_ff @(posedge ck) begin: la_main
     if (rst) begin
-      $display("%t:  Resetting FPU", $time);
+      $display("--- %t: Resetting FPU ---", $time);
       reset_fpu(fpu);
       fpu_ready_s <= 0;
       //Reset the rest of the signals aswell
@@ -106,6 +108,7 @@ module rvfpm #(
     end
     else if (enable) begin
       //Call clocked functions
+
       write_sv_state(fpu, xif_mem_if.mem_ready, xif_mem_result_if.mem_result_valid, mem_res.id, mem_res.rdata, mem_res.err, mem_res.dbg, xif_result_if.result_ready);
       clock_event(fpu, fpu_ready_s);
       poll_predecoder_result(fpu, issue_resp, use_rs_i[0], use_rs_i[1], use_rs_i[2]);
@@ -133,6 +136,9 @@ module rvfpm #(
   always_comb begin
     if (xif_issue_if.issue_valid && fpu_ready_s) begin
       predecode_instruction(fpu, xif_issue_if.issue_req.instr, xif_issue_if.issue_req.id); //TODO: add issue_transaction_active?
+    end
+    if (xif_commit_if.commit_valid) begin
+      commit_instruction(fpu, xif_commit_if.commit.id,  xif_commit_if.commit.commit_kill);
     end
   end
 

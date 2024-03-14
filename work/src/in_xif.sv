@@ -59,10 +59,10 @@ interface in_xif
     logic       exc;        // Can the offloaded instruction possibly cause a synchronous exception in the coprocessor itself?
   } x_issue_resp_t;
 
-  // typedef struct packed {
-  //   logic [X_ID_WIDTH-1:0] id;          // Identification of the offloaded instruction
-  //   logic                  commit_kill; // Shall an offloaded instruction be killed?
-  // } x_commit_t;
+  typedef struct packed {
+    logic [X_ID_WIDTH-1:0] id;          // Identification of the offloaded instruction
+    logic                  commit_kill; // Shall an offloaded instruction be killed?
+  } x_commit_t;
 
   typedef struct packed {
     logic [X_ID_WIDTH   -1:0] id;    // Identification of the offloaded instruction
@@ -109,9 +109,9 @@ interface in_xif
   x_issue_req_t       issue_req;
   x_issue_resp_t      issue_resp;
 
-  // // Commit interface
-  // logic               commit_valid;
-  // x_commit_t          commit;
+  // Commit interface
+  logic               commit_valid;
+  x_commit_t          commit;
 
   // Memory (request/response) interface
   logic               mem_valid;
@@ -135,10 +135,10 @@ interface in_xif
     output issue_req,
     input  issue_resp
   );
-  // modport cpu_commit (
-  //   output commit_valid,
-  //   output commit
-  // );
+  modport cpu_commit (
+    output commit_valid,
+    output commit
+  );
   modport cpu_mem (
     input  mem_valid,
     output mem_ready,
@@ -162,10 +162,10 @@ interface in_xif
     input  issue_req,
     output issue_resp
   );
-  // modport coproc_commit (
-  //   input  commit_valid,
-  //   input  commit
-  // );
+  modport coproc_commit (
+    input  commit_valid,
+    input  commit
+  );
   modport coproc_mem (
     output mem_valid,
     input  mem_ready,
@@ -189,10 +189,10 @@ interface in_xif
     input  issue_req,
     input  issue_resp
   );
-  // modport monitor_commit (
-  //   input  commit_valid,
-  //   input  commit
-  // );
+  modport monitor_commit (
+    input  commit_valid,
+    input  commit
+  );
   modport monitor_mem (
     input  mem_valid,
     input  mem_ready,

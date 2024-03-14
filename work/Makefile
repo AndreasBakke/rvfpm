@@ -13,23 +13,24 @@ else
 	TININESS = -tininessafter
 endif
 
+
 #Filepaths for the c++ core
 COREFILES = src/fpu_top.cpp src/fpu_predecoder.cpp src/fpu_decode.cpp src/fpu_execute.cpp src/fpu_pipeline.cpp src/fpu_rf.cpp  src/fp_number.cpp
 
-CONFIGPATH:=""
+CONFIG:=""
 sim_full:
 	make clean
-	python3 run/setup.py $(CONFIGPATH)
+	python3 run/setup.py $(CONFIG)
 	make sharedLib
-	vlog -work work /work/anb7/prosjektoppgave/rvfpm/work/src/in_xif.sv
-	vlog -work work /work/anb7/prosjektoppgave/rvfpm/work/src/pa_defines.sv
-	vlog -work work /work/anb7/prosjektoppgave/rvfpm/work/src/pa_rvfpm.sv
-	vlog -work work /work/anb7/prosjektoppgave/rvfpm/work/src/rvfpm.sv
-	vlog -work work /work/anb7/prosjektoppgave/rvfpm/work/sim/inTest_rvfpm.sv
-	vlog -work work /work/anb7/prosjektoppgave/rvfpm/work/sim/assertions_rvfpm.sv
-	vlog -work work /work/anb7/prosjektoppgave/rvfpm/work/sim/testPr_rvfpm.sv
-	vlog -work work /work/anb7/prosjektoppgave/rvfpm/work/sim/rvfpm_tb.sv
-	vsim -sv_lib bin/lib_rvfpm -novopt work.rvfpm_tb -suppress 12110
+	vlog -work work src/in_xif.sv
+	vlog -work work src/defines.svh
+	vlog -work work src/pa_rvfpm.sv
+	vlog -work work src/rvfpm.sv
+	vlog -work work sim/inTest_rvfpm.sv
+	vlog -work work sim/assertions_rvfpm.sv
+	vlog -work work sim/testPr_rvfpm.sv
+	vlog -work work sim/rvfpm_tb.sv
+	vsim -sv_lib bin/lib_rvfpm -novopt work.rvfpm_tb -suppress 12110 -c -do "run -all; quit" #$(!GUI? -c -do "run -all; quit")
 
 TestFloat: #Compile and test for IEEE754 compliance
 	make clean

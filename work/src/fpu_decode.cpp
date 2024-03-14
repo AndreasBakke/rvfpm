@@ -61,6 +61,7 @@ FpuPipeObj decode_R4TYPE(uint32_t instr, unsigned int operand_a, unsigned int op
 }
 
 FpuPipeObj decode_RTYPE(uint32_t instr, unsigned int operand_a, unsigned int operand_b) {
+  //TODO: add execution
   RTYPE dec_instr = {.instr = instr}; //"Decode" into ITYPE
   FpuPipeObj result = {};
   result.valid = 1;
@@ -73,27 +74,83 @@ FpuPipeObj decode_RTYPE(uint32_t instr, unsigned int operand_a, unsigned int ope
   result.use_rs_i[0] = false;
   result.use_rs_i[1] = false;
   result.use_rs_i[2] = false;
+  result.speculative = 1;
+  result.remaining_ex_cycles = NUM_CYCLES_DEFAULT; //Default number of cycles
   //Override relevant parameters based on function
   switch (dec_instr.parts.funct7)
   {
+    case FADD_S:
+    {
+      #ifdef NUM_CYCLES_FADD
+        result.remaining_ex_cycles = NUM_CYCLES_FADD;
+      #endif
+      break;
+    }
+    case FSUB_S:
+    {
+      #ifdef NUM_CYCLES_FSUB
+        result.remaining_ex_cycles = NUM_CYCLES_FSUB;
+      #endif
+      break;
+    }
+    case FMUL_S:
+    {
+      #ifdef NUM_CYCLES_FMUL
+        result.remaining_ex_cycles = NUM_CYCLES_FMUL;
+      #endif
+      break;
+    }
+    case FDIV_S:
+    {
+      #ifdef NUM_CYCLES_FDIV
+        result.remaining_ex_cycles = NUM_CYCLES_FDIV; //TODO: we need to check if this has been added. Thats not given
+      #endif
+      break;
+    }
+    case FSGNJ:
+    {
+      #ifdef NUM_CYCLES_FSGNJ
+        result.remaining_ex_cycles = NUM_CYCLES_FSGNJ;
+      #endif
+      break;
+    }
+    case FMIN_MAX:
+    {
+      #ifdef NUM_CYCLES_FMIN_MAX
+        result.remaining_ex_cycles = NUM_CYCLES_FMIN_MAX;
+      #endif
+      break;
+    }
     case FSQRT_S:
     {
+      #ifdef NUM_CYCLES_FSQRT
+        result.remaining_ex_cycles = NUM_CYCLES_FSQRT; //TODO: we need to check if this has been added. Thats not given
+      #endif
       result.addrFrom = {dec_instr.parts.rs1, 999}; //sqrt only dependent on rs1
       break;
     }
     case FCMP:
     {
+      #ifdef NUM_CYCLES_FCMP
+        result.remaining_ex_cycles = NUM_CYCLES_FCMP;
+      #endif
       result.toXReg = true;
       break;
     }
     case FCVT_W_S:
     {
+      #ifdef NUM_CYCLES_FCVT_W
+        result.remaining_ex_cycles = NUM_CYCLES_FCVT_W;
+      #endif
       result.addrFrom = {dec_instr.parts.rs1, 999}; //Overwrite since only one address is used
       result.toXReg = true;
       break;
     }
     case FCVT_S_W: //FCVT.S.W[U]
     {
+      #ifdef NUM_CYCLES_FCVT_S_W
+        result.remaining_ex_cycles = NUM_CYCLES_FCVT_S_W;
+      #endif
       result.addrFrom = {dec_instr.parts.rs1, 999}; //Overwrite since only one address is used
       result.fromXReg = true;
       result.use_rs_i[0] = true;
@@ -102,6 +159,9 @@ FpuPipeObj decode_RTYPE(uint32_t instr, unsigned int operand_a, unsigned int ope
     }
     case FCLASS_FMV_X_W:
     {
+      #ifdef NUM_CYCLES_FCLASS_FMV_X_W
+        result.remaining_ex_cycles = NUM_CYCLES_FCLASS_FMV_X_W;
+      #endif
       result.addrFrom = {dec_instr.parts.rs1, 999}; //Overwrite since only one address is used
       result.addrTo = {dec_instr.parts.rd};
       result.toXReg = true;
@@ -109,6 +169,9 @@ FpuPipeObj decode_RTYPE(uint32_t instr, unsigned int operand_a, unsigned int ope
     }
     case FMV_W_X:
     {
+      #ifdef NUM_CYCLES_FMV_W_X
+        result.remaining_ex_cycles = NUM_CYCLES_FMV_W_X;
+      #endif
       result.fromXReg = true;
       result.use_rs_i[0] = true;
       result.operand_a.bitpattern = operand_a;
