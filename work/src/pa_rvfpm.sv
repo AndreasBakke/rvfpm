@@ -5,7 +5,7 @@
   RISC-V Floating Point Unit Model.
   Package for types
 */
-`include "defines.svh"
+// `include "defines.svh"
 package pa_rvfpm;
   typedef struct packed {
     logic [31:0]  instr;
@@ -34,3 +34,4 @@ package pa_rvfpm;
     logic dbg;
   } x_mem_result_t;
 endpackage : pa_rvfpm
+

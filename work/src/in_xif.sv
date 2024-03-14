@@ -26,19 +26,28 @@
 */
 
 
-interface in_xif
-#(
-  parameter int XLEN = 32,
-  parameter int FLEN = 32,
-  parameter int unsigned X_NUM_RS        =  3,  // Number of register file read ports that can be used by the eXtension interface
-  parameter int unsigned X_ID_WIDTH      =  4,  // Width of ID field.
-  parameter int unsigned X_MEM_WIDTH     =  32, // Memory access width for loads/stores via the eXtension interface
-  parameter int unsigned X_RFR_WIDTH     =  32, // Register file read access width for the eXtension interface
-  parameter int unsigned X_RFW_WIDTH     =  32, // Register file write access width for the eXtension interface
-  parameter logic [31:0] X_MISA          =  '0, // MISA extensions implemented on the eXtension interface
-  parameter logic [ 1:0] X_ECS_XS        =  '0  // Default value for mstatus.XS
-);
+package in_xif;
+ parameter NUM_F_REGS        = `NUM_F_REGS;
+  parameter XLEN              = `XLEN;
+  parameter FLEN              = `FLEN;
+  //System parameters
 
+  //Pipeline parameters
+  parameter PIPELINE_STAGES   = `NUM_PIPELINE_STAGES;
+  parameter QUEUE_DEPTH       = `QUEUE_DEPTH; //Size of operation queue
+  parameter FORWARDING        = `FORWARDING; //Set to 1 to enable forwarding; not implemented
+  parameter OUT_OF_ORDER      = `OOO; //Set to 1 to enable out of order execution; not implemented
+
+  //CORE-V-XIF parameters for coprocessor
+  parameter X_NUM_RS          = `X_NUM_RS; //Read ports
+  parameter X_ID_WIDTH        = `X_ID_WIDTH;
+  parameter X_MEM_WIDTH       = `FLEN; //TODO: dependent on extension
+  parameter X_RFR_WIDTH       = `FLEN; //Read acces width
+  parameter X_RFW_WIDTH       = `FLEN; //Write acces width
+  parameter X_MISA            = `X_MISA; //TODO: not used
+  parameter X_ECS_XS          = `X_ECS_XS;        //TODO: not used
+
+  
   typedef struct packed {
     logic [          31:0]                  instr;     // Offloaded instruction
     logic [           1:0]                  mode;      // Privilege level
@@ -128,85 +137,6 @@ interface in_xif
   logic               result_ready;
   x_result_t          result;
 
-  // Port directions for host CPU
-  modport cpu_issue (
-    output issue_valid,
-    input  issue_ready,
-    output issue_req,
-    input  issue_resp
-  );
-  modport cpu_commit (
-    output commit_valid,
-    output commit
-  );
-  modport cpu_mem (
-    input  mem_valid,
-    output mem_ready,
-    input  mem_req,
-    output mem_resp
-  );
-  modport cpu_mem_result (
-    output mem_result_valid,
-    output mem_result
-  );
-  modport cpu_result (
-    input  result_valid,
-    output result_ready,
-    input  result
-  );
 
-  // Port directions for extension
-  modport coproc_issue (
-    input  issue_valid,
-    output issue_ready,
-    input  issue_req,
-    output issue_resp
-  );
-  modport coproc_commit (
-    input  commit_valid,
-    input  commit
-  );
-  modport coproc_mem (
-    output mem_valid,
-    input  mem_ready,
-    output mem_req,
-    input  mem_resp
-  );
-  modport coproc_mem_result (
-    input  mem_result_valid,
-    input  mem_result
-  );
-  modport coproc_result (
-    output result_valid,
-    input  result_ready,
-    output result
-  );
+endpackage : in_xif
 
-  // Monitor port directions
-  modport monitor_issue (
-    input  issue_valid,
-    input  issue_ready,
-    input  issue_req,
-    input  issue_resp
-  );
-  modport monitor_commit (
-    input  commit_valid,
-    input  commit
-  );
-  modport monitor_mem (
-    input  mem_valid,
-    input  mem_ready,
-    input  mem_req,
-    input  mem_resp
-  );
-  modport monitor_mem_result (
-    input  mem_result_valid,
-    input  mem_result
-  );
-  modport monitor_result (
-    input  result_valid,
-    input  result_ready,
-    input  result
-  );
-
-endinterface : in_xif

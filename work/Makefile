@@ -18,6 +18,13 @@ endif
 COREFILES = src/fpu_top.cpp src/fpu_predecoder.cpp src/fpu_decode.cpp src/fpu_execute.cpp src/fpu_pipeline.cpp src/fpu_rf.cpp  src/fp_number.cpp
 
 CONFIG:=""
+setup:
+	make clean
+	python3 run/setup.py $(CONFIG)
+	make sharedLib
+
+
+
 sim_full:
 	make clean
 	python3 run/setup.py $(CONFIG)

@@ -1,0 +1,49 @@
+CAPI=2:
+# Copyright AndreasBakke
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+name: "lowrisc:ibex:rvfpm"
+description: "rvfpm package"
+
+
+filesets:
+  files_rtl:
+    depend:
+      - lowrisc:ibex:rvfpm_pkg
+    files:
+      - work/src/rvfpm.sv
+    file_type: systemVerilogSource
+  files_dpi:
+    files:
+      - work/src/fpu_top.cpp
+      - work/src/fp_number.cpp
+      - work/src/fpu_execute.cpp
+      - work/src/dpi_wrapper.cpp
+      - work/src/fpu_decode.cpp
+      - work/src/fpu_pipeline.cpp
+      - work/src/fpu_predecoder.cpp
+      - work/src/fpu_rf.cpp
+      - work/src/fpu_top.cpp
+      - work/include/defines.h: { is_include_file: true }
+      - work/include/fp_number.h: { is_include_file: true }
+      - work/include/fpu_config.h: { is_include_file: true }
+      - work/include/fpu_execute.h: { is_include_file: true }
+      - work/include/fpu_instructions.h: { is_include_file: true }
+      - work/include/fpu_decode.h: { is_include_file: true }
+      - work/include/fpu_pipe.h: { is_include_file: true }
+      - work/include/fpu_pipeline.h: { is_include_file: true }
+      - work/include/fpu_predecoder.h: { is_include_file: true }
+      - work/include/fpu_rf.h: { is_include_file: true }
+      - work/include/fpu_top.h: { is_include_file: true }
+    file_type: cppSource
+
+  rvfpm_so: 
+    files:
+      - work/bin/lib_rvfpm.so
+    file_type: cppSource
+
+targets:
+  default:
+    filesets:
+      - files_rtl
+      - files_dpi
