@@ -8,6 +8,7 @@
 */
 `timescale 1ns/1ps
 `include "../src/defines.svh"
+import in_xif::*;
 module rvfpm_tb;
   //-----------------------
   //-- Parameters
@@ -49,19 +50,6 @@ module rvfpm_tb;
     .XLEN(TB_XLEN)
   ) uin_rvfpm ();
 
-
-  //eXtension interface
-  in_xif #(
-    .XLEN(TB_XLEN),
-    .FLEN(TB_FLEN),
-    .X_NUM_RS(TB_X_NUM_RS),
-    .X_ID_WIDTH(TB_X_ID_WIDTH),
-    .X_MEM_WIDTH(TB_X_MEM_WIDTH),
-    .X_RFR_WIDTH(TB_X_RFR_WIDTH),
-    .X_RFW_WIDTH(TB_X_RFW_WIDTH),
-    .X_MISA(TB_X_MISA),
-    .X_ECS_XS(TB_X_ECS_XS)
-  ) uin_xif ();
   //-----------------------
   //-- Clk gen
   //-----------------------
@@ -87,14 +75,33 @@ module rvfpm_tb;
     .XLEN(TB_XLEN)
   ) dut (
     .ck(uin_rvfpm.ck),
-    .rst(uin_rvfpm.rst),
+    .rst(!uin_rvfpm.rst),
     .enable(uin_rvfpm.enable),
     .fpu_ready(uin_rvfpm.fpu_ready),
-    .xif_issue_if(uin_xif.coproc_issue),
-    .xif_commit_if(uin_xif.coproc_commit),
-    .xif_mem_if(uin_xif.coproc_mem),
-    .xif_mem_result_if(uin_xif.coproc_mem_result),
-    .xif_result_if(uin_xif.coproc_result)
+    // Issue Interface
+    .issue_valid      (uin_rvfpm.issue_valid),
+    .issue_ready      (uin_rvfpm.issue_ready),
+    .issue_req        (uin_rvfpm.issue_req),
+    .issue_resp       (uin_rvfpm.issue_resp),
+
+    // Commit Interface
+    .commit_valid     (uin_rvfpm.commit_valid),
+    .commit           (uin_rvfpm.commit),
+
+    // Memory Request/Response Interface
+    .mem_valid        (uin_rvfpm.mem_valid),
+    .mem_ready        (uin_rvfpm.mem_ready),
+    .mem_req          (uin_rvfpm.mem_req),
+    .mem_resp         (uin_rvfpm.mem_resp),
+
+    // Memory Result Interface
+    .mem_result_valid (mem_result_valid),
+    .mem_result       (uin_rvfpm.mem_result),
+
+    // Result Interface
+    .result_valid     (uin_rvfpm.result_valid),
+    .result_ready     (uin_rvfpm.result_ready),
+    .result           (uin_rvfpm.result)
   );
   import "DPI-C" function int unsigned getRFContent(input chandle fpu_ptr, input int addr);
   import "DPI-C" function int unsigned getPipeStageId(input chandle fpu_ptr, input int stage);
@@ -122,18 +129,9 @@ module rvfpm_tb;
     `endif
 
 
-    if (uin_rvfpm.speculative_ids.size() > 0) begin
-      uin_xif.commit_valid = 1;
-      uin_xif.commit.id = uin_rvfpm.speculative_ids.pop_front();
-      uin_xif.commit.commit_kill = 0;
-      @(posedge uin_rvfpm.ck);
-      uin_xif.commit_valid = 0;
-      uin_xif.commit = {};
-    end
-
-    uin_xif.result_ready = 0;
-    if (uin_xif.result_valid) begin
-      uin_xif.result_ready = 1;
+    uin_rvfpm.result_ready = 0;
+    if (uin_rvfpm.result_valid) begin
+      uin_rvfpm.result_ready = 1;
     end
   end
 
@@ -155,8 +153,7 @@ module rvfpm_tb;
     .PIPELINE_STAGES(TB_PIPELINE_STAGES),
     .X_ID_WIDTH(TB_X_ID_WIDTH)
   ) u_testPr(
-    .uin_rvfpm(uin_rvfpm),
-    .uin_xif(uin_xif)
+    .uin_rvfpm(uin_rvfpm)
   );
 
   //-----------------------

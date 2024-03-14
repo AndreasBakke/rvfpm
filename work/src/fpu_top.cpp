@@ -48,12 +48,8 @@ void FPU::clockEvent(bool& fpu_ready){
 //--------------------------
 // Issue interface
 //--------------------------
-void FPU::predecodeInstruction(uint32_t instruction, unsigned int id){
-  predecoder.predecodeInstruction(instruction, id);
-};
-
-void FPU::pollPredecoderResult(x_issue_resp_t& resp_ref, bool& use_rs_a, bool& use_rs_b, bool& use_rs_c){
-  predecoder.pollPredecoderResult(resp_ref, use_rs_a, use_rs_b, use_rs_c);
+void FPU::predecodeInstruction(uint32_t instruction, unsigned int id, x_issue_resp_t& resp_ref, bool& use_rs_a, bool& use_rs_b, bool& use_rs_c){
+  predecoder.predecodeInstruction(instruction, id, resp_ref, use_rs_a, use_rs_b, use_rs_c);
 };
 
 void FPU::resetPredecoder(){

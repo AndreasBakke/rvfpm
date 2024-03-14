@@ -24,7 +24,6 @@ class FpuPredecoder {
   FpuPredecoder(bool& fpuReady);
   ~FpuPredecoder();
 
-  void predecodeInstruction(uint32_t instruction, unsigned int id);
-  void pollPredecoderResult(x_issue_resp_t& resp_ref, bool& use_rs_a, bool& use_rs_b, bool& use_rs_c);
+  void predecodeInstruction(uint32_t instruction, unsigned int id, x_issue_resp_t& resp_ref, bool& use_rs_a, bool& use_rs_b, bool& use_rs_c);
   void reset();
 };

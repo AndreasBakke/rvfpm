@@ -59,7 +59,6 @@ void FpuPipeline::step(){
     execute_done = true;
     //Wait - means we are stalled by some other step
   }
-
   //MEM
   if (MEMORY_STEP == EXECUTE_STEP && !execute_done) {
     mem_done = false;

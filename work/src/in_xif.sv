@@ -25,9 +25,9 @@
   limitations under the License.
 */
 
-
+`include "defines.svh"
 package in_xif;
- parameter NUM_F_REGS        = `NUM_F_REGS;
+  parameter NUM_F_REGS        = `NUM_F_REGS;
   parameter XLEN              = `XLEN;
   parameter FLEN              = `FLEN;
   //System parameters
@@ -47,7 +47,7 @@ package in_xif;
   parameter X_MISA            = `X_MISA; //TODO: not used
   parameter X_ECS_XS          = `X_ECS_XS;        //TODO: not used
 
-  
+
   typedef struct packed {
     logic [          31:0]                  instr;     // Offloaded instruction
     logic [           1:0]                  mode;      // Privilege level

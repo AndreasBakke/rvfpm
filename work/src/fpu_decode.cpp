@@ -40,6 +40,7 @@ FpuPipeObj decodeOp(uint32_t instruction, unsigned int id, unsigned int operand_
     result.valid = 0;
     break;
   }
+  result.speculative = 1;
   result.id = id;
 
   return result;
@@ -74,7 +75,6 @@ FpuPipeObj decode_RTYPE(uint32_t instr, unsigned int operand_a, unsigned int ope
   result.use_rs_i[0] = false;
   result.use_rs_i[1] = false;
   result.use_rs_i[2] = false;
-  result.speculative = 1;
   result.remaining_ex_cycles = NUM_CYCLES_DEFAULT; //Default number of cycles
   //Override relevant parameters based on function
   switch (dec_instr.parts.funct7)
@@ -180,7 +180,6 @@ FpuPipeObj decode_RTYPE(uint32_t instr, unsigned int operand_a, unsigned int ope
   }
   return result;
 }
-
 
 FpuPipeObj decode_ITYPE(uint32_t instr) {
   ITYPE dec_instr = {.instr = instr}; //"Decode" into ITYPE

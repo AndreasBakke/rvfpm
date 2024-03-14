@@ -9,8 +9,8 @@
 */
 
 
-// `include "defines.svh"
-// `include "pa_rvfpm.sv"
+`include "defines.svh"
+`include "pa_rvfpm.sv"
 import pa_rvfpm::*;
 import in_xif::*;
 
@@ -78,8 +78,7 @@ module rvfpm #(
   import "DPI-C" function int unsigned getRFContent(input chandle fpu_ptr, input int addr);
   import "DPI-C" function void add_accepted_instruction(input chandle fpu_ptr, input int instr, input int unsigned id, input int unsigned operand_a, input int unsigned operand_b, input int unsigned operand_c);
   import "DPI-C" function void reset_predecoder(input chandle fpu_ptr);
-  import "DPI-C" function void poll_predecoder_result(input chandle fpu_ptr, output x_issue_resp_t resp, output logic use_rs_a, output logic use_rs_b, output logic use_rs_c);
-  import "DPI-C" function void predecode_instruction(input chandle fpu_ptr, input int instr, input int unsigned id);
+  import "DPI-C" function void predecode_instruction(input chandle fpu_ptr, input int instr, input int unsigned id, output x_issue_resp_t resp, output logic use_rs_a, output logic use_rs_b, output logic use_rs_c);
   import "DPI-C" function void commit_instruction(input chandle fpu_ptr, input int unsigned id, input logic kill);
   import "DPI-C" function void poll_mem_req(input chandle fpu_ptr, output logic mem_valid, output int unsigned id, output int unsigned addr, output int unsigned wdata);
   import "DPI-C" function void write_sv_state(input chandle fpu_ptr, input logic mem_ready, input logic mem_result_valid, input int unsigned id, input int unsigned rdata, input logic err, input logic dbg, input logic result_ready);
@@ -133,38 +132,32 @@ module rvfpm #(
     end
     else if (enable) begin
       //Call clocked functions
-
       write_sv_state(fpu, mem_ready, mem_result_valid, mem_res.id, mem_res.rdata, mem_res.err, mem_res.dbg, result_ready);
       clock_event(fpu, fpu_ready_s);
-      poll_predecoder_result(fpu, issue_resp_s, use_rs_i[0], use_rs_i[1], use_rs_i[2]);
       poll_mem_req(fpu, mem_valid, mem_id_full, mem_req.addr, mem_req.wdata); //TODO: should this be polled more often to more closely resemble internal signals?
       poll_res(fpu, result_valid, result_id_full, result.data, result_rd_full); //TODO: add remaining signals in interface
 
-
-      if (issue_valid) begin
-        issue_ready = fpu_ready_s
-        & ((use_rs_i[0] & issue_req.rs_valid[0]) | !use_rs_i[0])
-        & ((use_rs_i[1] & issue_req.rs_valid[1]) | !use_rs_i[1])
-        & ((use_rs_i[2] & issue_req.rs_valid[2]) | !use_rs_i[2]) ; //TODO: and if RS_valid is true for all used operands (find out in predecoder) (Could predictivly do it in case of ZFINX aswell)
-      end else begin
-        issue_ready = 0;
-      end
       if (new_instruction_accepted && fpu_ready_s) begin
         add_accepted_instruction(fpu, issue_req.instr, issue_req.id, issue_req.rs[0], issue_req.rs[1], issue_req.rs[2]);
-        reset_predecoder(fpu); //or something
       end
-
+      if (commit_valid) begin
+        commit_instruction(fpu, commit.id,  commit.commit_kill);
+      end
     end
   end
 
 
   always_comb begin
+
     if (issue_valid && fpu_ready_s) begin
-      predecode_instruction(fpu, issue_req.instr, issue_req.id); //TODO: add issue_transaction_active?
+      predecode_instruction(fpu, issue_req.instr, issue_req.id, issue_resp_s, use_rs_i[0], use_rs_i[1], use_rs_i[2]);
+      issue_ready <= 1;
+    end else begin
+      issue_ready <= 0;
+      issue_resp_s <= 0;
     end
-    if (commit_valid) begin
-      commit_instruction(fpu, commit.id,  commit.commit_kill);
-    end
+
+
   end
 
 
