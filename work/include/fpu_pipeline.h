@@ -51,7 +51,8 @@ class FpuPipeline {
     FpuPipeline(FpuRf* rf_pointer);
     ~FpuPipeline();
     void step(); //Advance pipeline by one step (called by clock in interface)
-    void stallCheck();
+    void advanceStages(); //Move non-stalled stages one step forward
+    void stallCheck(); //Set stalled if pipeline(& optionally queue) is full
     bool isStalled();
 
     //Issue/Commit interface

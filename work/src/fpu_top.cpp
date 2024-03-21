@@ -38,12 +38,14 @@ void FPU::resetFPU(){
 };
 
 
-void FPU::clockEvent(bool& fpu_ready){
+void FPU::clockEvent(){
   pipeline.step();
-  fpuReady = !pipeline.isStalled();
-  fpu_ready = fpuReady;
 };
 
+bool FPU::pollReady(){
+  pipeline.stallCheck();
+  return !pipeline.isStalled();
+};
 
 //--------------------------
 // Issue interface

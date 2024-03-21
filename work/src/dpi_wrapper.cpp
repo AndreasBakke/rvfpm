@@ -27,9 +27,14 @@ extern "C" {
     fpu->resetFPU();
   };
 
-  void clock_event(void* fpu_ptr, bool& fpu_ready){
+  void clock_event(void* fpu_ptr){
     FPU* fpu = static_cast<FPU*>(fpu_ptr); //from generic pointer to FPU pointer
-    fpu->clockEvent(fpu_ready);
+    fpu->clockEvent();
+  };
+
+  void poll_ready(void* fpu_ptr, bool& stalled){
+    FPU* fpu = static_cast<FPU*>(fpu_ptr);
+    stalled = fpu->pollReady();
   };
 
   //-----------------------

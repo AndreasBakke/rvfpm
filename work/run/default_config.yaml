@@ -19,13 +19,13 @@ xif:
   X_ECS_XS:  0      #Default value for mstatus.XS
 
 fpu_pipeline:
-  num_pipeline_stages: 2 #Number of stages in the FPU pipeline
-  queue_depth: 1 #Depth of the FPU instruction queue - set to 0 to disable
+  num_pipeline_stages: 1 #Number of stages in the FPU pipeline
+  queue_depth: 0 #Depth of the FPU instruction queue - set to 0 to disable
 
   OOO: false #Out of order execution - Not yet implemented
   forwarding: false #Forward/bypass result to next operation - Not yet implemented
   steps:  #step 0 is the last step in the pipeline
-    execute_step: 1
+    execute_step: 0
     memory_step: 0
     writeback_step: 0
 

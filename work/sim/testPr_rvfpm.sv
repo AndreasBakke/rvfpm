@@ -185,9 +185,9 @@ program automatic testPr_rvfpm #(
     @(posedge uin_rvfpm.ck);
   endtask
 
-  logic[X_ID_WIDTH-1:0] id = 0;
+  logic[X_ID_WIDTH-1:0] id = 1;
   task nextId();
-    id = (id+1);
+    id = (id%X_ID_WIDTH) + 1;
   endtask;
 
   task init();
@@ -245,20 +245,17 @@ program automatic testPr_rvfpm #(
     fork
       begin
         while (1) begin
-          @(posedge uin_rvfpm.ck) //Wait for memory request from CPU
+          @(posedge uin_rvfpm.ck); //Wait for memory request from CPU
           if (uin_rvfpm.mem_valid && uin_rvfpm.mem_req.id == issue_id) begin
-            @(posedge uin_rvfpm.ck)
             uin_rvfpm.mem_ready = 1;
-            @(posedge uin_rvfpm.ck)
-            uin_rvfpm.mem_ready = 0;
             uin_rvfpm.mem_result_valid = 1;
             uin_rvfpm.mem_result.id = issue_id;
             uin_rvfpm.mem_result.rdata = 0;
             uin_rvfpm.mem_result.err = 0;
             uin_rvfpm.mem_result.dbg = 0;
             @(posedge uin_rvfpm.ck)
-            uin_rvfpm.mem_result_valid = 0;
             uin_rvfpm.mem_ready = 0;
+            uin_rvfpm.mem_result_valid = 0;
             uin_rvfpm.mem_result = {};
             break;
           end
@@ -285,12 +282,9 @@ program automatic testPr_rvfpm #(
         while (1) begin
           @(posedge uin_rvfpm.ck) //Wait for memory request from CPU
           if (uin_rvfpm.mem_valid && uin_rvfpm.mem_req.id == issue_id) begin
-            @(posedge uin_rvfpm.ck)
-            uin_rvfpm.mem_ready = 1;//Todo: add response (dbg etc)
-            @(posedge uin_rvfpm.ck)
-            uin_rvfpm.mem_ready = 0;
+            uin_rvfpm.mem_ready = 1;
             uin_rvfpm.mem_result_valid = 1;
-            uin_rvfpm.mem_result.id = issue_id;//TODO: read as 8 in core
+            uin_rvfpm.mem_result.id = issue_id;
             uin_rvfpm.mem_result.rdata = data;
             uin_rvfpm.mem_result.err = 0;
             uin_rvfpm.mem_result.dbg = 0;

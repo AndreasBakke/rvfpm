@@ -73,7 +73,8 @@ module rvfpm #(
   //-----------------------
   import "DPI-C" function chandle create_fpu_model(input int pipelineStages, input int queueDepth, input int rfDepth);
   import "DPI-C" function void reset_fpu(input chandle fpu_ptr);
-  import "DPI-C" function void clock_event(input chandle fpu_ptr, output logic fpu_ready);
+  import "DPI-C" function void clock_event(input chandle fpu_ptr);
+  import "DPI-C" function void poll_ready(input chandle fpu_ptr, output logic fpu_ready);
   import "DPI-C" function void destroy_fpu(input chandle fpu_ptr);
   import "DPI-C" function int unsigned getRFContent(input chandle fpu_ptr, input int addr);
   import "DPI-C" function void add_accepted_instruction(input chandle fpu_ptr, input int instr, input int unsigned id, input int unsigned operand_a, input int unsigned operand_b, input int unsigned operand_c);
@@ -120,7 +121,7 @@ module rvfpm #(
   assign result.id = result_id_full[X_ID_WIDTH-1:0];
   logic[31:0] result_rd_full;
   assign result.rd = result_rd_full[4:0];
-
+  logic done_test;
 
   always_ff @(posedge ck or negedge rst) begin: la_main
     if (!rst) begin
@@ -132,31 +133,32 @@ module rvfpm #(
     end
     else if (enable) begin
       //Call clocked functions
+      // poll_ready(fpu, fpu_ready_s);
+
       write_sv_state(fpu, mem_ready, mem_result_valid, mem_res.id, mem_res.rdata, mem_res.err, mem_res.dbg, result_ready);
-      clock_event(fpu, fpu_ready_s);
+      clock_event(fpu);
+      poll_ready(fpu, fpu_ready_s);
       poll_mem_req(fpu, mem_valid, mem_id_full, mem_req.addr, mem_req.wdata); //TODO: should this be polled more often to more closely resemble internal signals?
       poll_res(fpu, result_valid, result_id_full, result.data, result_rd_full); //TODO: add remaining signals in interface
 
-      if (new_instruction_accepted && fpu_ready_s) begin
-        add_accepted_instruction(fpu, issue_req.instr, issue_req.id, issue_req.rs[0], issue_req.rs[1], issue_req.rs[2]);
-      end
-      if (commit_valid) begin
-        commit_instruction(fpu, commit.id,  commit.commit_kill);
-      end
+
     end
   end
 
 
   always_comb begin
-
+    issue_ready = fpu_ready_s;
     if (issue_valid && fpu_ready_s) begin
       predecode_instruction(fpu, issue_req.instr, issue_req.id, issue_resp_s, use_rs_i[0], use_rs_i[1], use_rs_i[2]);
-      issue_ready <= 1;
+      if (new_instruction_accepted && fpu_ready_s) begin
+        add_accepted_instruction(fpu, issue_req.instr, issue_req.id, issue_req.rs[0], issue_req.rs[1], issue_req.rs[2]); //TODO: We want this to be done before the pipeline step to improve speed. Can it be done combinatorially?
+      end
     end else begin
-      issue_ready <= 0;
-      issue_resp_s <= 0;
+      issue_resp_s = 0;
     end
-
+    if (commit_valid) begin
+      commit_instruction(fpu, commit.id,  commit.commit_kill);
+    end
 
   end
 

@@ -40,6 +40,18 @@ void FpuPipeline::step(){
     return;
   #endif
 
+  if (pipeline.at(pipeline.size()-1).isEmpty()){
+    pipeline.pop_back();//removes the empty op
+    if (QUEUE_DEPTH > 0){
+      pipeline.push_back(operationQueue.front());
+      operationQueue.pop_front();
+      operationQueue.push_back(FpuPipeObj({})); //Push back empty op to keep size
+    } else {
+      pipeline.push_back(waitingOp);
+      setWaitingOp(FpuPipeObj({}));
+    }
+  }
+
   //EX TODO: make EX and MEM "independent" in terms of which comes first. Requires check for speculative in mem_step
   if(!execute_done) { //If we are not done executing the op in execute step. Flag reset by stallCheck() if we advance
     bool speculative = false;
@@ -69,7 +81,7 @@ void FpuPipeline::step(){
     }
     if(wait_for_mem_resp) {
       wait_for_mem_resp = !mem_ready;
-      mem_valid = wait_for_mem_resp; //set to 0 if done, keep to 1 if not
+      mem_valid = !mem_ready; //set to 0 if done, keep to 1 if not
       wait_for_mem_result = mem_ready; //set to 1 if mem_ready is 1
     } else {
       mem_valid = 0;
@@ -90,35 +102,41 @@ void FpuPipeline::step(){
   }
 
   //WB
+  //TODO: set result_valid also if not a writeback when finished.
   if ((WRITEBACK_STEP == MEMORY_STEP && !mem_done) || (WRITEBACK_STEP == EXECUTE_STEP && !execute_done)) {
     wb_done = false;
+    result_valid = 0;
+    result = {};
   } else if(!wb_done){ //TODO: structure more like the memory step
     //If not to xreg, or not memory, and not empty. Just write to register file and set done = 1
-    if (!pipeline.at(WRITEBACK_STEP).toMem && !pipeline.at(WRITEBACK_STEP).toXReg && !pipeline.at(WRITEBACK_STEP).isEmpty()){
+    wb_done = true;
+     if (!pipeline.at(WRITEBACK_STEP).toMem && !pipeline.at(WRITEBACK_STEP).toXReg && !pipeline.at(WRITEBACK_STEP).isEmpty()){
       registerFilePtr->write(pipeline.at(WRITEBACK_STEP).addrTo, pipeline.at(WRITEBACK_STEP).data);
-      wb_done = true;
-    } else if (result_valid) {
-      wb_done = result_ready;
+      result_valid = 1;
+      result.id = pipeline.at(WRITEBACK_STEP).id;
+      wb_done = false;
     } else if (pipeline.at(WRITEBACK_STEP).toXReg) {
       result_valid = 1;
       result.id = pipeline.at(WRITEBACK_STEP).id;
       result.data = pipeline.at(WRITEBACK_STEP).data.u;
       result.rd = pipeline.at(WRITEBACK_STEP).addrTo;
       wb_done = false;
-    } else {
-      wb_done = true;
     }
-    if (wb_done){
-      result_valid = 0;
-      result = {};
+    if (result_valid) {
+      wb_done = result_ready;
     }
   } else {
     wb_done = true;
+    result_valid = 0;
+    result = {};
   }
+  advanceStages();
   stallCheck();
 };
 
-void FpuPipeline::stallCheck(){ //TODO: also check for hazards.
+
+//Todo: split this into smaller functions one for cheking if we are stalled, and one to move operations down the pipeline
+void FpuPipeline::advanceStages(){ //TODO: also check for hazards.
   bool all_done = execute_done && mem_done && wb_done;
   stalled = false;
   for (int i = 0; i < pipeline.size(); i++){
@@ -134,7 +152,7 @@ void FpuPipeline::stallCheck(){ //TODO: also check for hazards.
     }
 
     if (i == MEMORY_STEP) {
-      if(mem_done && (MEMORY_STEP != EXECUTE_STEP || execute_done) && pipeline.at(i-1).isEmpty()){
+      if(mem_done && (MEMORY_STEP != EXECUTE_STEP || execute_done)){
         mem_done = false;
         pipeline.at(i-1) = pipeline.at(i);
         pipeline.at(i) = FpuPipeObj({});
@@ -174,18 +192,18 @@ void FpuPipeline::stallCheck(){ //TODO: also check for hazards.
     }
   }
 
-  for (int i = 1; i < operationQueue.size(); i++){
-    if (operationQueue.at(i-1).isEmpty()){
-      operationQueue.at(i-1) = operationQueue.at(i);
-      operationQueue.at(i) = FpuPipeObj({});
+  #ifdef INCLUDE_QUEUE
+    for (int i = 1; i < operationQueue.size(); i++){
+      if (operationQueue.at(i-1).isEmpty()){
+        operationQueue.at(i-1) = operationQueue.at(i);
+        operationQueue.at(i) = FpuPipeObj({});
+      }
     }
-  }
+  #endif
+}
 
-  if (all_done) {
-    stalled = false;
-    return; //No need to check for stall if nothing have stalled us this cycle
-  }
-  // if queue is empty, we can accept new operations
+
+void FpuPipeline::stallCheck(){
   if (QUEUE_DEPTH > 0) {
     if (!operationQueue.back().isEmpty()){
       stalled = true;

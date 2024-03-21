@@ -129,10 +129,7 @@ module rvfpm_tb;
     `endif
 
 
-    uin_rvfpm.result_ready = 0;
-    if (uin_rvfpm.result_valid) begin
-      uin_rvfpm.result_ready = 1;
-    end
+    uin_rvfpm.result_ready = 1;
   end
 
   //-----------------------

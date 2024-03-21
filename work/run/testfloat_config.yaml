@@ -1,7 +1,7 @@
 ---
 
 fpu_pipeline:
-  num_pipeline_stages: 0 #Number of stages in the FPU pipeline
+  num_pipeline_stages: 1 #Number of stages in the FPU pipeline
   queue_depth: 0 #Depth of the FPU instruction queue
   steps:  #step 0 is the last step in the pipeline
     execute_step: 0
