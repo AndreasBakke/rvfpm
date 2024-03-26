@@ -30,6 +30,10 @@ FpuPipeline::FpuPipeline(FpuRf* rf_pointer) : pipeline(NUM_PIPELINE_STAGES), ope
 FpuPipeline::~FpuPipeline() {
 }
 
+FpuPipeObj FpuPipeline::at(int i){
+  return pipeline.at(i);
+};
+
 void FpuPipeline::step(){
   //Operations are decoded before adding to the pipeline
   //Check for memory dependencies and request throough interface
@@ -39,7 +43,6 @@ void FpuPipeline::step(){
     executeOp(waitingOp, registerFilePtr, mem_valid, mem_req); //Values are loaded to register using bd_load
     return;
   #endif
-
   if (pipeline.at(pipeline.size()-1).isEmpty()){
     pipeline.pop_back();//removes the empty op
     if (QUEUE_DEPTH > 0){
@@ -51,7 +54,6 @@ void FpuPipeline::step(){
       setWaitingOp(FpuPipeObj({}));
     }
   }
-
   //EX TODO: make EX and MEM "independent" in terms of which comes first. Requires check for speculative in mem_step
   if(!execute_done) { //If we are not done executing the op in execute step. Flag reset by stallCheck() if we advance
     bool speculative = false;
@@ -130,6 +132,7 @@ void FpuPipeline::step(){
     result_valid = 0;
     result = {};
   }
+  std::cout << "Execute done: " << execute_done << " Mem done: " << mem_done << " WB done: " << wb_done << std::endl;
   advanceStages();
   stallCheck();
 };
@@ -215,6 +218,16 @@ void FpuPipeline::stallCheck(){
 
 bool FpuPipeline::isStalled(){
   return stalled;
+};
+
+bool FpuPipeline::isEmpty(){
+  //Check if all stages are empty
+  for (auto& op : pipeline) {
+    if (!op.isEmpty()) {
+      return false;
+    }
+  }
+  return true;
 };
 
 

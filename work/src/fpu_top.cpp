@@ -68,14 +68,24 @@ FpuPipeObj FPU::testFloatOp(){
 }
 
 
-void FPU::addAcceptedInstruction(uint32_t instruction, unsigned int id, unsigned int operand_a, unsigned int operand_b, unsigned int operand_c){ //and other necessary inputs (should be somewhat close to in_xif type)
+void FPU::addAcceptedInstruction(uint32_t instruction, unsigned int id, unsigned int operand_a, unsigned int operand_b, unsigned int operand_c, bool commit_valid, unsigned int commit_id, bool commit_kill){ //and other necessary inputs (should be somewhat close to in_xif type)
+  std::cout << "Adding!" << std::endl;
   FpuPipeObj newOp = decodeOp(instruction, id, operand_a, operand_b, operand_c);
-  // newOp.id = id;
+  if (commit_valid && commit_id == newOp.id){
+    if (commit_kill){
+      newOp = {};
+    } else {
+      newOp.speculative = 0;
+    }
+  }
   if (pipeline.getQueueDepth() > 0){
     pipeline.addOpToQueue(newOp);
   }
   else {
     pipeline.setWaitingOp(newOp); //set waitingOp (if queue=0, this will be empty given the instruction is accepted
+  }
+  if (pipeline.isEmpty()){
+    pipeline.step();
   }
 }
 
@@ -136,4 +146,8 @@ unsigned int FPU::bd_getPipeStageId(int stage) {
 
 unsigned int FPU::bd_getQueueStageId(int stage) {
   return pipeline.getId_operationQueue(stage);
+}
+
+unsigned int FPU::bd_getWaitingOpId() {
+  return pipeline.getWaitingOp().id;
 }

@@ -4,8 +4,6 @@
   Description:
   RISC-V Floating Point Unit Model.
   Implemented in C++ (fpu_top) and interfaced using sv and DPI-C.
-  Number of pipeline stages are parameterized. Note: Execute (and dependency on data_fromMem and data_fromXreg) is last stage in pipeline
-  Further work: fully parameterized pipeline. More fp types. Standardized interface (CORE-V-XIF)
 */
 
 
@@ -77,7 +75,7 @@ module rvfpm #(
   import "DPI-C" function void poll_ready(input chandle fpu_ptr, output logic fpu_ready);
   import "DPI-C" function void destroy_fpu(input chandle fpu_ptr);
   import "DPI-C" function int unsigned getRFContent(input chandle fpu_ptr, input int addr);
-  import "DPI-C" function void add_accepted_instruction(input chandle fpu_ptr, input int instr, input int unsigned id, input int unsigned operand_a, input int unsigned operand_b, input int unsigned operand_c);
+  import "DPI-C" function void add_accepted_instruction(input chandle fpu_ptr, input int instr, input int unsigned id, input int unsigned operand_a, input int unsigned operand_b, input int unsigned operand_c, input logic commit_valid, input int unsigned commit_id, input logic commit_kill);
   import "DPI-C" function void reset_predecoder(input chandle fpu_ptr);
   import "DPI-C" function void predecode_instruction(input chandle fpu_ptr, input int instr, input int unsigned id, output x_issue_resp_t resp, output logic use_rs_a, output logic use_rs_b, output logic use_rs_c);
   import "DPI-C" function void commit_instruction(input chandle fpu_ptr, input int unsigned id, input logic kill);
@@ -121,44 +119,40 @@ module rvfpm #(
   assign result.id = result_id_full[X_ID_WIDTH-1:0];
   logic[31:0] result_rd_full;
   assign result.rd = result_rd_full[4:0];
-  logic done_test;
-
+  logic poll_mem;
   always_ff @(posedge ck or negedge rst) begin: la_main
     if (!rst) begin
       $display("--- %t: Resetting FPU ---", $time);
       reset_fpu(fpu);
       fpu_ready_s <= 0;
-      //Reset the rest of the signals aswell
-
     end
-    else if (enable) begin
-      //Call clocked functions
+    else if (enable) begin //Call clocked functions
       // poll_ready(fpu, fpu_ready_s);
-
       write_sv_state(fpu, mem_ready, mem_result_valid, mem_res.id, mem_res.rdata, mem_res.err, mem_res.dbg, result_ready);
       clock_event(fpu);
       poll_ready(fpu, fpu_ready_s);
-      poll_mem_req(fpu, mem_valid, mem_id_full, mem_req.addr, mem_req.wdata); //TODO: should this be polled more often to more closely resemble internal signals?
-      poll_res(fpu, result_valid, result_id_full, result.data, result_rd_full); //TODO: add remaining signals in interface
-
+      poll_res(fpu, result_valid, result_id_full, result.data, result_rd_full);
 
     end
   end
 
 
-  always_comb begin
+  always_latch begin
     issue_ready = fpu_ready_s;
     if (issue_valid && fpu_ready_s) begin
       predecode_instruction(fpu, issue_req.instr, issue_req.id, issue_resp_s, use_rs_i[0], use_rs_i[1], use_rs_i[2]);
-      if (new_instruction_accepted && fpu_ready_s) begin
-        add_accepted_instruction(fpu, issue_req.instr, issue_req.id, issue_req.rs[0], issue_req.rs[1], issue_req.rs[2]); //TODO: We want this to be done before the pipeline step to improve speed. Can it be done combinatorially?
-      end
     end else begin
       issue_resp_s = 0;
+    end
+    if (new_instruction_accepted) begin
+      add_accepted_instruction(fpu, issue_req.instr, issue_req.id, issue_req.rs[0], issue_req.rs[1], issue_req.rs[2], commit_valid, commit.id, commit.commit_kill); //TODO: We want this to be done before the pipeline step to improve speed. Can it be done combinatorially?
+      poll_mem_req(fpu, mem_valid, mem_id_full, mem_req.addr, mem_req.wdata);
     end
     if (commit_valid) begin
       commit_instruction(fpu, commit.id,  commit.commit_kill);
     end
+
+    poll_mem_req(fpu, mem_valid, mem_id_full, mem_req.addr, mem_req.wdata);
 
   end
 

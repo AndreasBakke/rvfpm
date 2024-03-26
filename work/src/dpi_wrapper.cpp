@@ -10,8 +10,11 @@
 // #include "svdpi.h"
 #include <iostream>
 // #include <svdpi.h>
+#include <functional>
+std::function<void(bool)> sv_callback;
 
 extern "C" {
+
   void* create_fpu_model(){
     std::cout << "pipelineStages: " << NUM_PIPELINE_STAGES << " queueDepth: " << QUEUE_DEPTH << "  rfDepth: " << NUM_F_REGS <<std::endl;
     return new FPU(); //Return pointer to FPU
@@ -42,9 +45,9 @@ extern "C" {
   //-----------------------
 
 
-  void add_accepted_instruction(void* fpu_ptr, uint32_t instruction, unsigned int id, unsigned int operand_a, unsigned int operand_b, unsigned int operand_c){
+  void add_accepted_instruction(void* fpu_ptr, uint32_t instruction, unsigned int id, unsigned int operand_a, unsigned int operand_b, unsigned int operand_c, bool commit_valid, unsigned int commit_id, bool commit_kill){
     FPU* fpu = static_cast<FPU*>(fpu_ptr);
-    fpu->addAcceptedInstruction(instruction, id, operand_a, operand_b, operand_c);
+    fpu->addAcceptedInstruction(instruction, id, operand_a, operand_b, operand_c, commit_valid, commit_id, commit_kill);
   };
 
   void reset_predecoder(void* fpu_ptr){
@@ -111,6 +114,11 @@ extern "C" {
   unsigned int getQueueStageId(void* fpu_ptr, int stage) { //Get id of instruction in queue stage
     FPU* fpu = static_cast<FPU*>(fpu_ptr);
     return fpu->bd_getQueueStageId(stage);
+  }
+
+  unsigned int getWaitingOpId(void* fpu_ptr) { //Get id of instruction in waiting queue
+    FPU* fpu = static_cast<FPU*>(fpu_ptr);
+    return fpu->bd_getWaitingOpId();
   }
 
   unsigned int randomFloat() { //Generate pseudorandom float

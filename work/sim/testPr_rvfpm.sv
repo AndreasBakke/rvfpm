@@ -245,21 +245,23 @@ program automatic testPr_rvfpm #(
     fork
       begin
         while (1) begin
-          @(posedge uin_rvfpm.ck); //Wait for memory request from CPU
           if (uin_rvfpm.mem_valid && uin_rvfpm.mem_req.id == issue_id) begin
             uin_rvfpm.mem_ready = 1;
+            @(posedge uin_rvfpm.ck);
+            uin_rvfpm.mem_ready = 0;
             uin_rvfpm.mem_result_valid = 1;
             uin_rvfpm.mem_result.id = issue_id;
             uin_rvfpm.mem_result.rdata = 0;
             uin_rvfpm.mem_result.err = 0;
             uin_rvfpm.mem_result.dbg = 0;
             @(posedge uin_rvfpm.ck)
-            uin_rvfpm.mem_ready = 0;
             uin_rvfpm.mem_result_valid = 0;
             uin_rvfpm.mem_result = {};
             break;
           end
+          @(posedge uin_rvfpm.ck); //Wait for memory request from CPU
         end
+
       end
     join_none
     //Fork and repond with memory write
@@ -280,9 +282,10 @@ program automatic testPr_rvfpm #(
     fork
       begin
         while (1) begin
-          @(posedge uin_rvfpm.ck) //Wait for memory request from CPU
           if (uin_rvfpm.mem_valid && uin_rvfpm.mem_req.id == issue_id) begin
             uin_rvfpm.mem_ready = 1;
+            @(posedge uin_rvfpm.ck);
+            uin_rvfpm.mem_ready = 0;
             uin_rvfpm.mem_result_valid = 1;
             uin_rvfpm.mem_result.id = issue_id;
             uin_rvfpm.mem_result.rdata = data;
@@ -290,10 +293,10 @@ program automatic testPr_rvfpm #(
             uin_rvfpm.mem_result.dbg = 0;
             @(posedge uin_rvfpm.ck)
             uin_rvfpm.mem_result_valid = 0;
-            uin_rvfpm.mem_ready = 0;
             uin_rvfpm.mem_result = {};
             break;
           end
+          @(posedge uin_rvfpm.ck); //Wait for memory request from CPU
         end
       end
     join_none

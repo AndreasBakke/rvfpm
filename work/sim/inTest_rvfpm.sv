@@ -60,6 +60,7 @@ interface inTest_rvfpm #(
     `endif
     `ifdef INCLUDE_PIPELINE
         int unsigned pipelineIds[PIPELINE_STAGES];
+        int unsigned waitingOpId;
     `endif
     `ifdef INCLUDE_QUEUE
         int unsigned queueIds[QUEUE_DEPTH];

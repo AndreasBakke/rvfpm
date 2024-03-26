@@ -106,8 +106,9 @@ module rvfpm_tb;
   import "DPI-C" function int unsigned getRFContent(input chandle fpu_ptr, input int addr);
   import "DPI-C" function int unsigned getPipeStageId(input chandle fpu_ptr, input int stage);
   import "DPI-C" function int unsigned getQueueStageId(input chandle fpu_ptr, input int stage);
+  import "DPI-C" function int unsigned getWaitingOpId(input chandle fpu_ptr);
 
-  always @(posedge uin_rvfpm.ck) begin
+  always @(posedge uin_rvfpm.ck or negedge uin_rvfpm.ck) begin
     //Get entire rf for verification`
     `ifndef ZFINX
     for (int i=0; i < TB_NUM_F_REGS; ++i) begin
@@ -120,6 +121,7 @@ module rvfpm_tb;
       for (int i=0; i < TB_PIPELINE_STAGES; ++i) begin
         uin_rvfpm.pipelineIds[i] = getPipeStageId(dut.fpu, i);
       end
+      uin_rvfpm.waitingOpId = getWaitingOpId(dut.fpu);
     `endif
     `ifdef INCLUDE_QUEUE
       //Get entire queue for verification
@@ -165,11 +167,11 @@ module rvfpm_tb;
   function void printResult;
     $display("");
     $display("");
-    $display($time, "ns: ");
     $display("------------------------------------");
     $display("------------------------------------");
     $display("");
-    $display("Simulation finished, errors: $0d", errorCnt);
+    $display("    Simulation finished, errors: %0d", errorCnt);
+    $display("    Total time: %t", $time);
     $display("");
     $display("------------------------------------");
     $display("------------------------------------");
