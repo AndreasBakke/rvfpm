@@ -9,7 +9,7 @@
 
 #include <iostream>
 
-FpuPipeObj decodeOp(uint32_t instruction, unsigned int id, unsigned int operand_a, unsigned int operand_b, unsigned int operand_c) { //Add more fields if needed by eXtension interface
+FpuPipeObj decodeOp(uint32_t instruction, unsigned int id, unsigned int operand_a, unsigned int operand_b, unsigned int operand_c, unsigned int mode) { //Add more fields if needed by eXtension interface
   //Get result of operation
   unsigned int opcode = instruction & 127 ; //Get first 7 bit
   FpuPipeObj result = {};
@@ -42,6 +42,7 @@ FpuPipeObj decodeOp(uint32_t instruction, unsigned int id, unsigned int operand_
   }
   result.speculative = 1;
   result.id = id;
+  result.mode = mode;
 
   return result;
 };

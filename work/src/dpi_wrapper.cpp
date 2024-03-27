@@ -45,9 +45,9 @@ extern "C" {
   //-----------------------
 
 
-  void add_accepted_instruction(void* fpu_ptr, uint32_t instruction, unsigned int id, unsigned int operand_a, unsigned int operand_b, unsigned int operand_c, bool commit_valid, unsigned int commit_id, bool commit_kill){
+  void add_accepted_instruction(void* fpu_ptr, uint32_t instruction, unsigned int id, unsigned int operand_a, unsigned int operand_b, unsigned int operand_c, unsigned int mode, bool commit_valid, unsigned int commit_id, bool commit_kill){
     FPU* fpu = static_cast<FPU*>(fpu_ptr);
-    fpu->addAcceptedInstruction(instruction, id, operand_a, operand_b, operand_c, commit_valid, commit_id, commit_kill);
+    fpu->addAcceptedInstruction(instruction, id, operand_a, operand_b, operand_c, mode, commit_valid, commit_id, commit_kill);
   };
 
   void reset_predecoder(void* fpu_ptr){
@@ -69,7 +69,7 @@ extern "C" {
   // MEM REQ/RES INTERFACE
   //-----------------------
 
-  void poll_mem_req(void* fpu_ptr, bool& mem_valid, unsigned int& id,  unsigned int& addr, unsigned int& wdata, bool& last, unsigned int& size){
+  void poll_mem_req(void* fpu_ptr, bool& mem_valid, unsigned int& id,  unsigned int& addr, unsigned int& wdata, bool& last, unsigned int& size, unsigned int& mode){
     FPU* fpu = static_cast<FPU*>(fpu_ptr);
     x_mem_req_t mem_req = {};
     fpu->pollMemReq(mem_valid, mem_req);
@@ -78,6 +78,7 @@ extern "C" {
     wdata = mem_req.wdata;
     last = mem_req.last;
     size = mem_req.size;
+    mode = mem_req.mode;
   };
 
   void write_sv_state(void* fpu_ptr, bool mem_ready, bool mem_result_valid, unsigned int id, unsigned int rdata, bool err, bool dbg, bool result_ready){

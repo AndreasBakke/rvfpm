@@ -68,9 +68,9 @@ FpuPipeObj FPU::testFloatOp(){
 }
 
 
-void FPU::addAcceptedInstruction(uint32_t instruction, unsigned int id, unsigned int operand_a, unsigned int operand_b, unsigned int operand_c, bool commit_valid, unsigned int commit_id, bool commit_kill){ //and other necessary inputs (should be somewhat close to in_xif type)
+void FPU::addAcceptedInstruction(uint32_t instruction, unsigned int id, unsigned int operand_a, unsigned int operand_b, unsigned int operand_c, unsigned int mode, bool commit_valid, unsigned int commit_id, bool commit_kill){ //and other necessary inputs (should be somewhat close to in_xif type)
   std::cout << "Adding!" << std::endl;
-  FpuPipeObj newOp = decodeOp(instruction, id, operand_a, operand_b, operand_c);
+  FpuPipeObj newOp = decodeOp(instruction, id, operand_a, operand_b, operand_c, mode);
   if (commit_valid && commit_id == newOp.id){
     if (commit_kill){
       newOp = {};
@@ -115,7 +115,7 @@ void FPU::pollResult(bool& result_valid, x_result_t& result){
 // Backdoor functions
 //--------------------------
 void FPU::bd_load(uint32_t instruction, unsigned int dataFromMem){
-  FpuPipeObj op = decodeOp(instruction, 0, 0, 0, 0); //id is 0 for now
+  FpuPipeObj op = decodeOp(instruction, 0, 0, 0, 0, 0); //id is 0 for now
   op.data.bitpattern = dataFromMem;
   registerFile.write(op.addrTo, op.data);
 };

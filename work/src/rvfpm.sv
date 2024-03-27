@@ -75,11 +75,11 @@ module rvfpm #(
   import "DPI-C" function void poll_ready(input chandle fpu_ptr, output logic fpu_ready);
   import "DPI-C" function void destroy_fpu(input chandle fpu_ptr);
   import "DPI-C" function int unsigned getRFContent(input chandle fpu_ptr, input int addr);
-  import "DPI-C" function void add_accepted_instruction(input chandle fpu_ptr, input int instr, input int unsigned id, input int unsigned operand_a, input int unsigned operand_b, input int unsigned operand_c, input logic commit_valid, input int unsigned commit_id, input logic commit_kill);
+  import "DPI-C" function void add_accepted_instruction(input chandle fpu_ptr, input int instr, input int unsigned id, input int unsigned operand_a, input int unsigned operand_b, input int unsigned operand_c, input int unsigned mode, input logic commit_valid, input int unsigned commit_id, input logic commit_kill);
   import "DPI-C" function void reset_predecoder(input chandle fpu_ptr);
   import "DPI-C" function void predecode_instruction(input chandle fpu_ptr, input int instr, input int unsigned id, output x_issue_resp_t resp, output logic use_rs_a, output logic use_rs_b, output logic use_rs_c);
   import "DPI-C" function void commit_instruction(input chandle fpu_ptr, input int unsigned id, input logic kill);
-  import "DPI-C" function void poll_mem_req(input chandle fpu_ptr, output logic mem_valid, output int unsigned id, output int unsigned addr, output int unsigned wdata, output logic last, output int unsigned size);
+  import "DPI-C" function void poll_mem_req(input chandle fpu_ptr, output logic mem_valid, output int unsigned id, output int unsigned addr, output int unsigned wdata, output logic last, output int unsigned size, output int unsigned mode);
   import "DPI-C" function void write_sv_state(input chandle fpu_ptr, input logic mem_ready, input logic mem_result_valid, input int unsigned id, input int unsigned rdata, input logic err, input logic dbg, input logic result_ready);
   import "DPI-C" function void poll_res(input chandle fpu_ptr, output logic result_valid, output int unsigned id, output int unsigned data, output int unsigned rd); //TODO: add remaining signals in interface
 
@@ -103,7 +103,7 @@ module rvfpm #(
 
   assign fpu_ready = fpu_ready_s;
 
-  assign mem_req.mode = 3; //TODO: Set to 0 for now
+  // assign mem_req.mode = 3; //TODO: Set to 0 for now
   assign mem_req.we = 0; //TODO: Set to 0 for now
   // assign mem_req.size = 7; //TODO: Set to 7 for now
   assign mem_req.be = 'hF; //TODO: Set to F for now
@@ -125,6 +125,8 @@ module rvfpm #(
   assign mem_req.id = mem_id_full[X_ID_WIDTH-1:0];
   logic[31:0] mem_req_size_full;
   assign mem_req.size = mem_req_size_full[2:0];
+  logic[31:0] mem_req_mode_full;
+  assign mem_req.mode = mem_req_mode_full[1:0];
 
   logic[31:0] result_id_full;
   assign result.id = result_id_full[X_ID_WIDTH-1:0];
@@ -155,15 +157,15 @@ module rvfpm #(
       issue_resp_s = 0;
     end
     if (new_instruction_accepted) begin
-      add_accepted_instruction(fpu, issue_req.instr, issue_req.id, issue_req.rs[0], issue_req.rs[1], issue_req.rs[2], commit_valid, commit.id, commit.commit_kill); //TODO: We want this to be done before the pipeline step to improve speed. Can it be done combinatorially?
-      poll_mem_req(fpu, mem_valid, mem_id_full, mem_req.addr, mem_req.wdata, mem_req.last, mem_req_size_full);
+      add_accepted_instruction(fpu, issue_req.instr, issue_req.id, issue_req.rs[0], issue_req.rs[1], issue_req.rs[2], issue_req.mode, commit_valid, commit.id, commit.commit_kill); //TODO: We want this to be done before the pipeline step to improve speed. Can it be done combinatorially?
+      poll_mem_req(fpu, mem_valid, mem_id_full, mem_req.addr, mem_req.wdata, mem_req.last, mem_req_size_full, mem_req_mode_full);
       poll_res(fpu, result_valid, result_id_full, result.data, result_rd_full);
     end
     if (commit_valid) begin
       commit_instruction(fpu, commit.id,  commit.commit_kill);
     end
     poll_res(fpu, result_valid, result_id_full, result.data, result_rd_full);
-    poll_mem_req(fpu, mem_valid, mem_id_full, mem_req.addr, mem_req.wdata, mem_req.last, mem_req_size_full);
+    poll_mem_req(fpu, mem_valid, mem_id_full, mem_req.addr, mem_req.wdata, mem_req.last, mem_req_size_full, mem_req_mode_full);
 
   end
 
