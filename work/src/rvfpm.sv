@@ -121,6 +121,8 @@ module rvfpm #(
   //Need to switch byte order, first for the whole struct, then for each part. Only for incoming structs. Outgoing structs need to be passed part by part
   assign issue_resp= {<< {issue_resp_s}};
   assign mem_res = mem_result;
+
+  //Verilator does not allow unsigned int to have a size of <32 bits
   logic[31:0] mem_id_full;
   assign mem_req.id = mem_id_full[X_ID_WIDTH-1:0];
   logic[31:0] mem_req_size_full;
@@ -137,14 +139,13 @@ module rvfpm #(
     if (!rst) begin
       $display("--- %t: Resetting FPU ---", $time);
       reset_fpu(fpu);
-      fpu_ready_s <= 0;
+      poll_ready(fpu, fpu_ready_s);
     end
     else if (enable) begin //Call clocked functions
       // poll_ready(fpu, fpu_ready_s);
       write_sv_state(fpu, mem_ready, mem_result_valid, mem_res.id, mem_res.rdata, mem_res.err, mem_res.dbg, result_ready);
       clock_event(fpu);
       poll_ready(fpu, fpu_ready_s);
-
     end
   end
 
