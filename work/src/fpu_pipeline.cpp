@@ -132,7 +132,7 @@ void FpuPipeline::step(){
     result_valid = 0;
     result = {};
   }
-  std::cout << "Execute done: " << execute_done << " Mem done: " << mem_done << " WB done: " << wb_done << std::endl;
+  // std::cout << "Execute done: " << execute_done << " Mem done: " << mem_done << " WB done: " << wb_done << std::endl;
   advanceStages();
   stallCheck();
 };

@@ -16,10 +16,10 @@ FpuPipeObj decodeOp(uint32_t instruction, unsigned int id, unsigned int operand_
   switch (opcode)
   {
   case FLW:
-    result = decode_ITYPE(instruction);
+    result = decode_ITYPE(instruction, operand_a);
     break;
   case FSW:
-    result = decode_STYPE(instruction);
+    result = decode_STYPE(instruction, operand_a);
     break;
   case FMADD_S:
     result = decode_R4TYPE(instruction, operand_a, operand_b, operand_c);
@@ -181,28 +181,30 @@ FpuPipeObj decode_RTYPE(uint32_t instr, unsigned int operand_a, unsigned int ope
   return result;
 }
 
-FpuPipeObj decode_ITYPE(uint32_t instr) {
+FpuPipeObj decode_ITYPE(uint32_t instr, unsigned int operand_a) {
   ITYPE dec_instr = {.instr = instr}; //"Decode" into ITYPE
   FpuPipeObj result = {};
   result.valid = 1;
   int32_t offset = dec_instr.parts.offset;
   int32_t extendedOffset = (offset << 20) >> 20; //Sign extend - TODO: Extension independent
-  result.addrFrom = {dec_instr.parts.rs1 + extendedOffset};
+  result.addrFrom = {operand_a + offset};
   result.addrTo = dec_instr.parts.rd;
   result.fromMem = 1;
   result.instr = instr; //Save instruction
   result.instr_type = it_ITYPE;
+  result.operand_a.bitpattern = operand_a;
   return result;
 }
 
-FpuPipeObj decode_STYPE(uint32_t instr){
+FpuPipeObj decode_STYPE(uint32_t instr, unsigned int operand_a){
   STYPE dec_instr = {.instr = instr}; //Decode into STYPE
   FpuPipeObj result = {};
   result.valid = 1;
   result.addrFrom = {dec_instr.parts.rs2};
   int32_t offset = dec_instr.parts.offset;
+  result.operand_a.bitpattern = operand_a;
   int32_t extendedOffset = (offset << 25) >> 25; //Sign extend - TODO: Extension independent
-  result.addrTo = {dec_instr.parts.rs1 + extendedOffset};
+  result.addrTo = {operand_a + offset};
   result.toMem = true;
   result.instr = instr; //Save instruction
   result.instr_type = it_STYPE;

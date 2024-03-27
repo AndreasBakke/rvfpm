@@ -69,13 +69,14 @@ extern "C" {
   // MEM REQ/RES INTERFACE
   //-----------------------
 
-  void poll_mem_req(void* fpu_ptr, bool& mem_valid, unsigned int& id,  unsigned int& addr, unsigned int& wdata){
+  void poll_mem_req(void* fpu_ptr, bool& mem_valid, unsigned int& id,  unsigned int& addr, unsigned int& wdata, bool& last){
     FPU* fpu = static_cast<FPU*>(fpu_ptr);
     x_mem_req_t mem_req = {};
     fpu->pollMemReq(mem_valid, mem_req);
     id = mem_req.id;
     addr = mem_req.addr;
     wdata = mem_req.wdata;
+    last = mem_req.last;
   };
 
   void write_sv_state(void* fpu_ptr, bool mem_ready, bool mem_result_valid, unsigned int id, unsigned int rdata, bool err, bool dbg, bool result_ready){
