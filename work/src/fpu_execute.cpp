@@ -355,6 +355,7 @@ void execute_ITYPE(FpuPipeObj& op, FpuRf* registerFile, bool& mem_valid, x_mem_r
   mem_req.id = op.id;
   mem_req.addr = op.addrFrom.front();
   mem_req.last = 1;
+  mem_req.size = op.size;
 }
 void execute_STYPE(FpuPipeObj& op, FpuRf* registerFile, bool& mem_valid, x_mem_req_t& mem_req){
   if (registerFile != nullptr) {
@@ -366,6 +367,7 @@ void execute_STYPE(FpuPipeObj& op, FpuRf* registerFile, bool& mem_valid, x_mem_r
   mem_req.addr = op.addrTo; //Lots of Z
   mem_req.wdata = op.data.bitpattern; //Lots of X
   mem_req.last = 1;
+  mem_req.size = op.size;
 }
 
 void setRoundingMode(unsigned int rm){ //Sets c++ rounding mode. FCSR is written seperately

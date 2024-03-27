@@ -193,6 +193,7 @@ FpuPipeObj decode_ITYPE(uint32_t instr, unsigned int operand_a) {
   result.instr = instr; //Save instruction
   result.instr_type = it_ITYPE;
   result.operand_a.bitpattern = operand_a;
+  result.size = dec_instr.parts.funct3; //Size of word
   return result;
 }
 
@@ -208,5 +209,6 @@ FpuPipeObj decode_STYPE(uint32_t instr, unsigned int operand_a){
   result.toMem = true;
   result.instr = instr; //Save instruction
   result.instr_type = it_STYPE;
+  result.size = dec_instr.parts.funct3; //Size of word
   return result;
 }

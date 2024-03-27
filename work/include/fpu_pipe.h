@@ -31,7 +31,7 @@ struct FpuPipeObj {
   int remaining_ex_cycles= NUM_CYCLES_DEFAULT; //1 cycle for execution as standard
   bool valid = 0; //Is the instruction valid?
   bool speculative = 0; //Set to 1 in decode, so empty operations isn't speculative. Set to 0 when commited do not execute if 1
-
+  unsigned int size = 0;
 
   bool isEmpty() const {
     return addrFrom.empty() &&
