@@ -77,7 +77,7 @@ module rvfpm #(
   import "DPI-C" function int unsigned getRFContent(input chandle fpu_ptr, input int addr);
   import "DPI-C" function void add_accepted_instruction(input chandle fpu_ptr, input int instr, input int unsigned id, input int unsigned operand_a, input int unsigned operand_b, input int unsigned operand_c, input int unsigned mode, input logic commit_valid, input int unsigned commit_id, input logic commit_kill);
   import "DPI-C" function void reset_predecoder(input chandle fpu_ptr);
-  import "DPI-C" function void predecode_instruction(input chandle fpu_ptr, input int instr, input int unsigned id, output x_issue_resp_t resp, output logic use_rs_a, output logic use_rs_b, output logic use_rs_c);
+  import "DPI-C" function void predecode_instruction(input chandle fpu_ptr, input int instr, input int unsigned id, output logic accept, output logic loadstore, output logic use_rs_a, output logic use_rs_b, output logic use_rs_c);
   import "DPI-C" function void commit_instruction(input chandle fpu_ptr, input int unsigned id, input logic kill);
   import "DPI-C" function void poll_mem_req(input chandle fpu_ptr, output logic mem_valid, output int unsigned id, output int unsigned addr, output int unsigned wdata, output logic last, output int unsigned size, output int unsigned mode);
   import "DPI-C" function void write_sv_state(input chandle fpu_ptr, input logic mem_ready, input logic mem_result_valid, input int unsigned id, input int unsigned rdata, input logic err, input logic dbg, input logic result_ready);
@@ -95,7 +95,6 @@ module rvfpm #(
   //-----------------------
   //-- Initialization
   //-----------------------
-  assign new_instruction_accepted = issue_valid && issue_ready && issue_resp.accept; //Signal that a new instruction is accepted
   chandle fpu;
   initial begin
     fpu = create_fpu_model(PIPELINE_STAGES, QUEUE_DEPTH, NUM_F_REGS);
@@ -119,10 +118,9 @@ module rvfpm #(
   assign result.dbg = 0; //TODO: Set to 0 for now
 
   //Need to switch byte order, first for the whole struct, then for each part. Only for incoming structs. Outgoing structs need to be passed part by part
-  assign issue_resp= {<< {issue_resp_s}};
+  // assign issue_resp= {<< {issue_resp_s}};
   assign mem_res = mem_result;
 
-  //Verilator does not allow unsigned int to have a size of <32 bits
   logic[31:0] mem_id_full;
   assign mem_req.id = mem_id_full[X_ID_WIDTH-1:0];
   logic[31:0] mem_req_size_full;
@@ -149,16 +147,39 @@ module rvfpm #(
     end
   end
 
+  logic test;
 
-  always_latch begin
-    issue_ready = fpu_ready_s;
-    if (issue_valid && fpu_ready_s) begin
-      predecode_instruction(fpu, issue_req.instr, issue_req.id, issue_resp_s, use_rs_i[0], use_rs_i[1], use_rs_i[2]);
-    end else begin
-      issue_resp_s = 0;
-    end
-    if (new_instruction_accepted) begin
+  always_ff @(posedge test) begin
+    // if (new_instruction_accepted) begin
+      $display("Id: %h", issue_req.id);
       add_accepted_instruction(fpu, issue_req.instr, issue_req.id, issue_req.rs[0], issue_req.rs[1], issue_req.rs[2], issue_req.mode, commit_valid, commit.id, commit.commit_kill); //TODO: We want this to be done before the pipeline step to improve speed. Can it be done combinatorially?
+
+    // end
+  end
+
+
+  logic accept_s, loadstore_s;
+  assign issue_resp.accept = accept_s;
+  assign issue_resp.writeback = 0;
+  assign issue_resp.dualwrite = 0;
+  assign issue_resp.dualread = 0;
+  assign issue_resp.loadstore = loadstore_s;
+  assign issue_resp.ecswrite = 0;
+  assign issue_resp.exc = 0;
+  always_latch begin
+    test = accept_s & ck;
+    issue_ready = fpu_ready_s;
+    accept_s = 0;
+    // new_instruction_accepted = issue_valid && issue_ready && issue_resp.accept; //Signal that a new instruction is accepted
+    if (issue_valid && fpu_ready_s) begin
+      //TODO: this writes to exswrite instead of loadstore. Try to use the parts instead
+      predecode_instruction(fpu, issue_req.instr, issue_req.id, accept_s, loadstore_s, use_rs_i[0], use_rs_i[1], use_rs_i[2]);
+    end else begin
+      accept_s = 0;
+      loadstore_s = 0;
+    end
+    if (test) begin
+      // add_accepted_instruction(fpu, issue_req.instr, issue_req.id, issue_req.rs[0], issue_req.rs[1], issue_req.rs[2], issue_req.mode, commit_valid, commit.id, commit.commit_kill); //TODO: We want this to be done before the pipeline step to improve speed. Can it be done combinatorially?
       poll_mem_req(fpu, mem_valid, mem_id_full, mem_req.addr, mem_req.wdata, mem_req.last, mem_req_size_full, mem_req_mode_full);
       poll_res(fpu, result_valid, result_id_full, result.data, result_rd_full);
     end

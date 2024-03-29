@@ -50,8 +50,8 @@ bool FPU::pollReady(){
 //--------------------------
 // Issue interface
 //--------------------------
-void FPU::predecodeInstruction(uint32_t instruction, unsigned int id, x_issue_resp_t& resp_ref, bool& use_rs_a, bool& use_rs_b, bool& use_rs_c){
-  predecoder.predecodeInstruction(instruction, id, resp_ref, use_rs_a, use_rs_b, use_rs_c);
+void FPU::predecodeInstruction(uint32_t instruction, unsigned int id, bool& accept, bool& loadstore, bool& use_rs_a, bool& use_rs_b, bool& use_rs_c){
+  predecoder.predecodeInstruction(instruction, id, accept, loadstore, use_rs_a, use_rs_b, use_rs_c);
 };
 
 void FPU::resetPredecoder(){
@@ -69,8 +69,11 @@ FpuPipeObj FPU::testFloatOp(){
 
 
 void FPU::addAcceptedInstruction(uint32_t instruction, unsigned int id, unsigned int operand_a, unsigned int operand_b, unsigned int operand_c, unsigned int mode, bool commit_valid, unsigned int commit_id, bool commit_kill){ //and other necessary inputs (should be somewhat close to in_xif type)
-  std::cout << "Adding!" << std::endl;
   FpuPipeObj newOp = decodeOp(instruction, id, operand_a, operand_b, operand_c, mode);
+  if (newOp.id == pipeline.at(0).id && !pipeline.at(0).isEmpty()){
+    return;
+  }
+  std::cout << "Adding!" << std::endl;
   if (commit_valid && commit_id == newOp.id){
     if (commit_kill){
       newOp = {};
@@ -85,6 +88,7 @@ void FPU::addAcceptedInstruction(uint32_t instruction, unsigned int id, unsigned
     pipeline.setWaitingOp(newOp); //set waitingOp (if queue=0, this will be empty given the instruction is accepted
   }
   if (pipeline.isEmpty()){
+    pipeline.step();
     pipeline.step();
   }
 }

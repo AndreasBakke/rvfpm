@@ -17,7 +17,7 @@ FpuPredecoder::FpuPredecoder(bool& fpuReady) : fpuReady(fpuReady) {
   resp.accept = false;
   resp.writeback = false;
   resp.dualwrite = false;
-  resp.dualread = 0;
+  resp.dualread = false;
   resp.loadstore = false;
   resp.ecswrite = false;
   resp.exc = false;
@@ -26,25 +26,27 @@ FpuPredecoder::FpuPredecoder(bool& fpuReady) : fpuReady(fpuReady) {
 FpuPredecoder::~FpuPredecoder() {
 }
 
-void FpuPredecoder::predecodeInstruction(uint32_t instruction, unsigned int id, x_issue_resp_t& resp_ref, bool& use_rs_a, bool& use_rs_b, bool& use_rs_c) {
+void FpuPredecoder::predecodeInstruction(uint32_t instruction, unsigned int id, bool& accept, bool& loadstore, bool& use_rs_a, bool& use_rs_b, bool& use_rs_c) {
   current_decode_id = id;
   FpuPipeObj res = {};
   res = decodeOp(instruction, id, 0, 0, 0, 0);
   use_rs_a = res.use_rs_i[0];
   use_rs_b = res.use_rs_i[1];
   use_rs_c = res.use_rs_i[2];
+  // std::cout << "current: " << instruction  << " past " << past_instruction_accepted << std::endl;
   if (res.valid) {
-    resp_ref.accept = true;
-    resp_ref.writeback = res.toXReg;
-    resp_ref.loadstore = res.toMem || res.fromMem;
-    resp_ref.ecswrite = false; //Todo: understand this
-    resp_ref.exc = false; //Todo: understand this
+    accept = true;
+    // resp_ref.writeback = res.toXReg;
+    loadstore = res.toMem || res.fromMem;
+    // resp_ref.ecswrite = false; //Todo: understand this
+    // resp_ref.exc = false; //Todo: understand this
+    // past_instruction_accepted = instruction;
   } else {
-    resp_ref.accept = false;
-    resp_ref.writeback = false;
-    resp_ref.loadstore = false;
-    resp_ref.ecswrite = false;
-    resp_ref.exc = false;
+    accept = false;
+    // resp_ref.writeback = false;
+    loadstore = false;
+    // resp_ref.ecswrite = false;
+    // resp_ref.exc = false;
   }
 }
 

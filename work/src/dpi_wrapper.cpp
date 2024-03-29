@@ -55,9 +55,9 @@ extern "C" {
     fpu->resetPredecoder();
   };
 
-  void predecode_instruction(void* fpu_ptr, uint32_t instruction, unsigned int id,  x_issue_resp_t& resp, bool& use_rs_a, bool& use_rs_b, bool& use_rs_c){
+  void predecode_instruction(void* fpu_ptr, uint32_t instruction, unsigned int id,  bool& accept, bool& loadstore, bool& use_rs_a, bool& use_rs_b, bool& use_rs_c){
     FPU* fpu = static_cast<FPU*>(fpu_ptr);
-    fpu->predecodeInstruction(instruction, id, resp, use_rs_a, use_rs_b, use_rs_c);
+    fpu->predecodeInstruction(instruction, id, accept, loadstore, use_rs_a, use_rs_b, use_rs_c);
   };
 
   void commit_instruction(void* fpu_ptr, unsigned int id, bool kill){

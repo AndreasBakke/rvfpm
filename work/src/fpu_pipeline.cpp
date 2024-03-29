@@ -62,6 +62,8 @@ void FpuPipeline::step(){
   //WB
   //TODO: set result_valid also if not a writeback when finished.
   resultStep();
+  // std::cout << std::endl;
+  // std::cout << "waitingOp: " << waitingOp.id <<" " << waitingOp.isEmpty() << "  at0: " << pipeline.at(0).id << " " << pipeline.at(0).isEmpty() << std::endl;
   // std::cout << "Execute done: " << execute_done << " Mem done: " << mem_done << " WB done: " << wb_done << std::endl;
   advanceStages();
   stallCheck();
@@ -162,12 +164,15 @@ void FpuPipeline::memStep(){
 if (MEMORY_STEP == EXECUTE_STEP && !execute_done) {
     mem_done = false;
   } else if ((pipeline.at(MEMORY_STEP).fromMem || pipeline.at(MEMORY_STEP).toMem ) && !mem_done){
+    
     if (!wait_for_mem_resp && mem_valid){
       wait_for_mem_resp = true;
     }
     if(wait_for_mem_resp) {
       wait_for_mem_resp = !mem_ready;
-      mem_valid = !mem_ready; //set to 0 if done, keep to 1 if not
+      mem_valid = 1;
+      // mem_valid = mem_ready; //set to 0 if done, keep to 1 if not //This is not kept as 1 for long enough
+      //We need to keep all signals 1 UNTILL ck rising
       wait_for_mem_result = mem_ready; //set to 1 if mem_ready is 1
     } else {
       mem_valid = 0;
@@ -175,12 +180,14 @@ if (MEMORY_STEP == EXECUTE_STEP && !execute_done) {
     }
 
     if(wait_for_mem_result && memoryResultValid && memoryResults.id == pipeline.at(MEMORY_STEP).id){
+      mem_valid = 0;
       pipeline.at(MEMORY_STEP).data.bitpattern = memoryResults.rdata;
       memoryResults = x_mem_result_t({0, 0, 0, 0});
       memoryResultValid = false;
       mem_done = true;
       wait_for_mem_result = false;
     }
+
   } else {
     mem_done = true;
     wait_for_mem_resp = false;
