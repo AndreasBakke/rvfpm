@@ -36,17 +36,10 @@ void FpuPredecoder::predecodeInstruction(uint32_t instruction, unsigned int id, 
   // std::cout << "current: " << instruction  << " past " << past_instruction_accepted << std::endl;
   if (res.valid) {
     accept = true;
-    // resp_ref.writeback = res.toXReg;
     loadstore = res.toMem || res.fromMem;
-    // resp_ref.ecswrite = false; //Todo: understand this
-    // resp_ref.exc = false; //Todo: understand this
-    // past_instruction_accepted = instruction;
   } else {
     accept = false;
-    // resp_ref.writeback = false;
     loadstore = false;
-    // resp_ref.ecswrite = false;
-    // resp_ref.exc = false;
   }
 }
 

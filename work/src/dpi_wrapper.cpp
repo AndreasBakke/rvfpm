@@ -11,7 +11,6 @@
 #include <iostream>
 // #include <svdpi.h>
 #include <functional>
-std::function<void(bool)> sv_callback;
 
 extern "C" {
 
@@ -87,17 +86,34 @@ extern "C" {
     fpu->writeResult(result_ready);
   };
 
+  void memoryStep(void* fpu_ptr) {
+    FPU* fpu = static_cast<FPU*>(fpu_ptr);
+    fpu->memoryStep();
+  };
+
   //-----------------------
   // RESULT INTERFACE
   //-----------------------
 
-  void poll_res(void* fpu_ptr, bool& result_valid, unsigned int& id, unsigned int& data, unsigned int& rd){
+  void poll_res(void* fpu_ptr, bool& result_valid, unsigned int& id, unsigned int& data, unsigned int& rd, unsigned int& ecswe, unsigned int& ecsdata){
     FPU* fpu = static_cast<FPU*>(fpu_ptr);
     x_result_t result = {};
     fpu->pollResult(result_valid, result);
     id = result.id;
     data = result.data;
     rd = result.rd;
+    ecswe = result.ecswe;
+    ecsdata = result.ecsdata;
+    if (result_valid ) {
+      std::cout << "Polled - ecswe : " << ecswe << "  data: " <<ecsdata <<std::endl;
+    }
+    if (ecswe != 0) {
+    }
+  };
+
+  void resultStep(void* fpu_ptr) {
+    FPU* fpu = static_cast<FPU*>(fpu_ptr);
+    fpu->resultStep();
   };
 
   //-----------------------

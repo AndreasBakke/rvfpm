@@ -57,7 +57,7 @@ void FpuPipeline::step(){
   //EX TODO: make EX and MEM "independent" in terms of which comes first. Requires check for speculative in mem_step
   executeStep();
   //MEM
-  memStep();
+  memoryStep();
 
   //WB
   //TODO: set result_valid also if not a writeback when finished.
@@ -78,6 +78,8 @@ void FpuPipeline::advanceStages(){ //TODO: also check for hazards.
     if (i == WRITEBACK_STEP) {
       if (wb_done && (WRITEBACK_STEP != MEMORY_STEP || mem_done) && (WRITEBACK_STEP != EXECUTE_STEP || execute_done)){
         wb_done = false;
+        // result_valid = 0; //Keep higher for a moment longer?  Its not registered at the cpu.
+        // result = {};
         i==0 ? pipeline.at(i) = FpuPipeObj({}) : pipeline.at(i-1) = pipeline.at(i); //Move the operation to the next stage
         pipeline.at(i) = FpuPipeObj({}); //Clear the current stage
         i == MEMORY_STEP ? mem_done = false : mem_done = mem_done;
@@ -160,7 +162,7 @@ if(!execute_done) { //If we are not done executing the op in execute step. Flag 
   }
 }
 
-void FpuPipeline::memStep(){
+void FpuPipeline::memoryStep(){
 if (MEMORY_STEP == EXECUTE_STEP && !execute_done) {
     mem_done = false;
   } else if ((pipeline.at(MEMORY_STEP).fromMem || pipeline.at(MEMORY_STEP).toMem ) && !mem_done){
@@ -196,32 +198,48 @@ if (MEMORY_STEP == EXECUTE_STEP && !execute_done) {
 }
 
 void FpuPipeline::resultStep(){
+  if (wb_done) {
+    return;
+  }
   if ((WRITEBACK_STEP == MEMORY_STEP && !mem_done) || (WRITEBACK_STEP == EXECUTE_STEP && !execute_done)) {
-    wb_done = false;
-    result_valid = 0;
-    result = {};
-  } else if(!wb_done){ //TODO: structure more like the memory step
-    //If not to xreg, or not memory, and not empty. Just write to register file and set done = 1
-    wb_done = true;
-     if (!pipeline.at(WRITEBACK_STEP).toMem && !pipeline.at(WRITEBACK_STEP).toXReg && !pipeline.at(WRITEBACK_STEP).isEmpty()){
-      registerFilePtr->write(pipeline.at(WRITEBACK_STEP).addrTo, pipeline.at(WRITEBACK_STEP).data);
-      result_valid = 1;
-      result.id = pipeline.at(WRITEBACK_STEP).id;
-      wb_done = false;
-    } else if (pipeline.at(WRITEBACK_STEP).toXReg) {
-      result_valid = 1;
-      result.id = pipeline.at(WRITEBACK_STEP).id;
-      result.data = pipeline.at(WRITEBACK_STEP).data.u;
+    return;
+  }
+
+  wb_done = true;
+  result_valid = 0;
+  result = {};
+  if (!pipeline.at(WRITEBACK_STEP).toMem && !pipeline.at(WRITEBACK_STEP).toXReg && !pipeline.at(WRITEBACK_STEP).isEmpty()){
+    registerFilePtr->write(pipeline.at(WRITEBACK_STEP).addrTo, pipeline.at(WRITEBACK_STEP).data);
+    result_valid = 1;
+    result.id = pipeline.at(WRITEBACK_STEP).id;
+    std::cout << "A1" << std::endl;
+    // if (!pipeline.at(WRITEBACK_STEP).fromMem){
+      result.ecswe   = 0b010;
+      result.ecsdata = 0b001100;
+      std::cout << "her : " << pipeline.at(WRITEBACK_STEP).id << "  valid:: " << result_valid << std::endl;
       result.rd = pipeline.at(WRITEBACK_STEP).addrTo;
-      wb_done = false;
-    }
-    if (result_valid) {
-      wb_done = result_ready;
-    }
-  } else {
-    wb_done = true;
-    result_valid = 0;
-    result = {};
+      result.data = pipeline.at(WRITEBACK_STEP).data.bitpattern;
+    // }
+    wb_done = false;
+  } else if (pipeline.at(WRITEBACK_STEP).toXReg) {
+    result_valid = 1;
+    result.id = pipeline.at(WRITEBACK_STEP).id;
+    result.data = pipeline.at(WRITEBACK_STEP).data.u;
+    result.rd = pipeline.at(WRITEBACK_STEP).addrTo;
+    std::cout << "A2" << std::endl;
+    wb_done = false;
+  } else if (!pipeline.at(WRITEBACK_STEP).isEmpty()) {
+    std::cout << "A3" << std::endl;
+    result_valid = 1;
+    result.id = pipeline.at(WRITEBACK_STEP).id;
+    wb_done = false;
+  }
+
+  if (!pipeline.at(WRITEBACK_STEP).toMem && !pipeline.at(WRITEBACK_STEP).fromMem && !pipeline.at(WRITEBACK_STEP).isEmpty()){
+   }
+
+  if (result_valid) {
+    wb_done = result_ready;
   }
 }
 

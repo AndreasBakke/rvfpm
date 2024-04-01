@@ -73,7 +73,6 @@ void FPU::addAcceptedInstruction(uint32_t instruction, unsigned int id, unsigned
   if (newOp.id == pipeline.at(0).id && !pipeline.at(0).isEmpty()){
     return;
   }
-  std::cout << "Adding!" << std::endl;
   if (commit_valid && commit_id == newOp.id){
     if (commit_kill){
       newOp = {};
@@ -104,6 +103,10 @@ void FPU::writeMemRes(bool mem_ready, bool mem_result_valid, unsigned int id, un
   pipeline.writeMemRes(mem_ready, mem_result_valid, id, rdata, err, dbg);
 };
 
+void FPU::memoryStep(){
+  pipeline.memoryStep();
+}
+
 //--------------------------
 // Result interface
 //--------------------------
@@ -113,6 +116,10 @@ void FPU::writeResult(bool result_ready){
 
 void FPU::pollResult(bool& result_valid, x_result_t& result){
   pipeline.pollResult(result_valid, result);
+};
+
+void FPU::resultStep(){
+  pipeline.resultStep();
 };
 
 //--------------------------

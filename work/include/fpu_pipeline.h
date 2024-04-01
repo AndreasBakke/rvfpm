@@ -53,7 +53,7 @@ class FpuPipeline {
     FpuPipeObj at(int i);
     void step(); //Advance pipeline by one step (called by clock in interface)
     void executeStep();
-    void memStep();
+    void memoryStep();
     void resultStep(); //wb
     void advanceStages(); //Move non-stalled stages one step forward
     void stallCheck(); //Set stalled if pipeline(& optionally queue) is full
