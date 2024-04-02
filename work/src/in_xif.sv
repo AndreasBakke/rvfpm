@@ -104,12 +104,12 @@ package in_xif;
     logic [X_RFW_WIDTH     -1:0] data;    // Register file write data value(s)
     logic [                 4:0] rd;      // Register file destination address(es)
     logic [X_RFW_WIDTH/XLEN-1:0] we;      // Register file write enable(s)
-    logic [                 5:0] ecsdata; // Write data value for {mstatus.xs, mstatus.fs, mstatus.vs}
     logic [                 2:0] ecswe;   // Write enables for {mstatus.xs, mstatus.fs, mstatus.vs}
+    logic [                 5:0] ecsdata; // Write data value for {mstatus.xs, mstatus.fs, mstatus.vs}
     logic                        exc;     // Did the instruction cause a synchronous exception?
     logic [                 5:0] exccode; // Exception code
-    logic                        err;     // Did the instruction cause a bus error?
     logic                        dbg;     // Did the instruction cause a debug trigger match with ``mcontrol.timing`` = 0?
+    logic                        err;     // Did the instruction cause a bus error?
   } x_result_t;
 
   // Issue interface

@@ -137,9 +137,6 @@ module rvfpm #(
   assign mem_req.mode = mem_req_mode_full[1:0];
 
 
-
-
-  time a;
   always_ff @(posedge ck or negedge rst) begin: la_main
     if (!rst) begin
       $display("--- %t: Resetting FPU ---", $time);
@@ -148,10 +145,6 @@ module rvfpm #(
     end
     else if (enable) begin //Call clocked functions
       clock_event(fpu);
-      poll_ready(fpu, fpu_ready_s);
-      if(400 < $time && $time < 750) begin
-        $display("clockyclock: %t", $time);
-      end
     end
   end
 
@@ -161,6 +154,16 @@ module rvfpm #(
       add_accepted_instruction(fpu, issue_req.instr, issue_req.id, issue_req.rs[0], issue_req.rs[1], issue_req.rs[2], issue_req.mode, commit_valid, commit.id, commit.commit_kill); //TODO: We want this to be done before the pipeline step to improve speed. Can it be done combinatorially?
   end
 
+  always_ff @(negedge ck) begin
+    poll_ready(fpu, fpu_ready_s);
+    if (enable) begin
+        write_sv_state(fpu, mem_ready, mem_result_valid, mem_res.id, mem_res.rdata, mem_res.err, mem_res.dbg, result_ready);
+        memoryStep(fpu);
+        resultStep(fpu);
+        poll_mem_req(fpu, mem_valid, mem_id_full, mem_req.addr, mem_req.wdata, mem_req.last, mem_req_size_full, mem_req_mode_full);
+        poll_res(fpu, result_valid, result_id_full, result.data, result_rd_full, result_ecswe_full, result_ecsdata_full);
+    end
+  end
 
   always_latch begin
     add_instr = accept_s & ck;
@@ -172,30 +175,15 @@ module rvfpm #(
       loadstore_s = 0;
     end
     
-    if (add_instr) begin
-      poll_mem_req(fpu, mem_valid, mem_id_full, mem_req.addr, mem_req.wdata, mem_req.last, mem_req_size_full, mem_req_mode_full);
-      poll_res(fpu, result_valid, result_id_full, result.data, result_rd_full, result_ecswe_full, result_ecsdata_full);
-    end
-
     if (commit_valid) begin
-      commit_instruction(fpu, commit.id,  commit.commit_kill);
+      commit_instruction(fpu, commit.id,  commit.commit_kill); //ibex tries to commit before accepted
     end
 
     write_sv_state(fpu, mem_ready, mem_result_valid, mem_res.id, mem_res.rdata, mem_res.err, mem_res.dbg, result_ready);
-    poll_res(fpu, result_valid, result_id_full, result.data, result_rd_full, result_ecswe_full, result_ecsdata_full);
-    
     memoryStep(fpu);
     resultStep(fpu);
-    poll_res(fpu, result_valid, result_id_full, result.data, result_rd_full, result_ecswe_full, result_ecsdata_full);
-    poll_mem_req(fpu, mem_valid, mem_id_full, mem_req.addr, mem_req.wdata, mem_req.last, mem_req_size_full, mem_req_mode_full);
   end
 
 
 endmodule;
 
-//Problemet nå er at ingenting endrer seg annet enn result-staten 
-//når instruksjonen er noe annet enn memory operations.
-//da rekker vi ikke å polle result før den skrives over
-//Fordi resultet blir først valid og klart ved negativ klokkeedge tror jeg
-//Som er litt rart.
-//08b0F2C3

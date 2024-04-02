@@ -104,11 +104,6 @@ extern "C" {
     rd = result.rd;
     ecswe = result.ecswe;
     ecsdata = result.ecsdata;
-    if (result_valid ) {
-      std::cout << "Polled - ecswe : " << ecswe << "  data: " <<ecsdata <<std::endl;
-    }
-    if (ecswe != 0) {
-    }
   };
 
   void resultStep(void* fpu_ptr) {

@@ -12,7 +12,6 @@
 #include "fpu_decode.h"
 #include "fpu_execute.h"
 #include "fpu_config.h"
-
 #include <deque> //Double ended queue
 
 class FpuPipeline {
@@ -73,7 +72,7 @@ class FpuPipeline {
 
     //Resultinterface
     void writeResult(bool result_ready);
-    void pollResult(bool& result_valid, x_result_t& result);
+    void pollResult(bool& result_valid_ptr, x_result_t& result_ptr);
 
     void flush();
     int getNumStages();
