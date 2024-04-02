@@ -174,7 +174,7 @@ module rvfpm #(
       accept_s = 0;
       loadstore_s = 0;
     end
-    
+
     if (commit_valid) begin
       commit_instruction(fpu, commit.id,  commit.commit_kill); //ibex tries to commit before accepted
     end
