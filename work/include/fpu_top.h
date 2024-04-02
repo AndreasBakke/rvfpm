@@ -24,7 +24,6 @@ class FPU {
     void resetFPU();
     void clockEvent();
     bool pollReady();
-    bool testSignal;
 
     void addAcceptedInstruction(uint32_t instruction, unsigned int id, unsigned int operand_a, unsigned int operand_b, unsigned int operand_c, unsigned int mode, bool commit_valid, unsigned int commit_id, bool commit_kill);//and other necessary inputs (should be somewhat close to in_xif type)
 

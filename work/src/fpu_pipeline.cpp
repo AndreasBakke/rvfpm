@@ -38,7 +38,7 @@ void FpuPipeline::step(){
   //Operations are decoded before adding to the pipeline
   //Check for memory dependencies and request throough interface
   //Pipeline stucture set in run/setup.yaml
-  
+
   //The execute step is the only step called on positive clock edge (due to some executions requiring multiple clock cycles)
   //Memory and writeback is done combinatorially
 
@@ -66,16 +66,23 @@ void FpuPipeline::step(){
 };
 
 
-//Todo: split this into smaller functions one for cheking if we are stalled, and one to move operations down the pipeline
 void FpuPipeline::advanceStages(){ //TODO: also check for hazards.
   bool all_done = execute_done && mem_done && wb_done;
   stalled = false;
+  if (!wait_for_mem_resp){
+    mem_valid = 0;
+    mem_req = {};
+  }
+
+  if (wb_done) {
+    result_valid = 0;
+    result = {};
+  }
+
   for (int i = 0; i < pipeline.size(); i++){
     if (i == WRITEBACK_STEP) {
       if (wb_done && (WRITEBACK_STEP != MEMORY_STEP || mem_done) && (WRITEBACK_STEP != EXECUTE_STEP || execute_done)){
         wb_done = false;
-        result_valid = 0; //Keep higher for a moment longer?  Its not registered at the cpu.
-        result = {};
         i==0 ? pipeline.at(i) = FpuPipeObj({}) : pipeline.at(i-1) = pipeline.at(i); //Move the operation to the next stage
         pipeline.at(i) = FpuPipeObj({}); //Clear the current stage
         i == MEMORY_STEP ? mem_done = false : mem_done = mem_done;
@@ -138,7 +145,7 @@ void FpuPipeline::advanceStages(){ //TODO: also check for hazards.
 
 
 void FpuPipeline::executeStep(){
-if(!execute_done) { //If we are not done executing the op in execute step. Flag reset by stallCheck() if we advance
+  if(!execute_done) { //If we are not done executing the op in execute step. Flag reset by stallCheck() if we advance
     bool speculative = false;
     bool more_cycles_rem = false;
     if(pipeline.at(EXECUTE_STEP).speculative){
@@ -148,44 +155,33 @@ if(!execute_done) { //If we are not done executing the op in execute step. Flag 
       pipeline.at(EXECUTE_STEP).remaining_ex_cycles--;
       more_cycles_rem = true;
     }
-    else{ //If we reach this point, we can assume that this operation has not been executed yet (or have been decremented enugh).
+    else if(!(pipeline.at(EXECUTE_STEP).toMem || pipeline.at(EXECUTE_STEP).fromMem )) { //If we reach this point, we can assume that this operation has not been executed yet (or have been decremented enugh).
       executeOp(pipeline.at(EXECUTE_STEP), registerFilePtr, mem_valid, mem_req);
     }
     execute_done = !speculative  && !more_cycles_rem;
   } else {
     execute_done = true;
-    //Wait - means we are stalled by some other step
   }
 }
 
 void FpuPipeline::memoryStep(){
-if (MEMORY_STEP == EXECUTE_STEP && !execute_done) {
+  if (MEMORY_STEP == EXECUTE_STEP && !execute_done) {
     mem_done = false;
   } else if ((pipeline.at(MEMORY_STEP).fromMem || pipeline.at(MEMORY_STEP).toMem ) && !mem_done){
-    
-    if (!wait_for_mem_resp && mem_valid){
+    if (!wait_for_mem_resp && !wait_for_mem_result){
+      executeOp(pipeline.at(MEMORY_STEP), registerFilePtr, mem_valid, mem_req);
       wait_for_mem_resp = true;
     }
     if(wait_for_mem_resp) {
       wait_for_mem_resp = !mem_ready;
-      mem_valid = 1;
-      // mem_valid = mem_ready; //set to 0 if done, keep to 1 if not //This is not kept as 1 for long enough
-      //We need to keep all signals 1 UNTILL ck rising
-      wait_for_mem_result = mem_ready; //set to 1 if mem_ready is 1
-    } else {
-      mem_valid = 0;
-      this->mem_req = {};
+      wait_for_mem_result = mem_ready;
     }
 
     if(wait_for_mem_result && memoryResultValid && memoryResults.id == pipeline.at(MEMORY_STEP).id){
-      mem_valid = 0;
       pipeline.at(MEMORY_STEP).data.bitpattern = memoryResults.rdata;
-      memoryResults = x_mem_result_t({0, 0, 0, 0});
-      memoryResultValid = false;
-      mem_done = true;
       wait_for_mem_result = false;
+      mem_done = true;
     }
-
   } else {
     mem_done = true;
     wait_for_mem_resp = false;

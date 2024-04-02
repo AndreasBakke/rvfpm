@@ -18,8 +18,8 @@ endif
 COREFILES = src/fpu_top.cpp src/fpu_predecoder.cpp src/fpu_decode.cpp src/fpu_execute.cpp src/fpu_pipeline.cpp src/fpu_rf.cpp  src/fp_number.cpp
 
 CONFIG:=""
-
-N_GUI_OPTS = -c -do "run -all; quit"
+SIM_LENGTH = -all
+N_GUI_OPTS = -c -do "run $(SIM_LENGTH); quit"
 
 sim_full:
 	make setup
