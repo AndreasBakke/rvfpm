@@ -8,6 +8,7 @@
 
 #pragma once
 #include "defines.h"
+#include <stdint.h>
 
 typedef struct {
   bool          accept    : 1;

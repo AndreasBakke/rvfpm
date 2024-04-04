@@ -20,9 +20,6 @@ FpuPipeline::FpuPipeline(FpuRf* rf_pointer) : pipeline(NUM_PIPELINE_STAGES), ope
   mem_done = false;
   wb_done = false;
   stalled = false;
-  mem_valid = 0;
-  mem_req = {};
-  wait_for_mem_result = false;
   result_valid = 0;
   result = {};
 }
@@ -30,8 +27,12 @@ FpuPipeline::FpuPipeline(FpuRf* rf_pointer) : pipeline(NUM_PIPELINE_STAGES), ope
 FpuPipeline::~FpuPipeline() {
 }
 
-FpuPipeObj FpuPipeline::at(int i){
+FpuPipeObj& FpuPipeline::at(int i){
   return pipeline.at(i);
+};
+
+FpuPipeObj& FpuPipeline::at_queue(int i){
+  return operationQueue.at(i);
 };
 
 void FpuPipeline::step(){
@@ -43,7 +44,7 @@ void FpuPipeline::step(){
   //Memory and writeback is done combinatorially
 
   #ifdef TESTFLOAT
-    executeOp(waitingOp, registerFilePtr, mem_valid, mem_req); //Values are loaded to register using bd_load
+    executeOp(waitingOp, registerFilePtr); //Values are loaded to register using bd_load
     return;
   #endif
   // If the pipeline is empty, add the waiting operation to speed up execution a bit
@@ -69,11 +70,6 @@ void FpuPipeline::step(){
 void FpuPipeline::advanceStages(){ //TODO: also check for hazards.
   bool all_done = execute_done && mem_done && wb_done;
   stalled = false;
-  if (!wait_for_mem_resp){
-    mem_valid = 0;
-    mem_req = {};
-  }
-
   if (wb_done) {
     result_valid = 0;
     result = {};
@@ -156,7 +152,7 @@ void FpuPipeline::executeStep(){
       more_cycles_rem = true;
     }
     else if(!(pipeline.at(EXECUTE_STEP).toMem || pipeline.at(EXECUTE_STEP).fromMem )) { //If we reach this point, we can assume that this operation has not been executed yet (or have been decremented enugh).
-      executeOp(pipeline.at(EXECUTE_STEP), registerFilePtr, mem_valid, mem_req);
+      executeOp(pipeline.at(EXECUTE_STEP), registerFilePtr);
     }
     execute_done = !speculative  && !more_cycles_rem;
   } else {
@@ -164,28 +160,41 @@ void FpuPipeline::executeStep(){
   }
 }
 
-void FpuPipeline::memoryStep(){
+void FpuPipeline::memoryStep(){ //Todo: what should this be now?
   if (MEMORY_STEP == EXECUTE_STEP && !execute_done) {
     mem_done = false;
-  } else if ((pipeline.at(MEMORY_STEP).fromMem || pipeline.at(MEMORY_STEP).toMem ) && !mem_done){
-    if (!wait_for_mem_resp && !wait_for_mem_result){
-      executeOp(pipeline.at(MEMORY_STEP), registerFilePtr, mem_valid, mem_req);
-      wait_for_mem_resp = true;
+  } else if ((pipeline.at(MEMORY_STEP).fromMem || pipeline.at(MEMORY_STEP).toMem)){
+    if (!pipeline.at(MEMORY_STEP).mem_result_valid){
+      return;
     }
-    if(wait_for_mem_resp) {
-      wait_for_mem_resp = !mem_ready;
-      wait_for_mem_result = mem_ready;
-    }
-
-    if(wait_for_mem_result && memoryResultValid && memoryResults.id == pipeline.at(MEMORY_STEP).id){
-      pipeline.at(MEMORY_STEP).data.bitpattern = memoryResults.rdata;
-      wait_for_mem_result = false;
-      mem_done = true;
-    }
-  } else {
     mem_done = true;
-    wait_for_mem_resp = false;
-    wait_for_mem_result = false;
+    if (pipeline.at(MEMORY_STEP).fromMem){
+      std::cout << "Memory read: " << pipeline.at(MEMORY_STEP).mem_result << std::endl;
+      pipeline.at(MEMORY_STEP).data.bitpattern = pipeline.at(MEMORY_STEP).mem_result;
+    } else {
+      std::cout << "Memory write: " << pipeline.at(MEMORY_STEP).data.bitpattern << std::endl;
+    }
+  }
+
+  // else if ((pipeline.at(MEMORY_STEP).fromMem || pipeline.at(MEMORY_STEP).toMem ) && !mem_done){
+  //   if (!wait_for_mem_resp && !wait_for_mem_result){
+  //     executeOp(pipeline.at(MEMORY_STEP), registerFilePtr);
+  //     wait_for_mem_resp = true;
+  //   }
+  //   if(wait_for_mem_resp) {
+  //     wait_for_mem_resp = !mem_ready;
+  //     wait_for_mem_result = mem_ready;
+  //   }
+
+  //   if(wait_for_mem_result && memoryResultValid && memoryResults.id == pipeline.at(MEMORY_STEP).id){
+  //     pipeline.at(MEMORY_STEP).data.bitpattern = memoryResults.rdata;
+  //     wait_for_mem_result = false;
+  //     mem_done = true;
+  //   }
+
+  //TODO: bør kunne velge om store-operations skal gjøres her! I tilfelle det er en del av pipeline-strukturen til brukeren
+   else {
+    mem_done = true;
   }
 }
 
@@ -313,26 +322,6 @@ void FpuPipeline::commitInstruction(unsigned int id, bool kill){
   }
 };
 
-
-
-//--------------------------
-// Memory interface
-//--------------------------
-void FpuPipeline::pollMemReq(bool& mem_valid, x_mem_req_t& mem_req){
-  mem_valid = this->mem_valid;
-  mem_req = this->mem_req;
-};
-
-void FpuPipeline::writeMemRes(bool mem_ready, bool mem_result_valid, unsigned int id, unsigned int rdata, bool err, bool dbg){
-  this->mem_ready = mem_ready;
-  memoryResultValid = mem_result_valid;
-  memoryResults.id = id;
-  memoryResults.rdata = rdata;
-  memoryResults.err = err;
-  memoryResults.dbg = dbg;
-
-};
-
 //--------------------------
 // Result interface
 //--------------------------
@@ -367,15 +356,11 @@ void FpuPipeline::flush(){
   pipeline = std::deque<FpuPipeObj>(NUM_PIPELINE_STAGES, FpuPipeObj({}));
   //Reset all internal data
   operationQueue = std::deque<FpuPipeObj>(QUEUE_DEPTH, FpuPipeObj({}));
-  mem_valid = 0;
-  mem_req = {};
   execute_done = false;
   mem_done = false;
   wb_done = false;
   stalled = false;
   pipelineFull = false;
-  mem_valid = 0;
-  mem_req = {};
   result_valid = 0;
   result = {};
 };

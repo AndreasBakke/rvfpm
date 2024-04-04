@@ -95,7 +95,7 @@ module rvfpm_tb;
     .mem_resp         (uin_rvfpm.mem_resp),
 
     // Memory Result Interface
-    .mem_result_valid (mem_result_valid),
+    .mem_result_valid (uin_rvfpm.mem_result_valid),
     .mem_result       (uin_rvfpm.mem_result),
 
     // Result Interface

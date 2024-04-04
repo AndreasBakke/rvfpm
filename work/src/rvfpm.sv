@@ -79,9 +79,10 @@ module rvfpm #(
   import "DPI-C" function void reset_predecoder(input chandle fpu_ptr);
   import "DPI-C" function void predecode_instruction(input chandle fpu_ptr, input int instr, input int unsigned id, output logic accept, output logic loadstore, output logic use_rs_a, output logic use_rs_b, output logic use_rs_c);
   import "DPI-C" function void commit_instruction(input chandle fpu_ptr, input int unsigned id, input logic kill);
-  import "DPI-C" function void poll_mem_req(input chandle fpu_ptr, output logic mem_valid, output int unsigned id, output int unsigned addr, output int unsigned wdata, output logic last, output int unsigned size, output int unsigned mode);
-  import "DPI-C" function void write_sv_state(input chandle fpu_ptr, input logic mem_ready, input logic mem_result_valid, input int unsigned id, input int unsigned rdata, input logic err, input logic dbg, input logic result_ready);
+  import "DPI-C" function void poll_memory_request(input chandle fpu_ptr, output logic mem_valid, output int unsigned id, output int unsigned addr, output int unsigned wdata, output logic last, output int unsigned size, output int unsigned mode);
+  import "DPI-C" function void write_sv_state(input chandle fpu_ptr, input logic mem_ready, input logic result_ready);
   import "DPI-C" function void poll_res(input chandle fpu_ptr, output logic result_valid, output int unsigned id, output int unsigned data, output int unsigned rd, output int unsigned ecswe, output int unsigned ecsdata); //TODO: add remaining signals in interface
+  import "DPI-C" function void write_memory_result(input chandle fpu_ptr, input int unsigned id, input int unsigned rdata, input logic err, input logic dbg);
   import "DPI-C" function void resultStep(input chandle fpu_ptr);
   import "DPI-C" function void memoryStep(input chandle fpu_ptr);
   //-----------------------
@@ -89,8 +90,6 @@ module rvfpm #(
   //-----------------------
   logic fpu_ready_s; //status signal
   logic [X_NUM_RS-1:0] use_rs_i; //Which operands are used
-  logic new_instruction_accepted; //Indicates that a new instruction is accepted
-  x_issue_resp_t issue_resp_s; //To recieve issue response
   x_mem_result_t mem_res;
   //-----------------------
   //-- Initialization
@@ -151,17 +150,20 @@ module rvfpm #(
   logic add_instr;
 
   always_ff @(posedge add_instr) begin
-      add_accepted_instruction(fpu, issue_req.instr, issue_req.id, issue_req.rs[0], issue_req.rs[1], issue_req.rs[2], issue_req.mode, commit_valid, commit.id, commit.commit_kill); //TODO: We want this to be done before the pipeline step to improve speed. Can it be done combinatorially?
+      add_accepted_instruction(fpu, issue_req.instr, issue_req.id, issue_req.rs[0], issue_req.rs[1], issue_req.rs[2], issue_req.mode, commit_valid, commit.id, commit.commit_kill);
   end
 
   always_ff @(negedge ck) begin
     poll_ready(fpu, fpu_ready_s);
     if (enable) begin
-        write_sv_state(fpu, mem_ready, mem_result_valid, mem_res.id, mem_res.rdata, mem_res.err, mem_res.dbg, result_ready);
-        memoryStep(fpu);
-        resultStep(fpu);
-        poll_mem_req(fpu, mem_valid, mem_id_full, mem_req.addr, mem_req.wdata, mem_req.last, mem_req_size_full, mem_req_mode_full);
-        poll_res(fpu, result_valid, result_id_full, result.data, result_rd_full, result_ecswe_full, result_ecsdata_full);
+      write_sv_state(fpu, mem_ready, result_ready);
+      if (mem_result_valid) begin
+        write_memory_result(fpu, mem_result.id, mem_result.rdata, mem_result.err, mem_result.dbg);
+      end
+      memoryStep(fpu);
+      resultStep(fpu);
+      poll_memory_request(fpu, mem_valid, mem_id_full, mem_req.addr, mem_req.wdata, mem_req.last, mem_req_size_full, mem_req_mode_full);
+      poll_res(fpu, result_valid, result_id_full, result.data, result_rd_full, result_ecswe_full, result_ecsdata_full);
     end
   end
 
@@ -179,7 +181,7 @@ module rvfpm #(
       commit_instruction(fpu, commit.id,  commit.commit_kill); //ibex tries to commit before accepted
     end
 
-    write_sv_state(fpu, mem_ready, mem_result_valid, mem_res.id, mem_res.rdata, mem_res.err, mem_res.dbg, result_ready);
+    write_sv_state(fpu, mem_ready, result_ready);
     memoryStep(fpu);
     resultStep(fpu);
   end

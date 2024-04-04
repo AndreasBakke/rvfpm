@@ -9,14 +9,15 @@
 #include "fpu_decode.h"
 #include "fpu_execute.h"
 #include "fpu_predecoder.h"
+#include "controller.h"
 
 class FPU {
   private:
     FpuRf registerFile;
     FpuPipeline pipeline;
     FpuPredecoder predecoder;
+    Controller controller;
     bool fpuReady;
-
 
   public:
     FPU();
@@ -33,8 +34,9 @@ class FPU {
     void commitInstruction(unsigned int id, bool kill);
 
     //Memory interface
-    void pollMemReq(bool& mem_valid, x_mem_req_t& mem_req);
-    void writeMemRes(bool mem_ready, bool mem_result_valid, unsigned int id, unsigned int rdata, bool err, bool dbg);
+    void pollMemoryRequest(bool& mem_valid, x_mem_req_t& mem_req);
+    void writeMemoryResult(unsigned int id, uint32_t rdata, bool err, bool dbg);
+    void writeMemoryResponse(bool mem_ready, bool exc, unsigned int exccode, bool dbg);
     void memoryStep();
 
     //Result interface

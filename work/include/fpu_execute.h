@@ -17,13 +17,13 @@
 
 #pragma STDC FENV_ACCESS ON //To set roundingmode
 
-void executeOp(FpuPipeObj& op, FpuRf* registerFile, bool& mem_valid, x_mem_req_t& mem_req);
+void executeOp(FpuPipeObj& op, FpuRf* registerFile);
 
 void execute_RTYPE(FpuPipeObj& op, FpuRf* registerFile);
 void execute_R4TYPE(FpuPipeObj& op, FpuRf* registerFile);
-void execute_ITYPE(FpuPipeObj& op, FpuRf* registerFile, bool& mem_valid, x_mem_req_t& mem_req);
-void execute_STYPE(FpuPipeObj& op, FpuRf* registerFile, bool& mem_valid, x_mem_req_t& mem_req);
-void execute_ISTYPE(FpuPipeObj& op, FpuRf* registerFile, bool& mem_valid, x_mem_req_t& mem_req);
+void execute_ITYPE(FpuPipeObj& op, FpuRf* registerFile);
+void execute_STYPE(FpuPipeObj& op, FpuRf* registerFile);
+void execute_ISTYPE(FpuPipeObj& op, FpuRf* registerFile);
 
 
 void setRoundingMode(unsigned int rm);

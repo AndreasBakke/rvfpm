@@ -68,10 +68,10 @@ extern "C" {
   // MEM REQ/RES INTERFACE
   //-----------------------
 
-  void poll_mem_req(void* fpu_ptr, bool& mem_valid, unsigned int& id,  unsigned int& addr, unsigned int& wdata, bool& last, unsigned int& size, unsigned int& mode){
+  void poll_memory_request(void* fpu_ptr, bool& mem_valid, unsigned int& id,  unsigned int& addr, unsigned int& wdata, bool& last, unsigned int& size, unsigned int& mode){
     FPU* fpu = static_cast<FPU*>(fpu_ptr);
     x_mem_req_t mem_req = {};
-    fpu->pollMemReq(mem_valid, mem_req);
+    fpu->pollMemoryRequest(mem_valid, mem_req);
     id = mem_req.id;
     addr = mem_req.addr;
     wdata = mem_req.wdata;
@@ -80,10 +80,15 @@ extern "C" {
     mode = mem_req.mode;
   };
 
-  void write_sv_state(void* fpu_ptr, bool mem_ready, bool mem_result_valid, unsigned int id, unsigned int rdata, bool err, bool dbg, bool result_ready){
+  void write_sv_state(void* fpu_ptr, bool mem_ready, bool result_ready){
     FPU* fpu = static_cast<FPU*>(fpu_ptr);
-    fpu->writeMemRes(mem_ready, mem_result_valid, id, rdata, err, dbg);
+    fpu->writeMemoryResponse(mem_ready, 0, 0, 0);
     fpu->writeResult(result_ready);
+  };
+
+  void write_memory_result(void* fpu_ptr, unsigned int id, uint32_t rdata, bool err, bool dbg){
+    FPU* fpu = static_cast<FPU*>(fpu_ptr);
+    fpu->writeMemoryResult(id, rdata, err, dbg);
   };
 
   void memoryStep(void* fpu_ptr) {
