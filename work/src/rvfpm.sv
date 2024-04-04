@@ -79,7 +79,7 @@ module rvfpm #(
   import "DPI-C" function void reset_predecoder(input chandle fpu_ptr);
   import "DPI-C" function void predecode_instruction(input chandle fpu_ptr, input int instr, input int unsigned id, output logic accept, output logic loadstore, output logic use_rs_a, output logic use_rs_b, output logic use_rs_c);
   import "DPI-C" function void commit_instruction(input chandle fpu_ptr, input int unsigned id, input logic kill);
-  import "DPI-C" function void poll_memory_request(input chandle fpu_ptr, output logic mem_valid, output int unsigned id, output int unsigned addr, output int unsigned wdata, output logic last, output int unsigned size, output int unsigned mode);
+  import "DPI-C" function void poll_memory_request(input chandle fpu_ptr, output logic mem_valid, output int unsigned id, output int unsigned addr, output int unsigned wdata, output logic last, output int unsigned size, output int unsigned mode, output logic we);
   import "DPI-C" function void write_sv_state(input chandle fpu_ptr, input logic mem_ready, input logic result_ready);
   import "DPI-C" function void poll_res(input chandle fpu_ptr, output logic result_valid, output int unsigned id, output int unsigned data, output int unsigned rd, output int unsigned ecswe, output int unsigned ecsdata); //TODO: add remaining signals in interface
   import "DPI-C" function void write_memory_result(input chandle fpu_ptr, input int unsigned id, input int unsigned rdata, input logic err, input logic dbg);
@@ -110,7 +110,6 @@ module rvfpm #(
   assign issue_resp.ecswrite = 0;
   assign issue_resp.exc = 0;
 
-  assign mem_req.we = 0; //TODO: Set to 0 for now
   assign mem_req.be = 'hF; //TODO: Set to F for now
   assign mem_req.attr = 0; //TODO: Set to 0 for now
   assign mem_req.spec = 1; //TODO: Set to 0 for now
@@ -162,7 +161,7 @@ module rvfpm #(
       end
       memoryStep(fpu);
       resultStep(fpu);
-      poll_memory_request(fpu, mem_valid, mem_id_full, mem_req.addr, mem_req.wdata, mem_req.last, mem_req_size_full, mem_req_mode_full);
+      poll_memory_request(fpu, mem_valid, mem_id_full, mem_req.addr, mem_req.wdata, mem_req.last, mem_req_size_full, mem_req_mode_full, mem_req.we);
       poll_res(fpu, result_valid, result_id_full, result.data, result_rd_full, result_ecswe_full, result_ecsdata_full);
     end
   end

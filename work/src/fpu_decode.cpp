@@ -188,7 +188,7 @@ FpuPipeObj decode_ITYPE(uint32_t instr, unsigned int operand_a) {
   result.valid = 1;
   int32_t offset = dec_instr.parts.offset;
   int32_t extendedOffset = (offset << 20) >> 20; //Sign extend - TODO: Extension independent
-  result.addrFrom = {operand_a + offset};
+  result.addrFrom = {operand_a + extendedOffset};
   result.addrTo = dec_instr.parts.rd;
   result.fromMem = 1;
   result.instr = instr; //Save instruction
@@ -203,10 +203,11 @@ FpuPipeObj decode_STYPE(uint32_t instr, unsigned int operand_a){
   FpuPipeObj result = {};
   result.valid = 1;
   result.addrFrom = {dec_instr.parts.rs2};
-  int32_t offset = dec_instr.parts.offset;
+  int32_t upper_offset = (dec_instr.parts.offset << 25) >> 20;
+  int32_t lower_offset = dec_instr.parts.imm_4_0;
   result.operand_a.bitpattern = operand_a;
-  int32_t extendedOffset = (offset << 25) >> 25; //Sign extend - TODO: Extension independent
-  result.addrTo = {operand_a + offset};
+  int32_t full_offset = 0 | upper_offset | lower_offset; //Sign extend - TODO: Extension independent
+  result.addrTo = {operand_a + full_offset};
   result.toMem = true;
   result.instr = instr; //Save instruction
   result.instr_type = it_STYPE;

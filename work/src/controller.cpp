@@ -37,6 +37,7 @@ void Controller::addAcceptedInstruction(uint32_t instruction, unsigned int id, u
     mem_req.last = 1;
     mem_req.size = newOp.size;
     mem_req.mode = newOp.mode;
+    mem_req.we = newOp.toMem ? 1 : 0;
   } else {
     mem_valid = 0;
     mem_req = {};

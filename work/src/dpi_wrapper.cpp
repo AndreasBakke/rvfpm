@@ -68,7 +68,7 @@ extern "C" {
   // MEM REQ/RES INTERFACE
   //-----------------------
 
-  void poll_memory_request(void* fpu_ptr, bool& mem_valid, unsigned int& id,  unsigned int& addr, unsigned int& wdata, bool& last, unsigned int& size, unsigned int& mode){
+  void poll_memory_request(void* fpu_ptr, bool& mem_valid, unsigned int& id,  unsigned int& addr, unsigned int& wdata, bool& last, unsigned int& size, unsigned int& mode, bool& we){
     FPU* fpu = static_cast<FPU*>(fpu_ptr);
     x_mem_req_t mem_req = {};
     fpu->pollMemoryRequest(mem_valid, mem_req);
@@ -78,6 +78,7 @@ extern "C" {
     last = mem_req.last;
     size = mem_req.size;
     mode = mem_req.mode;
+    we = mem_req.we;
   };
 
   void write_sv_state(void* fpu_ptr, bool mem_ready, bool result_ready){
