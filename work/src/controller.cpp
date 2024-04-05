@@ -6,12 +6,12 @@
 */
 
 #include "controller.h"
-#include "fpu_decode.h"
-#include "fpu_pipe.h"
 
 Controller::Controller(FpuRf& rf, FpuPipeline& pipe, bool& ready) : registerFile(rf), fpu_pipeline(pipe), fpuReady(ready){
 
 }
+
+Controller::~Controller(){};
 
 
 void Controller::reset(){
@@ -29,18 +29,15 @@ void Controller::addAcceptedInstruction(uint32_t instruction, unsigned int id, u
   }
 
   if (newOp.toMem || newOp.fromMem){
-    mem_valid = 1;
-    mem_req.id = newOp.id;
-    mem_req.addr = newOp.addrFrom.front();
-    newOp.data.bitpattern = registerFile.read(newOp.addrFrom.front()).bitpattern;
-    mem_req.wdata = newOp.toMem ? newOp.data.bitpattern : 0;
-    mem_req.last = 1;
-    mem_req.size = newOp.size;
-    mem_req.mode = newOp.mode;
-    mem_req.we = newOp.toMem ? 1 : 0;
-  } else {
-    mem_valid = 0;
-    mem_req = {};
+    x_mem_req_t mem_req_s = {};
+    mem_req_s.id = newOp.id;
+    mem_req_s.addr = newOp.toMem ? newOp.addrTo : newOp.addrFrom.front();
+    mem_req_s.wdata = newOp.toMem ?  registerFile.read(newOp.addrFrom.front()).bitpattern: 0;
+    mem_req_s.last = 1;
+    mem_req_s.size = newOp.size;
+    mem_req_s.mode = newOp.mode;
+    mem_req_s.we = newOp.toMem ? 1 : 0;
+    mem_req_queue.push_back(mem_req_s);
   }
 
   if (commit_valid && commit_id == newOp.id){
@@ -50,15 +47,12 @@ void Controller::addAcceptedInstruction(uint32_t instruction, unsigned int id, u
       newOp.speculative = 0;
     }
   }
+
   if (fpu_pipeline.getQueueDepth() > 0){
     fpu_pipeline.addOpToQueue(newOp);
   }
   else {
     fpu_pipeline.setWaitingOp(newOp); //set waitingOp (if queue=0, this will be empty given the instruction is accepted
-  }
-  if (fpu_pipeline.isEmpty()){
-    fpu_pipeline.step();
-    fpu_pipeline.step();
   }
 }
 
@@ -72,21 +66,19 @@ void Controller::commitInstruction(unsigned int id, bool kill){
 };
 
 void Controller::writeMemoryResult(unsigned int id, uint32_t rdata, bool err, bool dbg) {
-  // std::cout << "wmr - id: " << id << " - rdata: " << rdata << std::endl;
   if (err) {
-    std::cout << "Error in memory result - id: " << id << std::endl;
+    std::cerr << "Error in memory result - id: " << id << std::endl;
     return;
   }
-
   for (int i = 0; i < fpu_pipeline.getNumStages(); i++) {
-    if (fpu_pipeline.at(i).id == id) {
+    if (fpu_pipeline.at(i).id == id && !fpu_pipeline.at(i).isEmpty()) {
       fpu_pipeline.at(i).mem_result_valid = 1;
       fpu_pipeline.at(i).mem_result = rdata;
       return;
     }
   }
 
-  if (fpu_pipeline.getWaitingOp().id == id) {
+  if (fpu_pipeline.getWaitingOp().id == id && !fpu_pipeline.getWaitingOp().isEmpty()) {
     FpuPipeObj tmpOp = fpu_pipeline.getWaitingOp();
     tmpOp.mem_result_valid = 1;
     tmpOp.mem_result = rdata;
@@ -95,7 +87,7 @@ void Controller::writeMemoryResult(unsigned int id, uint32_t rdata, bool err, bo
   }
 
   for (int i = 0; i < fpu_pipeline.getQueueDepth(); i++) {
-    if (fpu_pipeline.at_queue(i).id == id) {
+    if (fpu_pipeline.at_queue(i).id == id && !fpu_pipeline.at_queue(i).isEmpty()) {
       fpu_pipeline.at_queue(i).mem_result_valid = 1;
       fpu_pipeline.at_queue(i).mem_result = rdata;
       return;
@@ -104,15 +96,24 @@ void Controller::writeMemoryResult(unsigned int id, uint32_t rdata, bool err, bo
 }
 
 void Controller::pollMemoryRequest(bool& mem_valid, x_mem_req_t& mem_req){
-  mem_valid = this->mem_valid;
-  mem_req = this->mem_req;
+  mem_valid = !mem_req_queue.empty();
+  if (mem_valid) {
+    mem_req = mem_req_queue.front();
+  }
+
 };
+
+void Controller::resetMemoryRequest(unsigned int id){
+  if (id == mem_req_queue.front().id){
+    mem_req_queue.pop_front();
+  }
+};
+
 
 void Controller::writeMemoryResponse(bool mem_ready, bool exc, unsigned int exccode, bool dbg){
   this->mem_ready = mem_ready;
-  this->mem_valid = mem_valid && !mem_ready;
   if (exc) {
-    std::cout << "Exception in memory request - id: " << this->mem_req.id << std::endl;
+    std::cerr << "Exception in memory request - id: " << this->mem_req.id << std::endl;
     std::cout << "Exception code: " << exccode << std::endl;
   }
 };

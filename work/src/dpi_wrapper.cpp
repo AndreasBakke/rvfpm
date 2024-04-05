@@ -64,6 +64,11 @@ extern "C" {
     fpu->commitInstruction(id, kill);
   };
 
+  void executeStep(void* fpu_ptr) {
+    FPU* fpu = static_cast<FPU*>(fpu_ptr);
+    fpu->executeStep();
+  }
+
   //-----------------------
   // MEM REQ/RES INTERFACE
   //-----------------------
@@ -80,6 +85,11 @@ extern "C" {
     mode = mem_req.mode;
     we = mem_req.we;
   };
+
+  void reset_memory_request(void* fpu_ptr, unsigned int id) {
+    FPU* fpu = static_cast<FPU*>(fpu_ptr);
+    fpu->resetMemoryRequest(id);
+  }
 
   void write_sv_state(void* fpu_ptr, bool mem_ready, bool result_ready){
     FPU* fpu = static_cast<FPU*>(fpu_ptr);

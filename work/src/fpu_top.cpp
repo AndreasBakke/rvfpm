@@ -64,6 +64,10 @@ void FPU::commitInstruction(unsigned int id, bool kill){
   controller.commitInstruction(id, kill);
 };
 
+void FPU::executeStep(){
+  pipeline.executeStep();
+}
+
 FpuPipeObj FPU::testFloatOp(){
   pipeline.step();
   return pipeline.getWaitingOp();
@@ -80,6 +84,11 @@ void FPU::addAcceptedInstruction(uint32_t instruction, unsigned int id, unsigned
 void FPU::pollMemoryRequest(bool& mem_valid, x_mem_req_t& mem_req){
   controller.pollMemoryRequest(mem_valid, mem_req);
 };
+
+void FPU::resetMemoryRequest(unsigned int id){
+  controller.resetMemoryRequest(id);
+};
+
 
 void FPU::writeMemoryResult(unsigned int id, uint32_t rdata, bool err, bool dbg){
   controller.writeMemoryResult(id, rdata, err, dbg);

@@ -32,9 +32,11 @@ class FPU {
     void predecodeInstruction(uint32_t instruction, unsigned int id, bool& accept, bool& loadstore, bool& use_rs_a, bool& use_rs_b, bool& use_rs_c);
     void resetPredecoder();
     void commitInstruction(unsigned int id, bool kill);
+    void executeStep();
 
     //Memory interface
     void pollMemoryRequest(bool& mem_valid, x_mem_req_t& mem_req);
+    void resetMemoryRequest(unsigned int id);
     void writeMemoryResult(unsigned int id, uint32_t rdata, bool err, bool dbg);
     void writeMemoryResponse(bool mem_ready, bool exc, unsigned int exccode, bool dbg);
     void memoryStep();

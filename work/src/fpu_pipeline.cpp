@@ -47,21 +47,8 @@ void FpuPipeline::step(){
     executeOp(waitingOp, registerFilePtr); //Values are loaded to register using bd_load
     return;
   #endif
-  // If the pipeline is empty, add the waiting operation to speed up execution a bit
-  if (pipeline.at(pipeline.size()-1).isEmpty()){
-    pipeline.pop_back();//removes the empty op
-    if (QUEUE_DEPTH > 0){
-      pipeline.push_back(operationQueue.front());
-      operationQueue.pop_front();
-      operationQueue.push_back(FpuPipeObj({})); //Push back empty op to keep size
-    } else {
-      pipeline.push_back(waitingOp);
-      setWaitingOp(FpuPipeObj({}));
-    }
-  }
 
-  executeStep();
-
+  pipeline.at(EXECUTE_STEP).remaining_ex_cycles--;
   advanceStages();
   stallCheck();
 };
@@ -69,7 +56,6 @@ void FpuPipeline::step(){
 
 void FpuPipeline::advanceStages(){ //TODO: also check for hazards.
   bool all_done = execute_done && mem_done && wb_done;
-  stalled = false;
   if (wb_done) {
     result_valid = 0;
     result = {};
@@ -148,10 +134,9 @@ void FpuPipeline::executeStep(){
       speculative = true; //Wait until operation has been committed before executing
     }
     else if (pipeline.at(EXECUTE_STEP).remaining_ex_cycles > 1){
-      pipeline.at(EXECUTE_STEP).remaining_ex_cycles--;
       more_cycles_rem = true;
     }
-    else if(!(pipeline.at(EXECUTE_STEP).toMem || pipeline.at(EXECUTE_STEP).fromMem )) { //If we reach this point, we can assume that this operation has not been executed yet (or have been decremented enugh).
+    else if(!(pipeline.at(EXECUTE_STEP).toMem || pipeline.at(EXECUTE_STEP).fromMem) && !pipeline.at(EXECUTE_STEP).isEmpty()) { //If we reach this point, we can assume that this operation has not been executed yet (or have been decremented enugh).
       executeOp(pipeline.at(EXECUTE_STEP), registerFilePtr);
     }
     execute_done = !speculative  && !more_cycles_rem;
@@ -169,28 +154,9 @@ void FpuPipeline::memoryStep(){ //Todo: what should this be now?
     }
     mem_done = true;
     if (pipeline.at(MEMORY_STEP).fromMem){
-      std::cout << "Memory read: " << pipeline.at(MEMORY_STEP).mem_result << std::endl;
       pipeline.at(MEMORY_STEP).data.bitpattern = pipeline.at(MEMORY_STEP).mem_result;
-    } else {
-      std::cout << "Memory write: " << pipeline.at(MEMORY_STEP).data.bitpattern << std::endl;
     }
   }
-
-  // else if ((pipeline.at(MEMORY_STEP).fromMem || pipeline.at(MEMORY_STEP).toMem ) && !mem_done){
-  //   if (!wait_for_mem_resp && !wait_for_mem_result){
-  //     executeOp(pipeline.at(MEMORY_STEP), registerFilePtr);
-  //     wait_for_mem_resp = true;
-  //   }
-  //   if(wait_for_mem_resp) {
-  //     wait_for_mem_resp = !mem_ready;
-  //     wait_for_mem_result = mem_ready;
-  //   }
-
-  //   if(wait_for_mem_result && memoryResultValid && memoryResults.id == pipeline.at(MEMORY_STEP).id){
-  //     pipeline.at(MEMORY_STEP).data.bitpattern = memoryResults.rdata;
-  //     wait_for_mem_result = false;
-  //     mem_done = true;
-  //   }
 
   //TODO: bør kunne velge om store-operations skal gjøres her! I tilfelle det er en del av pipeline-strukturen til brukeren
    else {
@@ -206,9 +172,7 @@ void FpuPipeline::resultStep(){
     wb_done = false;
     return;
   }
-
   wb_done = true;
-
   if (!pipeline.at(WRITEBACK_STEP).toMem && !pipeline.at(WRITEBACK_STEP).toXReg && !pipeline.at(WRITEBACK_STEP).isEmpty()){
     registerFilePtr->write(pipeline.at(WRITEBACK_STEP).addrTo, pipeline.at(WRITEBACK_STEP).data);
     result_valid = 1;
@@ -237,6 +201,7 @@ void FpuPipeline::resultStep(){
 
 
 void FpuPipeline::stallCheck(){
+  stalled = false;
   if (QUEUE_DEPTH > 0) {
     if (!operationQueue.back().isEmpty()){
       stalled = true;
