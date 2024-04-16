@@ -51,8 +51,8 @@ bool FPU::pollReady(){
 //--------------------------
 // Issue interface
 //--------------------------
-void FPU::predecodeInstruction(uint32_t instruction, unsigned int id, bool& accept, bool& loadstore, bool& use_rs_a, bool& use_rs_b, bool& use_rs_c){
-  predecoder.predecodeInstruction(instruction, id, accept, loadstore, use_rs_a, use_rs_b, use_rs_c);
+void FPU::predecodeInstruction(uint32_t instruction, unsigned int id, bool& accept, bool& loadstore, bool& writeback, bool& use_rs_a, bool& use_rs_b, bool& use_rs_c){
+  predecoder.predecodeInstruction(instruction, id, accept, loadstore, writeback, use_rs_a, use_rs_b, use_rs_c);
 };
 
 void FPU::resetPredecoder(){

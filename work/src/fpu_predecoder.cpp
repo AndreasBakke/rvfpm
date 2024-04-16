@@ -26,7 +26,7 @@ FpuPredecoder::FpuPredecoder(bool& fpuReady) : fpuReady(fpuReady) {
 FpuPredecoder::~FpuPredecoder() {
 }
 
-void FpuPredecoder::predecodeInstruction(uint32_t instruction, unsigned int id, bool& accept, bool& loadstore, bool& use_rs_a, bool& use_rs_b, bool& use_rs_c) {
+void FpuPredecoder::predecodeInstruction(uint32_t instruction, unsigned int id, bool& accept, bool& loadstore, bool& writeback, bool& use_rs_a, bool& use_rs_b, bool& use_rs_c) {
   current_decode_id = id;
   FpuPipeObj res = {};
   res = decodeOp(instruction, id, 0, 0, 0, 0);
@@ -37,9 +37,11 @@ void FpuPredecoder::predecodeInstruction(uint32_t instruction, unsigned int id, 
   if (res.valid) {
     accept = true;
     loadstore = res.toMem || res.fromMem;
+    writeback = res.toXReg;
   } else {
     accept = false;
     loadstore = false;
+    writeback = false;
   }
 }
 

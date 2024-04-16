@@ -179,20 +179,18 @@ void FpuPipeline::resultStep(){
   if (!pipeline.at(WRITEBACK_STEP).isEmpty()){
     result_valid = 1;
     result.id = pipeline.at(WRITEBACK_STEP).id;
-    if (!pipeline.at(WRITEBACK_STEP).toMem && !pipeline.at(WRITEBACK_STEP).fromMem) {
-      result.ecswe   = 0b010;
-      result.ecsdata = 0b001100;
+    if (!pipeline.at(WRITEBACK_STEP).fromMem && !pipeline.at(WRITEBACK_STEP).toMem){
       result.rd = pipeline.at(WRITEBACK_STEP).addrTo;
       result.data = pipeline.at(WRITEBACK_STEP).data.bitpattern;
     }
-  } else if (pipeline.at(WRITEBACK_STEP).toXReg) {
-    result_valid = 1;
-    result.id = pipeline.at(WRITEBACK_STEP).id;
-    result.data = pipeline.at(WRITEBACK_STEP).data.u;
-    result.rd = pipeline.at(WRITEBACK_STEP).addrTo;
-  } else if (!pipeline.at(WRITEBACK_STEP).isEmpty()) {
-    result_valid = 1;
-    result.id = pipeline.at(WRITEBACK_STEP).id;
+    if(pipeline.at(WRITEBACK_STEP).toXReg){ //TODO: or is ZFINX
+      result.we = 1;
+    }
+    if(!pipeline.at(WRITEBACK_STEP).toXReg && !pipeline.at(WRITEBACK_STEP).toMem && !pipeline.at(WRITEBACK_STEP).fromMem){ //TODO: and not ZFINX
+      //If target is F-reg
+      result.ecswe   = 0b010;
+      result.ecsdata = 0b001100;
+    }
   }
 
   if (result_valid) {
