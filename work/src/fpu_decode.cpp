@@ -160,9 +160,16 @@ FpuPipeObj decode_RTYPE(uint32_t instr, unsigned int operand_a, unsigned int ope
     }
     case FCLASS_FMV_X_W:
     {
-      #ifdef NUM_CYCLES_FCLASS_FMV_X_W
-        result.remaining_ex_cycles = NUM_CYCLES_FCLASS_FMV_X_W;
-      #endif
+      if (dec_instr.parts.funct3 == 0) {
+        #ifdef NUM_CYCLES_FMV_X_W
+        result.remaining_ex_cycles = NUM_CYCLES_FMV_X_W;
+        #endif
+      } else if (dec_instr.parts.funct3 == 1) {
+        #ifdef NUM_CYCLES_FCLASS
+        result.remaining_ex_cycles = NUM_CYCLES_FCLASS;
+        #endif
+      }
+
       result.addrFrom = {dec_instr.parts.rs1, 999}; //Overwrite since only one address is used
       result.addrTo = {dec_instr.parts.rd};
       result.toXReg = true;

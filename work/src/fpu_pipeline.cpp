@@ -57,6 +57,9 @@ void FpuPipeline::step(){
 void FpuPipeline::advanceStages(){ //TODO: also check for hazards.
   bool all_done = execute_done && mem_done && wb_done;
   if (wb_done) {
+    if (!pipeline.at(WRITEBACK_STEP).toMem && !pipeline.at(WRITEBACK_STEP).toXReg && !pipeline.at(WRITEBACK_STEP).isEmpty()){
+      registerFilePtr->write(pipeline.at(WRITEBACK_STEP).addrTo, pipeline.at(WRITEBACK_STEP).data);
+    }
     result_valid = 0;
     result = {};
   }
@@ -173,11 +176,10 @@ void FpuPipeline::resultStep(){
     return;
   }
   wb_done = true;
-  if (!pipeline.at(WRITEBACK_STEP).toMem && !pipeline.at(WRITEBACK_STEP).toXReg && !pipeline.at(WRITEBACK_STEP).isEmpty()){
-    registerFilePtr->write(pipeline.at(WRITEBACK_STEP).addrTo, pipeline.at(WRITEBACK_STEP).data);
+  if (!pipeline.at(WRITEBACK_STEP).isEmpty()){
     result_valid = 1;
     result.id = pipeline.at(WRITEBACK_STEP).id;
-    if (!pipeline.at(WRITEBACK_STEP).fromMem){
+    if (!pipeline.at(WRITEBACK_STEP).toMem && !pipeline.at(WRITEBACK_STEP).fromMem) {
       result.ecswe   = 0b010;
       result.ecsdata = 0b001100;
       result.rd = pipeline.at(WRITEBACK_STEP).addrTo;

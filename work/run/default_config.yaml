@@ -35,8 +35,9 @@ execute_cycles: #Number of cycles for execution of each instruction
   FDIV: 16
 
 defines: #Will be added as defines
+  - RF_RESET_VALUE 0.0 #Reset value for the register file. NAN used if not specified
+  - SOME_DEF
   # - TESTFLOAT
-  - SOME_DEF 1
 
 # constInts: #Will be added as constInts
 #   #...
