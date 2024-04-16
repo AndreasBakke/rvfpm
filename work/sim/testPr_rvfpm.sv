@@ -12,8 +12,7 @@ program automatic testPr_rvfpm #(
   parameter X_ID_WIDTH
 )
 (
-  inTest_rvfpm uin_rvfpm,
-  in_xif uin_xif
+  inTest_rvfpm uin_rvfpm
 );
   import "DPI-C" function int unsigned randomFloat(); //C++ function for random float generation
 
@@ -80,33 +79,50 @@ program automatic testPr_rvfpm #(
     repeat(10) @(posedge uin_rvfpm.ck);
     doRTYPE(.funct7(7'b0000100), .rs1(3), .rs2(2), .rd(4));
     repeat(PIPELINE_STAGES*2) @(posedge uin_rvfpm.ck);
+    $display("--- %t: started Random testing ---", $time);
+    init();
+    fillRF();
+    repeat(NUM_TESTS) doRandomInstr();
+    repeat(PIPELINE_STAGES*4) @(posedge uin_rvfpm.ck);
+    fillRF();
+    repeat(NUM_TESTS) doRandomInstr();
+
+    fillRF();
+    repeat(PIPELINE_STAGES*2) @(posedge uin_rvfpm.ck);
+    $display("--- %t: started R4 testing ---", $time);
+    doR4TYPE(.rs3(14), .rs2(15), .rs1(16), .rd(17)); //FMADD
+    repeat(NUM_TESTS) begin //test NUM_TESTS number of FSGNJN-operations using random registers
+      doR4TYPE();
+    end
+    init();
+    // fillRF();
 
 
     $display("--- %t: started Classify-load ---", $time);
     doITYPE(.rd(0), .data(32'b11111111100000000000000000000000)); //-inf
-    @(negedge uin_xif.issue_valid);
+    @(negedge uin_rvfpm.issue_valid);
     doITYPE(.rd(1), .data($shortrealtobits(-1.4125))); //Negative normal
-    @(negedge uin_xif.issue_valid);
+    @(negedge uin_rvfpm.issue_valid);
     doITYPE(.rd(2), .data(32'b10000000000001000010000100000000)); //Negative subnormal
-    @(negedge uin_xif.issue_valid);
+    @(negedge uin_rvfpm.issue_valid);
     doITYPE(.rd(3), .data(32'b10000000000000000000000000000000)); //-0
-    @(negedge uin_xif.issue_valid);
+    @(negedge uin_rvfpm.issue_valid);
     doITYPE(.rd(4), .data(0)); //positive 0
-    @(negedge uin_xif.issue_valid);
+    @(negedge uin_rvfpm.issue_valid);
     doITYPE(.rd(5), .data(32'b00000000000001000010000100000000)); //Positive subnormal
-    @(negedge uin_xif.issue_valid);
-    doITYPE(.rd(6), .data($shortrealtobits(1.4125))); //positive normal (12.125)
-    @(negedge uin_xif.issue_valid);
+    @(negedge uin_rvfpm.issue_valid);
+    doITYPE(.rd(6), .data($shortrealtobits(1.4125))); //positive normal
+    @(negedge uin_rvfpm.issue_valid);
     doITYPE(.rd(7), .data(32'b01111111100000000000000000000000)); //inf
-    @(negedge uin_xif.issue_valid);
+    @(negedge uin_rvfpm.issue_valid);
     doITYPE(.rd(8), .data(32'b01111111101000000000000000000000)); //Signaling NaN
-    @(negedge uin_xif.issue_valid);
+    @(negedge uin_rvfpm.issue_valid);
     doITYPE(.rd(9), .data(32'b01111111110000000000000000000000)); //qNaN
-    @(negedge uin_xif.issue_valid);
+    @(negedge uin_rvfpm.issue_valid);
     doITYPE(.rd(14), .data($shortrealtobits(18.3))); //for later
-    @(negedge uin_xif.issue_valid);
+    @(negedge uin_rvfpm.issue_valid);
     doITYPE(.rd(15), .data($shortrealtobits(9.0))); //for later
-    @(negedge uin_xif.issue_valid);
+    @(negedge uin_rvfpm.issue_valid);
 
     $display("--- %t: started Classify Op ---", $time);
     //Her stopper vi og venter på operands. Men vi skal ikke bruke operands?
@@ -115,13 +131,6 @@ program automatic testPr_rvfpm #(
     end
     repeat(PIPELINE_STAGES*2) @(posedge uin_rvfpm.ck);
     repeat(PIPELINE_STAGES*2) @(posedge uin_rvfpm.ck);
-    fillRF();
-    repeat(PIPELINE_STAGES*2) @(posedge uin_rvfpm.ck);
-    $display("--- %t: started R4 testing ---", $time);
-    doR4TYPE(.rs3(14), .rs2(15), .rs1(16), .rd(17)); //FMADD
-    repeat(NUM_TESTS) begin //test NUM_TESTS number of FSGNJN-operations using random registers
-      doR4TYPE();
-    end
 
     repeat(PIPELINE_STAGES*2) @(posedge uin_rvfpm.ck);
     $display("--- %t: started Sign Testing ---", $time);
@@ -152,15 +161,6 @@ program automatic testPr_rvfpm #(
 
 
 
-    $display("--- %t: started Random testing ---", $time);
-    init();
-    fillRF();
-    repeat(NUM_TESTS) doRandomInstr();
-    repeat(PIPELINE_STAGES*4) @(posedge uin_rvfpm.ck);
-    fillRF();
-    repeat(NUM_TESTS) doRandomInstr();
-
-
 
 
 
@@ -174,20 +174,20 @@ program automatic testPr_rvfpm #(
     uin_rvfpm.rst = 1;
     @(posedge uin_rvfpm.ck);
     uin_rvfpm.rst = 0;
-    uin_xif.issue_valid = 0;
-    uin_xif.issue_req ={};
-    uin_xif.commit_valid = 0;
-    uin_xif.commit ={};
-    uin_xif.mem_ready = 0;
-    uin_xif.mem_result_valid = 0;
-    uin_xif.mem_result ={};
-    uin_xif.result_ready = 0;
+    uin_rvfpm.issue_valid = 0;
+    uin_rvfpm.issue_req ={};
+    uin_rvfpm.commit_valid = 0;
+    uin_rvfpm.commit ={};
+    uin_rvfpm.mem_ready = 0;
+    uin_rvfpm.mem_result_valid = 0;
+    uin_rvfpm.mem_result ={};
+    uin_rvfpm.result_ready = 0;
     @(posedge uin_rvfpm.ck);
   endtask
 
-  logic[X_ID_WIDTH-1:0] id = 0;
+  logic[X_ID_WIDTH-1:0] id = 1;
   task nextId();
-    id = (id+1);
+    id = (id%X_ID_WIDTH) + 1;
   endtask;
 
   task init();
@@ -200,7 +200,7 @@ program automatic testPr_rvfpm #(
     //Fills register file with random value
     for (int i=0; i<NUM_F_REGS; ++i) begin
       doITYPE(.rd(i), .data(randomFloat()));
-      @(negedge uin_xif.issue_valid);
+      @(negedge uin_rvfpm.issue_valid);
     end
     repeat(PIPELINE_STAGES) @(posedge uin_rvfpm.ck); //wait for all operations to finish
   endtask
@@ -208,7 +208,6 @@ program automatic testPr_rvfpm #(
   task doRTYPE(input int funct7 = 0, input int rs2 = $urandom_range(0, NUM_F_REGS-1), input int rs1 = $urandom_range(0, NUM_F_REGS-1), input int funct3 = 0, input int rd = $urandom_range(0, NUM_F_REGS-1), input int unsigned operand_a = 0, input int unsigned operand_b = 0, input int unsigned operand_c = 0, input logic[2:0] rs_valid_i = 3'b000);
     automatic logic[31:0]  instr_r = 0;
     @(posedge uin_rvfpm.ck)
-    uin_xif.issue_valid = 1;
     instr_r[31:25] = funct7;
     instr_r[24:20] = rs2; //rs2
     instr_r[19:15] = rs1; //rs1 (base)
@@ -221,7 +220,6 @@ program automatic testPr_rvfpm #(
   task doR4TYPE(input int rs3 = $urandom_range(0, NUM_F_REGS-1), input int funct2 = 0,  input int rs2 = $urandom_range(0, NUM_F_REGS-1), input int rs1 = $urandom_range(0, NUM_F_REGS-1), input int funct3 = 0, input int rd = $urandom_range(0, NUM_F_REGS-1), input int unsigned opcode = 67, input int unsigned operand_a = 0, input int unsigned operand_b = 0, input int unsigned operand_c = 0, input logic[2:0] rs_valid_i = 3'b000);
     automatic logic[31:0]  instr_r4 = 0;
     @(posedge uin_rvfpm.ck)
-    uin_xif.issue_valid = 1;
     instr_r4[31:27] = rs3;
     instr_r4[26:25] = funct2; //funct2
     instr_r4[24:20] = rs2; //rs3
@@ -247,24 +245,23 @@ program automatic testPr_rvfpm #(
     fork
       begin
         while (1) begin
-          @(posedge uin_rvfpm.ck) //Wait for memory request from CPU
-          if (uin_xif.mem_valid && uin_xif.mem_req.id == issue_id) begin
+          if (uin_rvfpm.mem_valid && uin_rvfpm.mem_req.id == issue_id) begin
+            uin_rvfpm.mem_ready = 1;
+            @(posedge uin_rvfpm.ck);
+            uin_rvfpm.mem_ready = 0;
+            uin_rvfpm.mem_result_valid = 1;
+            uin_rvfpm.mem_result.id = issue_id;
+            uin_rvfpm.mem_result.rdata = 0;
+            uin_rvfpm.mem_result.err = 0;
+            uin_rvfpm.mem_result.dbg = 0;
             @(posedge uin_rvfpm.ck)
-            uin_xif.mem_ready = 1;
-            @(posedge uin_rvfpm.ck)
-            uin_xif.mem_ready = 0;
-            uin_xif.mem_result_valid = 1;
-            uin_xif.mem_result.id = issue_id;
-            uin_xif.mem_result.rdata = 0;
-            uin_xif.mem_result.err = 0;
-            uin_xif.mem_result.dbg = 0;
-            @(posedge uin_rvfpm.ck)
-            uin_xif.mem_result_valid = 0;
-            uin_xif.mem_ready = 0;
-            uin_xif.mem_result = {};
+            uin_rvfpm.mem_result_valid = 0;
+            uin_rvfpm.mem_result = {};
             break;
           end
+          @(posedge uin_rvfpm.ck); //Wait for memory request from CPU
         end
+
       end
     join_none
     //Fork and repond with memory write
@@ -285,23 +282,21 @@ program automatic testPr_rvfpm #(
     fork
       begin
         while (1) begin
-          @(posedge uin_rvfpm.ck) //Wait for memory request from CPU
-          if (uin_xif.mem_valid && uin_xif.mem_req.id == issue_id) begin
+          if (uin_rvfpm.mem_valid && uin_rvfpm.mem_req.id == issue_id) begin
+            uin_rvfpm.mem_ready = 1;
+            @(posedge uin_rvfpm.ck);
+            uin_rvfpm.mem_ready = 0;
+            uin_rvfpm.mem_result_valid = 1;
+            uin_rvfpm.mem_result.id = issue_id;
+            uin_rvfpm.mem_result.rdata = data;
+            uin_rvfpm.mem_result.err = 0;
+            uin_rvfpm.mem_result.dbg = 0;
             @(posedge uin_rvfpm.ck)
-            uin_xif.mem_ready = 1;//Todo: add response (dbg etc)
-            @(posedge uin_rvfpm.ck)
-            uin_xif.mem_ready = 0;
-            uin_xif.mem_result_valid = 1;
-            uin_xif.mem_result.id = issue_id;//TODO: read as 8 in core
-            uin_xif.mem_result.rdata = data;
-            uin_xif.mem_result.err = 0;
-            uin_xif.mem_result.dbg = 0;
-            @(posedge uin_rvfpm.ck)
-            uin_xif.mem_result_valid = 0;
-            uin_xif.mem_ready = 0;
-            uin_xif.mem_result = {};
+            uin_rvfpm.mem_result_valid = 0;
+            uin_rvfpm.mem_result = {};
             break;
           end
+          @(posedge uin_rvfpm.ck); //Wait for memory request from CPU
         end
       end
     join_none
@@ -310,36 +305,39 @@ program automatic testPr_rvfpm #(
   task automatic doIssueInst(input logic[31:0] instruction = 0, input logic[X_ID_WIDTH-1:0] id = 0, input int unsigned operand_a = 0, input int unsigned operand_b = 0, input int unsigned operand_c = 0, input logic[2:0] rs_valid_i = 3'b000); //Issue instruction to coproc
     static semaphore s = new(1);
     while (!s.try_get) @(posedge uin_rvfpm.ck);
-      uin_xif.issue_valid = 1;
-      uin_xif.issue_req.instr = instruction;
-      uin_xif.issue_req.id = id;
-      uin_xif.issue_req.rs[0] = operand_a;
-      uin_xif.issue_req.rs[1] = operand_b;
-      uin_xif.issue_req.rs[2] = operand_c;
-      uin_xif.issue_req.rs_valid = rs_valid_i;
-      //TODO: make this compliant- what is "not accepted"
+      uin_rvfpm.issue_valid <= 1;
+      uin_rvfpm.issue_req.instr <= instruction;
+      uin_rvfpm.issue_req.id <= id;
+      uin_rvfpm.issue_req.rs[0] <= operand_a;
+      uin_rvfpm.issue_req.rs[1] <= operand_b;
+      uin_rvfpm.issue_req.rs[2] <= operand_c;
+      uin_rvfpm.issue_req.rs_valid <= rs_valid_i;
+      uin_rvfpm.commit_valid <=1;
+      uin_rvfpm.commit.id <= id;
+      #1;
       fork: wait_for_response
         begin
-          while (uin_xif.issue_valid) begin
-            @(posedge uin_rvfpm.ck)
-            if(uin_xif.issue_ready && uin_xif.issue_resp.accept) begin
+          while (uin_rvfpm.issue_valid) begin
+            if(uin_rvfpm.issue_ready && uin_rvfpm.issue_resp.accept) begin
+              @(posedge uin_rvfpm.ck);
               break;
             end
+            @(posedge uin_rvfpm.ck);
           end
-          @(posedge uin_rvfpm.ck);
-          uin_rvfpm.speculative_ids.push_back(id);
-          uin_xif.issue_valid = 0;
-          uin_xif.issue_req ={};
-          uin_xif.issue_req.rs[0] = 0;
-          uin_xif.issue_req.rs[1] = 0;
-          uin_xif.issue_req.rs[2] = 0;
-          uin_xif.issue_req.rs_valid = 3'b000;
+          uin_rvfpm.issue_valid <= 0;
+          uin_rvfpm.issue_req <={};
+          uin_rvfpm.issue_req.rs[0] <= 0;
+          uin_rvfpm.issue_req.rs[1] <= 0;
+          uin_rvfpm.issue_req.rs[2] <= 0;
+          uin_rvfpm.issue_req.rs_valid <= 3'b000;
+          uin_rvfpm.commit_valid <= 0;
+          uin_rvfpm.commit.id <= 0;
           nextId();
           #0 s.put();
           disable wait_for_response;
         end
         // begin //If instruction is not accepted
-        //   @(negedge issue_valid && (!uin_xif.issue_resp.accept || !uin_xif.issue_ready) )
+        //   @(negedge issue_valid && !uin_rvfpm.issue_resp.accept && uin_rvfpm.issue_ready) )
 
 
         // end
@@ -348,8 +346,8 @@ program automatic testPr_rvfpm #(
           repeat(64) @(posedge uin_rvfpm.ck); //some timeout to release s. and raise some error
           $error("Timeout on issue instruction. ID: %0h, opcode: %d, funct7: %d", id, instruction[6:0], instruction[31:25]);
           uin_rvfpm.errorCntPr++;
-          uin_xif.issue_valid = 0;
-          uin_xif.issue_req ={};
+          uin_rvfpm.issue_valid = 0;
+          uin_rvfpm.issue_req ={};
           nextId();
           #0 s.put();
           disable wait_for_response;

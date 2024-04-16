@@ -12,7 +12,6 @@
 #include "fpu_decode.h"
 #include "fpu_execute.h"
 #include "fpu_config.h"
-
 #include <deque> //Double ended queue
 
 class FpuPipeline {
@@ -30,18 +29,6 @@ class FpuPipeline {
     bool wb_done;
     bool stalled; //Do not accept new operations
 
-    //Memory request interface
-    bool mem_valid; //set by core, polled in rvfpm.sv
-    x_mem_req_t mem_req; //set by core, polled in rvfpm.sv
-    bool mem_ready; //set by rvfpm.sv, polled in core
-
-    //Memory result interface
-    bool wait_for_mem_resp;
-    bool wait_for_mem_result; //For pipeline stalls
-    bool memoryResultValid; //Set during memory result transaction
-    x_mem_result_t memoryResults; //Set during memory result transaction
-
-
     //Result interface
     bool result_valid; //set by core, polled in rvfpm.sv
     x_result_t result; //set by core, polled in rvfpm.sv
@@ -50,9 +37,17 @@ class FpuPipeline {
   public:
     FpuPipeline(FpuRf* rf_pointer);
     ~FpuPipeline();
+    FpuPipeObj& at(int i);
+    FpuPipeObj& at_queue(int i);
+
     void step(); //Advance pipeline by one step (called by clock in interface)
-    void stallCheck();
+    void executeStep();
+    void memoryStep();
+    void resultStep(); //wb
+    void advanceStages(); //Move non-stalled stages one step forward
+    void stallCheck(); //Set stalled if pipeline(& optionally queue) is full
     bool isStalled();
+    bool isEmpty();
 
     //Issue/Commit interface
     void addOpToQueue(FpuPipeObj op);
@@ -60,14 +55,9 @@ class FpuPipeline {
     FpuPipeObj getWaitingOp();
     void commitInstruction(unsigned int id, bool kill);
 
-
-    //Memory request/result interface
-    void pollMemReq(bool& mem_valid, x_mem_req_t& mem_req);
-    void writeMemRes(bool mem_ready, bool mem_result_valid, unsigned int id, unsigned int rdata, bool err, bool dbg);
-
     //Resultinterface
     void writeResult(bool result_ready);
-    void pollResult(bool& result_valid, x_result_t& result);
+    void pollResult(bool& result_valid_ptr, x_result_t& result_ptr);
 
     void flush();
     int getNumStages();

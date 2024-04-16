@@ -190,6 +190,7 @@ if __name__ == "__main__":
   write_sv_params(config)
   write_cpp_params(config)
   write_data(sv_path, "`endif")
+  write_both("\n\n", "a")
   # write_data(sv_path,"endpackage: pa_defines")
 
   print("----------------------------")

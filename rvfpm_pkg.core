@@ -1,0 +1,19 @@
+CAPI=2:
+# Copyright AndreasBakke
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+name: "lowrisc:ibex:rvfpm_pkg"
+description: "rvfpm packages"
+filesets:
+  files_rtl:
+    files:
+      - work/src/defines.svh: { is_include_file: true }
+      - work/src/in_xif.sv
+      - work/src/pa_rvfpm.sv: { is_include_file: true }
+    file_type: systemVerilogSource
+
+
+targets:
+  default:
+    filesets:
+      - files_rtl

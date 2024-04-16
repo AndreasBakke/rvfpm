@@ -19,8 +19,8 @@ xif:
   X_ECS_XS:  0      #Default value for mstatus.XS
 
 fpu_pipeline:
-  num_pipeline_stages: 4 #Number of stages in the FPU pipeline
-  queue_depth: 4 #Depth of the FPU instruction queue - set to 0 to disable
+  num_pipeline_stages: 3 #Number of stages in the FPU pipeline
+  queue_depth: 2 #Depth of the FPU instruction queue - set to 0 to disable
 
   OOO: false #Out of order execution - Not yet implemented
   forwarding: false #Forward/bypass result to next operation - Not yet implemented
@@ -35,8 +35,9 @@ execute_cycles: #Number of cycles for execution of each instruction
   FDIV: 16
 
 defines: #Will be added as defines
+  - RF_RESET_VALUE 0.0 #Reset value for the register file. NAN used if not specified
+  - SOME_DEF
   # - TESTFLOAT
-  - SOME_DEF 1
 
 # constInts: #Will be added as constInts
 #   #...

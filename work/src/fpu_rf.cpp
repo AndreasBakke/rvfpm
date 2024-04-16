@@ -9,9 +9,7 @@
 
 
 FpuRf::FpuRf(int depth) : NUM_F_REGISTERS(depth), registerFile(depth) {
-  for (auto &reg : registerFile) {
-    reg = {.f = NAN}; //Initialize to NAN //TODO: Depends on extension
-  }
+  resetFpuRf();
   fcsr = {.v = 0};
 }
 
@@ -21,7 +19,11 @@ FpuRf::~FpuRf() {
 void FpuRf::resetFpuRf(){
   fcsr.v=0;
   for (auto &reg : registerFile) {
-    reg = {.f = NAN}; //Initialize to NAN
+    #ifdef RF_RESET_VALUE
+      reg = {.f = RF_RESET_VALUE}; //Initialize
+    #else
+      reg = {.f = NAN}; //Initialize to NAN
+    #endif
   }
 };
 
@@ -32,7 +34,7 @@ FPNumber FpuRf::read(int r_address) {
 }
 
 int FpuRf::write(int w_address, FPNumber data) { //Return int to give error messageS?
-  if (0 <= w_address <= NUM_F_REGISTERS) {
+  if (0 <= w_address && w_address <= NUM_F_REGISTERS) {
     registerFile[w_address] = data; //Might need more management about multiple writes and giving pri.
     return 1; //Success
   }

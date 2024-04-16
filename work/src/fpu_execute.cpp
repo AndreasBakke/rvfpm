@@ -7,7 +7,7 @@
 #include "fpu_execute.h"
 #include <iostream>
 
-void executeOp(FpuPipeObj& op, FpuRf* registerFile, bool& mem_valid, x_mem_req_t& mem_req) {
+void executeOp(FpuPipeObj& op, FpuRf* registerFile) {
   #ifndef NO_ROUNDING  // NO_ROUNDING uses c++ default rounding mode.
     unsigned int rm = registerFile->readfrm();
     if (rm == 0b111) //0b111 is dynamic rounding, and is handled for the relevant instructions later.
@@ -24,12 +24,12 @@ void executeOp(FpuPipeObj& op, FpuRf* registerFile, bool& mem_valid, x_mem_req_t
     {
     case it_ITYPE:
     {
-      execute_ITYPE(op, registerFile, mem_valid, mem_req);
+      execute_ITYPE(op, registerFile);
       break;
     }
     case it_STYPE:
     {
-      execute_STYPE(op, registerFile, mem_valid, mem_req);
+      execute_STYPE(op, registerFile);
       break;
     }
     case it_RTYPE:
@@ -349,21 +349,12 @@ void execute_RTYPE(FpuPipeObj& op, FpuRf* registerFile){
 };
 
 
-void execute_ITYPE(FpuPipeObj& op, FpuRf* registerFile, bool& mem_valid, x_mem_req_t& mem_req){
-  //Only ITYPE operation implemented is FLW
-  mem_valid = true;
-  mem_req.id = op.id;
-  mem_req.addr = op.addrFrom.front();
+void execute_ITYPE(FpuPipeObj& op, FpuRf* registerFile){
 }
-void execute_STYPE(FpuPipeObj& op, FpuRf* registerFile, bool& mem_valid, x_mem_req_t& mem_req){
+void execute_STYPE(FpuPipeObj& op, FpuRf* registerFile){
   if (registerFile != nullptr) {
     op.data = registerFile->read(op.addrFrom.front());
   }
-  // initiate memory write request (using data.bitpattern)
-  mem_valid = true;
-  mem_req.id = op.id;
-  mem_req.addr = op.addrTo; //Lots of Z
-  mem_req.wdata = op.data.bitpattern; //Lots of X
 }
 
 void setRoundingMode(unsigned int rm){ //Sets c++ rounding mode. FCSR is written seperately

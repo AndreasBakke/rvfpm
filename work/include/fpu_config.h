@@ -8,6 +8,7 @@
 
 #pragma once
 #include "defines.h"
+#include <stdint.h>
 
 typedef struct {
   bool          accept    : 1;
@@ -40,7 +41,9 @@ typedef struct {
 } __attribute__((packed)) x_mem_req_t;
 
 typedef struct{
-    unsigned int  id  : X_ID_WIDTH;
+    unsigned int id  : X_ID_WIDTH;
     unsigned int data : 32;
     unsigned int rd   : 5;
+    unsigned int ecswe : 3;
+    unsigned int ecsdata : 6;
   } __attribute__((packed)) x_result_t;

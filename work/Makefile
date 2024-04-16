@@ -15,13 +15,14 @@ endif
 
 
 #Filepaths for the c++ core
-COREFILES = src/fpu_top.cpp src/fpu_predecoder.cpp src/fpu_decode.cpp src/fpu_execute.cpp src/fpu_pipeline.cpp src/fpu_rf.cpp  src/fp_number.cpp
+COREFILES = src/fpu_top.cpp src/fpu_predecoder.cpp src/controller.cpp src/fpu_decode.cpp src/fpu_execute.cpp src/fpu_pipeline.cpp src/fpu_rf.cpp  src/fp_number.cpp
 
 CONFIG:=""
+SIM_LENGTH = -all
+N_GUI_OPTS = -c -do "run $(SIM_LENGTH); quit"
+
 sim_full:
-	make clean
-	python3 run/setup.py $(CONFIG)
-	make sharedLib
+	make setup
 	vlog -work work src/in_xif.sv
 	vlog -work work src/defines.svh
 	vlog -work work src/pa_rvfpm.sv
@@ -30,7 +31,10 @@ sim_full:
 	vlog -work work sim/assertions_rvfpm.sv
 	vlog -work work sim/testPr_rvfpm.sv
 	vlog -work work sim/rvfpm_tb.sv
-	vsim -sv_lib bin/lib_rvfpm -novopt work.rvfpm_tb -suppress 12110 -c -do "run -all; quit" #$(!GUI? -c -do "run -all; quit")
+	vsim -sv_lib bin/lib_rvfpm -novopt work.rvfpm_tb -suppress 12110 $(N_GUI_OPTS)
+
+gui:
+	make sim_full N_GUI_OPTS=""
 
 TestFloat: #Compile and test for IEEE754 compliance
 	make clean
@@ -60,6 +64,10 @@ TestFloat_all:
 	./bin/testfloat_gen_$(ARCH) f32_to_ui32 | ./bin/rvfpm_testFloat f32_to_ui32  $(args) | ./bin/testfloat_ver_$(ARCH) $(args)	f32_to_ui32 				-errors 0 > tests/$(ARCH)/rm$(args)/f32_ftui.txt 2>&1
 	./bin/testfloat_gen_$(ARCH) f32_to_i32  | ./bin/rvfpm_testFloat f32_to_i32   $(args) | ./bin/testfloat_ver_$(ARCH) $(args)	f32_to_i32					-errors 0 > tests/$(ARCH)/rm$(args)/f32_fti.txt 2>&1
 
+setup:
+	make clean
+	python3 run/setup.py $(CONFIG)
+	make sharedLib
 
 sharedLib: #Only tested for x86_64
 	$(CXX) $(CXXFLAGS) -shared -fPIC -o bin/lib_rvfpm.so -I ./include src/dpi_wrapper.cpp $(COREFILES)

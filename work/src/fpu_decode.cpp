@@ -9,17 +9,17 @@
 
 #include <iostream>
 
-FpuPipeObj decodeOp(uint32_t instruction, unsigned int id, unsigned int operand_a, unsigned int operand_b, unsigned int operand_c) { //Add more fields if needed by eXtension interface
+FpuPipeObj decodeOp(uint32_t instruction, unsigned int id, unsigned int operand_a, unsigned int operand_b, unsigned int operand_c, unsigned int mode) { //Add more fields if needed by eXtension interface
   //Get result of operation
   unsigned int opcode = instruction & 127 ; //Get first 7 bit
   FpuPipeObj result = {};
   switch (opcode)
   {
   case FLW:
-    result = decode_ITYPE(instruction);
+    result = decode_ITYPE(instruction, operand_a);
     break;
   case FSW:
-    result = decode_STYPE(instruction);
+    result = decode_STYPE(instruction, operand_a);
     break;
   case FMADD_S:
     result = decode_R4TYPE(instruction, operand_a, operand_b, operand_c);
@@ -40,7 +40,9 @@ FpuPipeObj decodeOp(uint32_t instruction, unsigned int id, unsigned int operand_
     result.valid = 0;
     break;
   }
+  result.speculative = 1;
   result.id = id;
+  result.mode = mode;
 
   return result;
 };
@@ -74,7 +76,6 @@ FpuPipeObj decode_RTYPE(uint32_t instr, unsigned int operand_a, unsigned int ope
   result.use_rs_i[0] = false;
   result.use_rs_i[1] = false;
   result.use_rs_i[2] = false;
-  result.speculative = 1;
   result.remaining_ex_cycles = NUM_CYCLES_DEFAULT; //Default number of cycles
   //Override relevant parameters based on function
   switch (dec_instr.parts.funct7)
@@ -159,9 +160,16 @@ FpuPipeObj decode_RTYPE(uint32_t instr, unsigned int operand_a, unsigned int ope
     }
     case FCLASS_FMV_X_W:
     {
-      #ifdef NUM_CYCLES_FCLASS_FMV_X_W
-        result.remaining_ex_cycles = NUM_CYCLES_FCLASS_FMV_X_W;
-      #endif
+      if (dec_instr.parts.funct3 == 0) {
+        #ifdef NUM_CYCLES_FMV_X_W
+        result.remaining_ex_cycles = NUM_CYCLES_FMV_X_W;
+        #endif
+      } else if (dec_instr.parts.funct3 == 1) {
+        #ifdef NUM_CYCLES_FCLASS
+        result.remaining_ex_cycles = NUM_CYCLES_FCLASS;
+        #endif
+      }
+
       result.addrFrom = {dec_instr.parts.rs1, 999}; //Overwrite since only one address is used
       result.addrTo = {dec_instr.parts.rd};
       result.toXReg = true;
@@ -181,31 +189,36 @@ FpuPipeObj decode_RTYPE(uint32_t instr, unsigned int operand_a, unsigned int ope
   return result;
 }
 
-
-FpuPipeObj decode_ITYPE(uint32_t instr) {
+FpuPipeObj decode_ITYPE(uint32_t instr, unsigned int operand_a) {
   ITYPE dec_instr = {.instr = instr}; //"Decode" into ITYPE
   FpuPipeObj result = {};
   result.valid = 1;
   int32_t offset = dec_instr.parts.offset;
   int32_t extendedOffset = (offset << 20) >> 20; //Sign extend - TODO: Extension independent
-  result.addrFrom = {dec_instr.parts.rs1 + extendedOffset};
+  result.addrFrom = {operand_a + extendedOffset};
   result.addrTo = dec_instr.parts.rd;
   result.fromMem = 1;
   result.instr = instr; //Save instruction
   result.instr_type = it_ITYPE;
+  result.operand_a.bitpattern = operand_a;
+  result.size = dec_instr.parts.funct3; //Size of word
   return result;
 }
 
-FpuPipeObj decode_STYPE(uint32_t instr){
+FpuPipeObj decode_STYPE(uint32_t instr, unsigned int operand_a){
   STYPE dec_instr = {.instr = instr}; //Decode into STYPE
   FpuPipeObj result = {};
   result.valid = 1;
   result.addrFrom = {dec_instr.parts.rs2};
-  int32_t offset = dec_instr.parts.offset;
-  int32_t extendedOffset = (offset << 25) >> 25; //Sign extend - TODO: Extension independent
-  result.addrTo = {dec_instr.parts.rs1 + extendedOffset};
+  int32_t upper_offset = (dec_instr.parts.offset << 25) >> 20;
+  int32_t lower_offset = dec_instr.parts.imm_4_0;
+  result.operand_a.bitpattern = operand_a;
+  int32_t full_offset = 0 | upper_offset | lower_offset; //Sign extend - TODO: Extension independent
+  result.addrTo = {operand_a + full_offset};
   result.toMem = true;
   result.instr = instr; //Save instruction
   result.instr_type = it_STYPE;
+  result.size = dec_instr.parts.funct3; //Size of word
+
   return result;
 }

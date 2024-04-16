@@ -7,7 +7,7 @@
 #include "fpu_top.h"
 #include <iostream>
 
-FPU::FPU () : registerFile(NUM_F_REGS),  pipeline(&registerFile), predecoder(fpuReady) {
+FPU::FPU () : registerFile(NUM_F_REGS),  pipeline(&registerFile), predecoder(fpuReady), controller(registerFile, pipeline, fpuReady) {
   #ifndef ZFINX
     // registerFile(rfDepth)
   #else
@@ -35,34 +35,38 @@ void FPU::resetFPU(){
   #endif
   pipeline.flush();
   predecoder.reset();
+  controller.reset();
 };
 
 
-void FPU::clockEvent(bool& fpu_ready){
+void FPU::clockEvent(){
   pipeline.step();
-  fpuReady = !pipeline.isStalled();
-  fpu_ready = fpuReady;
 };
 
+bool FPU::pollReady(){
+  pipeline.stallCheck();
+  return !pipeline.isStalled();
+};
 
 //--------------------------
 // Issue interface
 //--------------------------
-void FPU::predecodeInstruction(uint32_t instruction, unsigned int id){
-  predecoder.predecodeInstruction(instruction, id);
-};
-
-void FPU::pollPredecoderResult(x_issue_resp_t& resp_ref, bool& use_rs_a, bool& use_rs_b, bool& use_rs_c){
-  predecoder.pollPredecoderResult(resp_ref, use_rs_a, use_rs_b, use_rs_c);
+void FPU::predecodeInstruction(uint32_t instruction, unsigned int id, bool& accept, bool& loadstore, bool& use_rs_a, bool& use_rs_b, bool& use_rs_c){
+  predecoder.predecodeInstruction(instruction, id, accept, loadstore, use_rs_a, use_rs_b, use_rs_c);
 };
 
 void FPU::resetPredecoder(){
   predecoder.reset();
 };
 
+
 void FPU::commitInstruction(unsigned int id, bool kill){
-  pipeline.commitInstruction(id, kill);
+  controller.commitInstruction(id, kill);
 };
+
+void FPU::executeStep(){
+  pipeline.executeStep();
+}
 
 FpuPipeObj FPU::testFloatOp(){
   pipeline.step();
@@ -70,27 +74,37 @@ FpuPipeObj FPU::testFloatOp(){
 }
 
 
-void FPU::addAcceptedInstruction(uint32_t instruction, unsigned int id, unsigned int operand_a, unsigned int operand_b, unsigned int operand_c){ //and other necessary inputs (should be somewhat close to in_xif type)
-  FpuPipeObj newOp = decodeOp(instruction, id, operand_a, operand_b, operand_c);
-  // newOp.id = id;
-  if (pipeline.getQueueDepth() > 0){
-    pipeline.addOpToQueue(newOp);
-  }
-  else {
-    pipeline.setWaitingOp(newOp); //set waitingOp (if queue=0, this will be empty given the instruction is accepted
-  }
+void FPU::addAcceptedInstruction(uint32_t instruction, unsigned int id, unsigned int operand_a, unsigned int operand_b, unsigned int operand_c, unsigned int mode, bool commit_valid, unsigned int commit_id, bool commit_kill){ //and other necessary inputs (should be somewhat close to in_xif type)
+  controller.addAcceptedInstruction(instruction, id, operand_a, operand_b, operand_c, mode, commit_valid, commit_id, commit_kill);
 }
 
 //--------------------------
 // Memory interface
 //--------------------------
-void FPU::pollMemReq(bool& mem_valid, x_mem_req_t& mem_req){
-  pipeline.pollMemReq(mem_valid, mem_req);
+void FPU::pollMemoryRequest(bool& mem_valid, x_mem_req_t& mem_req){
+  controller.pollMemoryRequest(mem_valid, mem_req);
 };
 
-void FPU::writeMemRes(bool mem_ready, bool mem_result_valid, unsigned int id, unsigned int rdata, bool err, bool dbg){
-  pipeline.writeMemRes(mem_ready, mem_result_valid, id, rdata, err, dbg);
+void FPU::resetMemoryRequest(unsigned int id){
+  controller.resetMemoryRequest(id);
 };
+
+
+void FPU::writeMemoryResult(unsigned int id, uint32_t rdata, bool err, bool dbg){
+  controller.writeMemoryResult(id, rdata, err, dbg);
+};
+void FPU::writeMemoryResponse(bool mem_ready, bool exc, unsigned int exccode, bool dbg){
+  controller.writeMemoryResponse(mem_ready, exc, exccode, dbg);
+};
+
+
+// void FPU::writeMemRes(bool mem_ready, bool mem_result_valid, unsigned int id, unsigned int rdata, bool err, bool dbg){
+//   pipeline.writeMemRes(mem_ready, mem_result_valid, id, rdata, err, dbg);
+// };
+
+void FPU::memoryStep(){
+  pipeline.memoryStep();
+}
 
 //--------------------------
 // Result interface
@@ -103,11 +117,15 @@ void FPU::pollResult(bool& result_valid, x_result_t& result){
   pipeline.pollResult(result_valid, result);
 };
 
+void FPU::resultStep(){
+  pipeline.resultStep();
+};
+
 //--------------------------
 // Backdoor functions
 //--------------------------
 void FPU::bd_load(uint32_t instruction, unsigned int dataFromMem){
-  FpuPipeObj op = decodeOp(instruction, 0, 0, 0, 0); //id is 0 for now
+  FpuPipeObj op = decodeOp(instruction, 0, 0, 0, 0, 0); //id is 0 for now
   op.data.bitpattern = dataFromMem;
   registerFile.write(op.addrTo, op.data);
 };
@@ -138,4 +156,8 @@ unsigned int FPU::bd_getPipeStageId(int stage) {
 
 unsigned int FPU::bd_getQueueStageId(int stage) {
   return pipeline.getId_operationQueue(stage);
+}
+
+unsigned int FPU::bd_getWaitingOpId() {
+  return pipeline.getWaitingOp().id;
 }

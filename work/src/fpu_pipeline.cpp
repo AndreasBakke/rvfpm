@@ -20,9 +20,6 @@ FpuPipeline::FpuPipeline(FpuRf* rf_pointer) : pipeline(NUM_PIPELINE_STAGES), ope
   mem_done = false;
   wb_done = false;
   stalled = false;
-  mem_valid = 0;
-  mem_req = {};
-  wait_for_mem_result = false;
   result_valid = 0;
   result = {};
 }
@@ -30,98 +27,43 @@ FpuPipeline::FpuPipeline(FpuRf* rf_pointer) : pipeline(NUM_PIPELINE_STAGES), ope
 FpuPipeline::~FpuPipeline() {
 }
 
+FpuPipeObj& FpuPipeline::at(int i){
+  return pipeline.at(i);
+};
+
+FpuPipeObj& FpuPipeline::at_queue(int i){
+  return operationQueue.at(i);
+};
+
 void FpuPipeline::step(){
   //Operations are decoded before adding to the pipeline
   //Check for memory dependencies and request throough interface
   //Pipeline stucture set in run/setup.yaml
 
+  //The execute step is the only step called on positive clock edge (due to some executions requiring multiple clock cycles)
+  //Memory and writeback is done combinatorially
+
   #ifdef TESTFLOAT
-    executeOp(waitingOp, registerFilePtr, mem_valid, mem_req); //Values are loaded to register using bd_load
+    executeOp(waitingOp, registerFilePtr); //Values are loaded to register using bd_load
     return;
   #endif
 
-  //EX TODO: make EX and MEM "independent" in terms of which comes first. Requires check for speculative in mem_step
-  if(!execute_done) { //If we are not done executing the op in execute step. Flag reset by stallCheck() if we advance
-    bool speculative = false;
-    bool more_cycles_rem = false;
-    if(pipeline.at(EXECUTE_STEP).speculative){
-      speculative = true; //Wait until operation has been committed before executing
-    }
-    else if (pipeline.at(EXECUTE_STEP).remaining_ex_cycles > 1){
-      pipeline.at(EXECUTE_STEP).remaining_ex_cycles--;
-      more_cycles_rem = true;
-    }
-    else if (!(pipeline.at(EXECUTE_STEP).fromMem || pipeline.at(EXECUTE_STEP).toMem)){ //If we reach this point, we can assume that this operation has not been executed yet (or have been decremented enugh).
-      executeOp(pipeline.at(EXECUTE_STEP), registerFilePtr, mem_valid, mem_req);
-    }
-    execute_done = !speculative  && !more_cycles_rem;
-  } else {
-    execute_done = true;
-    //Wait - means we are stalled by some other step
-  }
-
-  //MEM
-  if (MEMORY_STEP == EXECUTE_STEP && !execute_done) {
-    mem_done = false;
-  } else if ((pipeline.at(MEMORY_STEP).fromMem || pipeline.at(MEMORY_STEP).toMem ) && !mem_done){
-    if (!wait_for_mem_resp && !wait_for_mem_result){
-      executeOp(pipeline.at(MEMORY_STEP), registerFilePtr, mem_valid, mem_req);
-      wait_for_mem_resp = true;
-    }
-    if(wait_for_mem_resp) {
-      wait_for_mem_resp = !mem_ready;
-      mem_valid = wait_for_mem_resp; //set to 0 if done, keep to 1 if not
-      wait_for_mem_result = mem_ready; //set to 1 if mem_ready is 1
-    } else {
-      mem_valid = 0;
-      this->mem_req = {};
-    }
-
-    if(wait_for_mem_result && memoryResultValid && memoryResults.id == pipeline.at(MEMORY_STEP).id){
-      pipeline.at(MEMORY_STEP).data.bitpattern = memoryResults.rdata;
-      memoryResults = x_mem_result_t({0, 0, 0, 0});
-      memoryResultValid = false;
-      mem_done = true;
-      wait_for_mem_result = false;
-    }
-  } else {
-    mem_done = true;
-    wait_for_mem_resp = false;
-    wait_for_mem_result = false;
-  }
-
-  //WB
-  if ((WRITEBACK_STEP == MEMORY_STEP && !mem_done) || (WRITEBACK_STEP == EXECUTE_STEP && !execute_done)) {
-    wb_done = false;
-  } else if(!wb_done){ //TODO: structure more like the memory step
-    //If not to xreg, or not memory, and not empty. Just write to register file and set done = 1
-    if (!pipeline.at(WRITEBACK_STEP).toMem && !pipeline.at(WRITEBACK_STEP).toXReg && !pipeline.at(WRITEBACK_STEP).isEmpty()){
-      registerFilePtr->write(pipeline.at(WRITEBACK_STEP).addrTo, pipeline.at(WRITEBACK_STEP).data);
-      wb_done = true;
-    } else if (result_valid) {
-      wb_done = result_ready;
-    } else if (pipeline.at(WRITEBACK_STEP).toXReg) {
-      result_valid = 1;
-      result.id = pipeline.at(WRITEBACK_STEP).id;
-      result.data = pipeline.at(WRITEBACK_STEP).data.u;
-      result.rd = pipeline.at(WRITEBACK_STEP).addrTo;
-      wb_done = false;
-    } else {
-      wb_done = true;
-    }
-    if (wb_done){
-      result_valid = 0;
-      result = {};
-    }
-  } else {
-    wb_done = true;
-  }
+  pipeline.at(EXECUTE_STEP).remaining_ex_cycles--;
+  advanceStages();
   stallCheck();
 };
 
-void FpuPipeline::stallCheck(){ //TODO: also check for hazards.
+
+void FpuPipeline::advanceStages(){ //TODO: also check for hazards.
   bool all_done = execute_done && mem_done && wb_done;
-  stalled = false;
+  if (wb_done) {
+    if (!pipeline.at(WRITEBACK_STEP).toMem && !pipeline.at(WRITEBACK_STEP).toXReg && !pipeline.at(WRITEBACK_STEP).isEmpty()){
+      registerFilePtr->write(pipeline.at(WRITEBACK_STEP).addrTo, pipeline.at(WRITEBACK_STEP).data);
+    }
+    result_valid = 0;
+    result = {};
+  }
+
   for (int i = 0; i < pipeline.size(); i++){
     if (i == WRITEBACK_STEP) {
       if (wb_done && (WRITEBACK_STEP != MEMORY_STEP || mem_done) && (WRITEBACK_STEP != EXECUTE_STEP || execute_done)){
@@ -135,7 +77,7 @@ void FpuPipeline::stallCheck(){ //TODO: also check for hazards.
     }
 
     if (i == MEMORY_STEP) {
-      if(mem_done && (MEMORY_STEP != EXECUTE_STEP || execute_done) && pipeline.at(i-1).isEmpty()){
+      if(mem_done && (MEMORY_STEP != EXECUTE_STEP || execute_done)){
         mem_done = false;
         pipeline.at(i-1) = pipeline.at(i);
         pipeline.at(i) = FpuPipeObj({});
@@ -175,18 +117,93 @@ void FpuPipeline::stallCheck(){ //TODO: also check for hazards.
     }
   }
 
-  for (int i = 1; i < operationQueue.size(); i++){
-    if (operationQueue.at(i-1).isEmpty()){
-      operationQueue.at(i-1) = operationQueue.at(i);
-      operationQueue.at(i) = FpuPipeObj({});
+  #ifdef INCLUDE_QUEUE
+    for (int i = 1; i < operationQueue.size(); i++){
+      if (operationQueue.at(i-1).isEmpty()){
+        operationQueue.at(i-1) = operationQueue.at(i);
+        operationQueue.at(i) = FpuPipeObj({});
+      }
+    }
+  #endif
+}
+
+
+
+void FpuPipeline::executeStep(){
+  if(!execute_done) { //If we are not done executing the op in execute step. Flag reset by stallCheck() if we advance
+    bool speculative = false;
+    bool more_cycles_rem = false;
+    if(pipeline.at(EXECUTE_STEP).speculative){
+      speculative = true; //Wait until operation has been committed before executing
+    }
+    else if (pipeline.at(EXECUTE_STEP).remaining_ex_cycles > 1){
+      more_cycles_rem = true;
+    }
+    else if(!(pipeline.at(EXECUTE_STEP).toMem || pipeline.at(EXECUTE_STEP).fromMem) && !pipeline.at(EXECUTE_STEP).isEmpty()) { //If we reach this point, we can assume that this operation has not been executed yet (or have been decremented enugh).
+      executeOp(pipeline.at(EXECUTE_STEP), registerFilePtr);
+    }
+    execute_done = !speculative  && !more_cycles_rem;
+  } else {
+    execute_done = true;
+  }
+}
+
+void FpuPipeline::memoryStep(){ //Todo: what should this be now?
+  if (MEMORY_STEP == EXECUTE_STEP && !execute_done) {
+    mem_done = false;
+  } else if ((pipeline.at(MEMORY_STEP).fromMem || pipeline.at(MEMORY_STEP).toMem)){
+    if (!pipeline.at(MEMORY_STEP).mem_result_valid){
+      return;
+    }
+    mem_done = true;
+    if (pipeline.at(MEMORY_STEP).fromMem){
+      pipeline.at(MEMORY_STEP).data.bitpattern = pipeline.at(MEMORY_STEP).mem_result;
     }
   }
 
-  if (all_done) {
-    stalled = false;
-    return; //No need to check for stall if nothing have stalled us this cycle
+  //TODO: bør kunne velge om store-operations skal gjøres her! I tilfelle det er en del av pipeline-strukturen til brukeren
+   else {
+    mem_done = true;
   }
-  // if queue is empty, we can accept new operations
+}
+
+void FpuPipeline::resultStep(){
+  if (wb_done) {
+    return;
+  }
+  if ((WRITEBACK_STEP == MEMORY_STEP && !mem_done) || (WRITEBACK_STEP == EXECUTE_STEP && !execute_done)) {
+    wb_done = false;
+    return;
+  }
+  wb_done = true;
+  if (!pipeline.at(WRITEBACK_STEP).isEmpty()){
+    result_valid = 1;
+    result.id = pipeline.at(WRITEBACK_STEP).id;
+    if (!pipeline.at(WRITEBACK_STEP).toMem && !pipeline.at(WRITEBACK_STEP).fromMem) {
+      result.ecswe   = 0b010;
+      result.ecsdata = 0b001100;
+      result.rd = pipeline.at(WRITEBACK_STEP).addrTo;
+      result.data = pipeline.at(WRITEBACK_STEP).data.bitpattern;
+    }
+  } else if (pipeline.at(WRITEBACK_STEP).toXReg) {
+    result_valid = 1;
+    result.id = pipeline.at(WRITEBACK_STEP).id;
+    result.data = pipeline.at(WRITEBACK_STEP).data.u;
+    result.rd = pipeline.at(WRITEBACK_STEP).addrTo;
+  } else if (!pipeline.at(WRITEBACK_STEP).isEmpty()) {
+    result_valid = 1;
+    result.id = pipeline.at(WRITEBACK_STEP).id;
+  }
+
+  if (result_valid) {
+    wb_done = result_ready;
+  }
+}
+
+
+
+void FpuPipeline::stallCheck(){
+  stalled = false;
   if (QUEUE_DEPTH > 0) {
     if (!operationQueue.back().isEmpty()){
       stalled = true;
@@ -198,6 +215,16 @@ void FpuPipeline::stallCheck(){ //TODO: also check for hazards.
 
 bool FpuPipeline::isStalled(){
   return stalled;
+};
+
+bool FpuPipeline::isEmpty(){
+  //Check if all stages are empty
+  for (auto& op : pipeline) {
+    if (!op.isEmpty()) {
+      return false;
+    }
+  }
+  return true;
 };
 
 
@@ -239,6 +266,7 @@ void FpuPipeline::commitInstruction(unsigned int id, bool kill){
       } else {
         op.speculative = 0;
       }
+      return;
     }
   }
   if (waitingOp.id == id) {
@@ -247,6 +275,7 @@ void FpuPipeline::commitInstruction(unsigned int id, bool kill){
     } else {
       waitingOp.speculative = 0;
     }
+    return;
   }
   for (auto& op : operationQueue) { //if the operation is in the queue, commit it
     if (op.id == id) {
@@ -255,28 +284,9 @@ void FpuPipeline::commitInstruction(unsigned int id, bool kill){
       } else {
         op.speculative = 0;
       }
+      return;
     }
   }
-};
-
-
-
-//--------------------------
-// Memory interface
-//--------------------------
-void FpuPipeline::pollMemReq(bool& mem_valid, x_mem_req_t& mem_req){
-  mem_valid = this->mem_valid;
-  mem_req = this->mem_req;
-};
-
-void FpuPipeline::writeMemRes(bool mem_ready, bool mem_result_valid, unsigned int id, unsigned int rdata, bool err, bool dbg){
-  this->mem_ready = mem_ready;
-  memoryResultValid = mem_result_valid;
-  memoryResults.id = id;
-  memoryResults.rdata = rdata;
-  memoryResults.err = err;
-  memoryResults.dbg = dbg;
-
 };
 
 //--------------------------
@@ -286,9 +296,9 @@ void FpuPipeline::writeResult(bool result_ready){
   this->result_ready = result_ready;
 };
 
-void FpuPipeline::pollResult(bool& result_valid, x_result_t& result){
-  result_valid = this->result_valid;
-  result = this->result;
+void FpuPipeline::pollResult(bool& result_valid_ptr, x_result_t& result_ptr){
+  result_valid_ptr = this->result_valid;
+  result_ptr = this->result;
 };
 
 
@@ -313,15 +323,11 @@ void FpuPipeline::flush(){
   pipeline = std::deque<FpuPipeObj>(NUM_PIPELINE_STAGES, FpuPipeObj({}));
   //Reset all internal data
   operationQueue = std::deque<FpuPipeObj>(QUEUE_DEPTH, FpuPipeObj({}));
-  mem_valid = 0;
-  mem_req = {};
   execute_done = false;
   mem_done = false;
   wb_done = false;
   stalled = false;
   pipelineFull = false;
-  mem_valid = 0;
-  mem_req = {};
   result_valid = 0;
   result = {};
 };
