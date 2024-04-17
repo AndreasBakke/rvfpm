@@ -13,7 +13,7 @@
 
 struct FpuPipeObj {
   uint32_t instr; //Save instruction
-  unsigned int id = 0;  //from Core-V-XIF standard
+  unsigned int id = 99;  //from Core-V-XIF standard
   FPNumber operand_a;
   FPNumber operand_b;
   FPNumber operand_c;

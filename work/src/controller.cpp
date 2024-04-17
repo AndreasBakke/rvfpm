@@ -117,3 +117,16 @@ void Controller::writeMemoryResponse(bool mem_ready, bool exc, unsigned int excc
     std::cout << "Exception code: " << exccode << std::endl;
   }
 };
+
+void Controller::pollResult(bool& result_valid_ptr, x_result_t& result_ptr){
+  result_valid_ptr = !fpu_pipeline.result_queue.empty();
+  if(result_valid_ptr) {
+    result_ptr = fpu_pipeline.result_queue.front();
+  }
+}
+
+void Controller::resetResult(unsigned int id){
+  if(id == fpu_pipeline.result_queue.front().id){
+    fpu_pipeline.result_queue.pop_front();
+  }
+}

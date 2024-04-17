@@ -43,7 +43,7 @@ class FpuPipeline {
     void step(); //Advance pipeline by one step (called by clock in interface)
     void executeStep();
     void memoryStep();
-    void resultStep(); //wb
+    void writebackStep(); //wb
     void advanceStages(); //Move non-stalled stages one step forward
     void stallCheck(); //Set stalled if pipeline(& optionally queue) is full
     bool isStalled();
@@ -56,9 +56,7 @@ class FpuPipeline {
     void commitInstruction(unsigned int id, bool kill);
 
     //Resultinterface
-    void writeResult(bool result_ready);
-    void pollResult(bool& result_valid_ptr, x_result_t& result_ptr);
-
+    std::deque<x_result_t> result_queue;
     void flush();
     int getNumStages();
     int getQueueDepth();

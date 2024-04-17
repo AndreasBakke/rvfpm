@@ -167,7 +167,7 @@ void FpuPipeline::memoryStep(){ //Todo: what should this be now?
   }
 }
 
-void FpuPipeline::resultStep(){
+void FpuPipeline::writebackStep(){
   if (wb_done) {
     return;
   }
@@ -176,26 +176,24 @@ void FpuPipeline::resultStep(){
     return;
   }
   wb_done = true;
+  x_result_t result_s = {};
+  result_s.id = pipeline.at(WRITEBACK_STEP).id;
+
+  if (!pipeline.at(WRITEBACK_STEP).fromMem && !pipeline.at(WRITEBACK_STEP).toMem){
+    result_s.rd = pipeline.at(WRITEBACK_STEP).addrTo;
+    result_s.data = pipeline.at(WRITEBACK_STEP).data.bitpattern;
+  }
+  if(pipeline.at(WRITEBACK_STEP).toXReg){ //TODO: or is ZFINX
+    result_s.we = 1;
+  }
+  if(!pipeline.at(WRITEBACK_STEP).toXReg && !pipeline.at(WRITEBACK_STEP).toMem && !pipeline.at(WRITEBACK_STEP).fromMem){ //TODO: and not ZFINX
+    result_s.ecswe   = 0b010;
+    result_s.ecsdata = 0b001100;
+  }
   if (!pipeline.at(WRITEBACK_STEP).isEmpty()){
-    result_valid = 1;
-    result.id = pipeline.at(WRITEBACK_STEP).id;
-    if (!pipeline.at(WRITEBACK_STEP).fromMem && !pipeline.at(WRITEBACK_STEP).toMem){
-      result.rd = pipeline.at(WRITEBACK_STEP).addrTo;
-      result.data = pipeline.at(WRITEBACK_STEP).data.bitpattern;
-    }
-    if(pipeline.at(WRITEBACK_STEP).toXReg){ //TODO: or is ZFINX
-      result.we = 1;
-    }
-    if(!pipeline.at(WRITEBACK_STEP).toXReg && !pipeline.at(WRITEBACK_STEP).toMem && !pipeline.at(WRITEBACK_STEP).fromMem){ //TODO: and not ZFINX
-      //If target is F-reg
-      result.ecswe   = 0b010;
-      result.ecsdata = 0b001100;
-    }
+    result_queue.push_back(result_s);
   }
 
-  if (result_valid) {
-    wb_done = result_ready;
-  }
 }
 
 
@@ -209,6 +207,8 @@ void FpuPipeline::stallCheck(){
   } else if (!waitingOp.isEmpty()){
     stalled = true;
   }
+    std::cout << "ex_done: " << execute_done << " mem: " <<mem_done << " wb "<< wb_done << std::endl;
+
 }
 
 bool FpuPipeline::isStalled(){
@@ -286,19 +286,6 @@ void FpuPipeline::commitInstruction(unsigned int id, bool kill){
     }
   }
 };
-
-//--------------------------
-// Result interface
-//--------------------------
-void FpuPipeline::writeResult(bool result_ready){
-  this->result_ready = result_ready;
-};
-
-void FpuPipeline::pollResult(bool& result_valid_ptr, x_result_t& result_ptr){
-  result_valid_ptr = this->result_valid;
-  result_ptr = this->result;
-};
-
 
 //--------------------------
 // Pipeline functions

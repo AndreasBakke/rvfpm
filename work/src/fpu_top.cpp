@@ -109,16 +109,16 @@ void FPU::memoryStep(){
 //--------------------------
 // Result interface
 //--------------------------
-void FPU::writeResult(bool result_ready){
-  pipeline.writeResult(result_ready);
-};
-
 void FPU::pollResult(bool& result_valid, x_result_t& result){
-  pipeline.pollResult(result_valid, result);
+  controller.pollResult(result_valid, result);
 };
 
-void FPU::resultStep(){
-  pipeline.resultStep();
+void FPU::resetResult(unsigned int id){
+  controller.resetResult(id);
+}
+
+void FPU::writebackStep(){
+  pipeline.writebackStep();
 };
 
 //--------------------------

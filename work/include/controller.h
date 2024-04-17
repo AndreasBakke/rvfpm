@@ -39,6 +39,8 @@ class Controller {
     void resetMemoryRequest(unsigned int id);
     void writeMemoryResponse(bool mem_ready, bool exc, unsigned int exccode, bool dbg);
     void writeMemoryResult(unsigned int id, uint32_t rdata, bool err, bool dbg);
+    void pollResult(bool& result_valid_ptr, x_result_t& result_ptr);
+    void resetResult(unsigned int id);
   //Mange av funksjonene fra pipeline kan flyttes hit
 
 };

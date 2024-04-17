@@ -94,7 +94,6 @@ extern "C" {
   void write_sv_state(void* fpu_ptr, bool mem_ready, bool result_ready){
     FPU* fpu = static_cast<FPU*>(fpu_ptr);
     fpu->writeMemoryResponse(mem_ready, 0, 0, 0);
-    fpu->writeResult(result_ready);
   };
 
   void write_memory_result(void* fpu_ptr, unsigned int id, uint32_t rdata, bool err, bool dbg){
@@ -123,9 +122,14 @@ extern "C" {
     ecsdata = result.ecsdata;
   };
 
-  void resultStep(void* fpu_ptr) {
+  void reset_result(void* fpu_ptr, unsigned int id){
     FPU* fpu = static_cast<FPU*>(fpu_ptr);
-    fpu->resultStep();
+    fpu->resetResult(id);
+  }
+
+  void writebackStep(void* fpu_ptr) {
+    FPU* fpu = static_cast<FPU*>(fpu_ptr);
+    fpu->writebackStep();
   };
 
   //-----------------------

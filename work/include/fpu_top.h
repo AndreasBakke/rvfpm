@@ -42,9 +42,9 @@ class FPU {
     void memoryStep();
 
     //Result interface
-    void writeResult(bool result_ready);
     void pollResult(bool& result_valid, x_result_t& result);
-    void resultStep();
+    void resetResult(unsigned int id);
+    void writebackStep();
 
     //Backdoor functions
     FpuPipeObj testFloatOp();
