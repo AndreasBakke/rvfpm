@@ -40,8 +40,7 @@ void FpuPipeline::step(){
   //Check for memory dependencies and request throough interface
   //Pipeline stucture set in run/setup.yaml
 
-  //The execute step is the only step called on positive clock edge (due to some executions requiring multiple clock cycles)
-  //Memory and writeback is done combinatorially
+  //All steps done "combinatorially" on negative clock edge, we only decrement remaining_ex_cycles and advance/check for stalls.
 
   #ifdef TESTFLOAT
     executeOp(waitingOp, registerFilePtr); //Values are loaded to register using bd_load
@@ -148,7 +147,7 @@ void FpuPipeline::executeStep(){
   }
 }
 
-void FpuPipeline::memoryStep(){ //Todo: what should this be now?
+void FpuPipeline::memoryStep(){
   if (MEMORY_STEP == EXECUTE_STEP && !execute_done) {
     mem_done = false;
   } else if ((pipeline.at(MEMORY_STEP).fromMem || pipeline.at(MEMORY_STEP).toMem)){
@@ -161,7 +160,6 @@ void FpuPipeline::memoryStep(){ //Todo: what should this be now?
     }
   }
 
-  //TODO: bør kunne velge om store-operations skal gjøres her! I tilfelle det er en del av pipeline-strukturen til brukeren
    else {
     mem_done = true;
   }
@@ -175,26 +173,28 @@ void FpuPipeline::writebackStep(){
     wb_done = false;
     return;
   }
+  addResult(pipeline.at(WRITEBACK_STEP));
   wb_done = true;
-  x_result_t result_s = {};
-  result_s.id = pipeline.at(WRITEBACK_STEP).id;
+}
 
-  if (!pipeline.at(WRITEBACK_STEP).fromMem && !pipeline.at(WRITEBACK_STEP).toMem){
-    result_s.rd = pipeline.at(WRITEBACK_STEP).addrTo;
-    result_s.data = pipeline.at(WRITEBACK_STEP).data.bitpattern;
+void FpuPipeline::addResult(FpuPipeObj op){
+  x_result_t result_s = {};
+  result_s.id = op.id;
+  if (!op.fromMem && !op.toMem){
+    result_s.rd = op.addrTo;
+    result_s.data = op.data.bitpattern;
   }
-  if(pipeline.at(WRITEBACK_STEP).toXReg){ //TODO: or is ZFINX
+  if(op.toXReg){ //TODO: or is ZFINX
     result_s.we = 1;
   }
-  if(!pipeline.at(WRITEBACK_STEP).toXReg && !pipeline.at(WRITEBACK_STEP).toMem && !pipeline.at(WRITEBACK_STEP).fromMem){ //TODO: and not ZFINX
+  if(!op.toXReg && !op.toMem && !op.fromMem){ //TODO: and not ZFINX
     result_s.ecswe   = 0b010;
     result_s.ecsdata = 0b001100;
   }
-  if (!pipeline.at(WRITEBACK_STEP).isEmpty()){
+  if (!op.isEmpty()){
     result_queue.push_back(result_s);
   }
-
-}
+};
 
 
 
@@ -226,35 +226,6 @@ bool FpuPipeline::isEmpty(){
 };
 
 
-//Checkforhazards
-//Hazard type?
-//Could include
-//step of pipeline
-//Addresses involved
-//IDs involved
-//ID stalled
-
-// //Return array of theese. OOO can use the information to reorder
-// bool FpuPipeLine::checkForHazards(){
-//   bool stallEx = checkExecuteHazards();
-//   bool stallMem = checkMemoryHazards(); // If write to Mem and there is a writeback to be done to the same register. Stall
-//   bool stallWB = checkWritebackHazards();//None?
-//   //Execute step:
-//   // IF addrFrom of execute step is the same as the toAddr of steps in front in pipeline
-//   // Not if forwarding is enabled
-//   // And not if its the same step
-// }
-
-
-//If addrFrom of execute step is the same as the toAddr of memory or writeback step, stall
-//But not if forwarding is enabled
-
-//Reorder
-//See if any stalling can be avoided by reordering executions
-//OBS: Be careful not to reorder anything that might affect results
-//eg. do not reorder operations if there are dependencies between instructions regarding targets
-// Especially nice to do if a division/sqrt is done, we can do other operations first, if we have empty queues later.
-//This would reduce the overal execution time
 
 void FpuPipeline::commitInstruction(unsigned int id, bool kill){
   for (auto& op : pipeline) {

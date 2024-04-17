@@ -44,6 +44,7 @@ class FpuPipeline {
     void executeStep();
     void memoryStep();
     void writebackStep(); //wb
+    void addResult(FpuPipeObj op);
     void advanceStages(); //Move non-stalled stages one step forward
     void stallCheck(); //Set stalled if pipeline(& optionally queue) is full
     bool isStalled();
