@@ -4,8 +4,6 @@ fpu:
   extensions:
     # - ZFINX
     # - ZFMin
-    # etc
-
 
 xif:
   XLEN: 32
@@ -21,13 +19,16 @@ xif:
 fpu_pipeline:
   num_pipeline_stages: 3 #Number of stages in the FPU pipeline
   queue_depth: 2 #Depth of the FPU instruction queue - set to 0 to disable
-
-  OOO: false #Out of order execution - Not yet implemented
-  forwarding: false #Forward/bypass result to next operation - Not yet implemented
   steps:  #step 0 is the last step in the pipeline
     execute_step: 2
     memory_step: 1
     writeback_step: 0
+  hazards: #Hazards the controller will check
+    - RAW
+    - WAR
+    - WAW
+  OOO: false #Out of order execution - Not yet implemented
+  forwarding: false #Forward/bypass result to next operation - Not yet implemented
 
 execute_cycles: #Number of cycles for execution of each instruction
   default: 1
@@ -39,5 +40,5 @@ defines: #Will be added as defines
   - SOME_DEF
   # - TESTFLOAT
 
-# constInts: #Will be added as constInts
-#   #...
+constInts: #Will be added as constInts
+  #...

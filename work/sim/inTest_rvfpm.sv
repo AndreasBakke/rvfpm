@@ -4,7 +4,7 @@
     Description:
     Signal interface for rvfpm_tb
 */
-`include "../src/defines.svh"
+`include "../src/config.svh"
 import in_xif::*;
 interface inTest_rvfpm #(
     parameter int X_ID_WIDTH = 4,

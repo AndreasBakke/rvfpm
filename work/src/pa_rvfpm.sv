@@ -5,7 +5,7 @@
   RISC-V Floating Point Unit Model.
   Package for types
 */
-`include "defines.svh"
+`include "config.svh"
 package pa_rvfpm;
 
 endpackage : pa_rvfpm

@@ -369,7 +369,6 @@ void execute_CSRTYPE(FpuPipeObj& op, FpuRf* registerFile){
   {
     case(0b001): //CSRRW
     {
-      std::cout << "csrrw" << std::endl;
       switch(dec_instr.parts.csr)
       {
         case(0x001): //fflags

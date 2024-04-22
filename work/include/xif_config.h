@@ -3,11 +3,11 @@
 
   Description:
   Structs for interfacing with the FPU.
-  Loads common defines for both sv and cpp through defines.h
+  Loads common defines for both sv and cpp through config.h
 */
 
 #pragma once
-#include "defines.h"
+#include "config.h"
 #include <stdint.h>
 
 typedef struct {

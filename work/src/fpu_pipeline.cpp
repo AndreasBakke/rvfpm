@@ -6,7 +6,7 @@
 */
 
 #include "fpu_pipeline.h"
-#include "fpu_config.h"
+#include "xif_config.h"
 #include <iostream>
 
 
@@ -207,7 +207,6 @@ void FpuPipeline::stallCheck(){
   } else if (!waitingOp.isEmpty()){
     stalled = true;
   }
-    std::cout << "ex_done: " << execute_done << " mem: " <<mem_done << " wb "<< wb_done << std::endl;
 
 }
 

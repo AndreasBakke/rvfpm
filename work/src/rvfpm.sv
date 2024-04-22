@@ -7,7 +7,7 @@
 */
 
 
-`include "defines.svh"
+`include "config.svh"
 `include "pa_rvfpm.sv"
 import pa_rvfpm::*;
 import in_xif::*;
@@ -155,7 +155,6 @@ module rvfpm #(
       end
     end
   end
-
 
   always_ff @(negedge ck) begin
     if (enable) begin

@@ -9,7 +9,7 @@
 #include <cstdint>
 #include "fpu_decode.h"
 #include "fpu_pipe.h"
-#include "fpu_config.h"
+#include "xif_config.h"
 
 
 

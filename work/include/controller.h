@@ -6,7 +6,7 @@
 */
 
 #pragma once
-#include "fpu_config.h"
+#include "xif_config.h"
 #include "fpu_pipeline.h"
 #include "fpu_rf.h"
 #include "fpu_decode.h"

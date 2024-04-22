@@ -11,7 +11,7 @@
 #include "fpu_instructions.h"
 #include "fpu_decode.h"
 #include "fpu_execute.h"
-#include "fpu_config.h"
+#include "xif_config.h"
 #include <deque> //Double ended queue
 
 class FpuPipeline {
