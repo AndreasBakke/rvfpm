@@ -36,6 +36,9 @@ FpuPipeObj decodeOp(uint32_t instruction, unsigned int id, unsigned int operand_
   case OP_FP:
     result = decode_RTYPE(instruction, operand_a, operand_b);
     break;
+  case CSR:
+    result = decode_CSRTYPE(instruction, operand_a);
+    break;
   default:
     result.valid = 0;
     break;
@@ -220,5 +223,26 @@ FpuPipeObj decode_STYPE(uint32_t instr, unsigned int operand_a){
   result.instr_type = it_STYPE;
   result.size = dec_instr.parts.funct3; //Size of word
 
+  return result;
+}
+
+FpuPipeObj decode_CSRTYPE(uint32_t instr, unsigned int operand_a) {
+  CSRTYPE dec_instr = {.instr = instr}; //Decode into CSRTYPE
+  FpuPipeObj result = {};
+  if (!(0x001 <= dec_instr.parts.csr <= 0x003)) { //If CSR op is not a FCSR instruction, return invalid
+    FpuPipeObj result = {};
+    result.valid = 0;
+    return result;
+  }
+  if (dec_instr.parts.funct3 == 0b001){
+    result.use_rs_i[0] = true;
+    result.operand_a.bitpattern = operand_a;
+    result.addrFrom = {dec_instr.parts.rs1};
+  }
+  result.valid = 1;
+  result.addrTo = dec_instr.parts.rd;
+  result.instr = instr; //Save instruction
+  result.instr_type = it_CSRTYPE;
+  result.toXReg = true;
   return result;
 }

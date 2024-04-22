@@ -62,6 +62,10 @@ unsigned int FpuRf::setFlags(unsigned int flags){
   return fcsr.parts_cons.flags;
 };
 
+unsigned int FpuRf::getFlags(){
+  return fcsr.parts_cons.flags;
+};
+
 unsigned int FpuRf::clearFlags(){
   fcsr.parts_cons.flags = 0b00000;
   return fcsr.parts_cons.flags;

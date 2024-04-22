@@ -7,12 +7,11 @@
 #pragma once
 
 enum {
-  it_NONE, it_RTYPE, it_R4TYPE, it_ITYPE, it_STYPE
+  it_NONE, it_RTYPE, it_R4TYPE, it_ITYPE, it_STYPE, it_CSRTYPE
 } instr_type;
 
 
-//One operation for each opcode
-// See p 118 in riscv specification for opcodes
+//One operation for each opcode (or multiple for RTYPE and CSR)
 enum  {
   FLW       = 7,
   FSW       = 39,
@@ -20,7 +19,8 @@ enum  {
   FMSUB_S   = 71,
   FNMSUB_S  = 75,
   FNMADD_S  = 79,
-  OP_FP     = 83
+  OP_FP     = 83,
+  CSR       = 115
 };
 
 //Typedef for extracting fields of different instructions
@@ -68,6 +68,17 @@ typedef union { //Only used for FSW
     unsigned int offset  : 7;
   } parts;
 } STYPE;
+
+typedef union {
+  uint32_t instr;
+  struct {
+    unsigned int opcode   : 7;
+    unsigned int rd       : 5;
+    unsigned int funct3   : 3;
+    unsigned int rs1      : 5;
+    unsigned int csr      : 12;
+  } parts;
+} CSRTYPE;
 
 
 //Enumerator for RTYPE instructions

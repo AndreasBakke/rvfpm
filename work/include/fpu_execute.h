@@ -24,7 +24,7 @@ void execute_R4TYPE(FpuPipeObj& op, FpuRf* registerFile);
 void execute_ITYPE(FpuPipeObj& op, FpuRf* registerFile);
 void execute_STYPE(FpuPipeObj& op, FpuRf* registerFile);
 void execute_ISTYPE(FpuPipeObj& op, FpuRf* registerFile);
-
+void execute_CSRTYPE(FpuPipeObj& op, FpuRf* registerFile);
 
 void setRoundingMode(unsigned int rm);
 

@@ -42,6 +42,11 @@ void executeOp(FpuPipeObj& op, FpuRf* registerFile) {
       execute_R4TYPE(op, registerFile);
       break;
     }
+    case it_CSRTYPE:
+    {
+      execute_CSRTYPE(op, registerFile);
+      break;
+    }
     default:
       //If no operation is in pipeline: do nothing
       break;
@@ -357,6 +362,86 @@ void execute_STYPE(FpuPipeObj& op, FpuRf* registerFile){
   }
 }
 
+
+void execute_CSRTYPE(FpuPipeObj& op, FpuRf* registerFile){
+  CSRTYPE dec_instr = {.instr = op.instr}; //"Decode" into CSRTYPE to get parts
+  switch(dec_instr.parts.funct3)
+  {
+    case(0b001): //CSRRW
+    {
+      std::cout << "csrrw" << std::endl;
+      switch(dec_instr.parts.csr)
+      {
+        case(0x001): //fflags
+        {
+          //Swap fflags with rs1
+          unsigned int flags = registerFile->getFlags();
+          op.data.u = flags;
+          registerFile->setFlags(op.operand_a.u);
+          break;
+        }
+        case(0x002): //frm
+        {
+          //Swap frm with rs1
+          unsigned int rm = registerFile->readfrm();
+          op.data.u = rm;
+          registerFile->setfrm(op.operand_a.u);
+          break;
+        }
+        case(0x003): //fcsr
+        {
+          //Swap fcsr with rs1
+          unsigned int data = registerFile->read_fcsr().v;
+          op.data.u = data;
+          registerFile->write_fcsr(op.operand_a.u);
+          break;
+        }
+        default:
+        {
+          std::feraiseexcept(FE_INVALID); //raise invalid
+          break;
+        }
+      }
+      break;
+    }
+    case(0b010): //CSRRS
+    {
+      //Go through different csr indicators (0x001 0x002 0x003)
+      switch(dec_instr.parts.csr)
+      {
+        case(0x001):
+        {
+          //read fflags
+          unsigned int flags = registerFile->getFlags();
+          op.data.u = flags;
+          break;
+        }
+        case(0x002):
+        {
+          //read frm
+          unsigned int rm = registerFile->readfrm();
+          op.data.u = rm;
+          break;
+        }
+        case(0x003):
+        {
+          //read fcsr
+          unsigned int data = registerFile->read_fcsr().v;
+          op.data.u = data;
+          break;
+        }
+      }
+      break;
+    }
+    default:
+    {
+      std::feraiseexcept(FE_INVALID); //raise invalid
+      break;
+    }
+  }
+  op.flags |=  getFlags();
+}
+
 void setRoundingMode(unsigned int rm){ //Sets c++ rounding mode. FCSR is written seperately
   switch (rm)
   {
@@ -382,10 +467,10 @@ void setRoundingMode(unsigned int rm){ //Sets c++ rounding mode. FCSR is written
   }
   case 0b100: //RMM
   {
-    // std::fesetround(); //RMM NOT A PART OF cfenv. TODO: is it okay to skip?
+    // std::fesetround(); //RMM NOT A PART OF cfenv.
     break;
   }
-  case 0b101: //Invalid. Reserved for future use TODO: write NV?
+  case 0b101: //Invalid. Reserved for future use
   {
     break;
   }
@@ -393,7 +478,7 @@ void setRoundingMode(unsigned int rm){ //Sets c++ rounding mode. FCSR is written
   {
     break;
   }
-  case 0b111: //Dynamic rounding mode. Do nothing - handled in fpu_top.cpp
+  case 0b111: //Dynamic rounding mode. Do nothing - handled in executeOp()
   {
     break;
   }
