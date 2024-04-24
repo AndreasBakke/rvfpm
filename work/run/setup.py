@@ -127,7 +127,8 @@ def write_cpp_params(data):
         continue
       if data["fpu_pipeline"][param] == True:
         write_data(cpp_path, "const int "+str(param).upper()+"=1;\n")
-        write_data(cpp_path, "#define "+str(param).upper()+"\n")
+        if param == "forwarding" or param == "OOO":
+          write_data(cpp_path, "#define "+str(param).upper()+"\n")
       elif data["fpu_pipeline"][param] == False:
         write_data(cpp_path, "const int "+str(param).upper()+"=0;\n")
       else:

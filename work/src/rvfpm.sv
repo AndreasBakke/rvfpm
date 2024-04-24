@@ -74,6 +74,7 @@ module rvfpm #(
   import "DPI-C" function void clock_event(input chandle fpu_ptr);
   import "DPI-C" function void poll_ready(input chandle fpu_ptr, output logic fpu_ready);
   import "DPI-C" function void destroy_fpu(input chandle fpu_ptr);
+  import "DPI-C" function void resolve_forwards(input chandle fpu_ptr);
   import "DPI-C" function int unsigned getRFContent(input chandle fpu_ptr, input int addr);
   import "DPI-C" function void add_accepted_instruction(input chandle fpu_ptr, input int instr, input int unsigned id, input int unsigned operand_a, input int unsigned operand_b, input int unsigned operand_c, input int unsigned mode, input logic commit_valid, input int unsigned commit_id, input logic commit_kill);
   import "DPI-C" function void reset_predecoder(input chandle fpu_ptr);
@@ -164,6 +165,9 @@ module rvfpm #(
       end
       if (mem_result_valid) begin
         write_memory_result(fpu, mem_result.id, mem_result.rdata, mem_result.err, mem_result.dbg);
+      end
+      if(FORWARDING == 1) begin
+        resolve_forwards(fpu);
       end
       executeStep(fpu);
       memoryStep(fpu);

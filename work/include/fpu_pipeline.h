@@ -62,6 +62,9 @@ class FpuPipeline {
     FpuPipeObj getWaitingOp();
     void commitInstruction(unsigned int id, bool kill);
 
+    //Memory request interface
+    std::deque<x_mem_req_t> mem_req_queue;
+
     //Resultinterface
     std::deque<x_result_t> result_queue;
     void flush();

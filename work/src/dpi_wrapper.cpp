@@ -39,6 +39,10 @@ extern "C" {
     stalled = fpu->pollReady();
   };
 
+  void resolve_forwards(void* fpu_ptr){
+    FPU* fpu = static_cast<FPU*>(fpu_ptr);
+    fpu->controller.resolveForwards();
+  };
   //-----------------------
   // ISSUE/COMMIT INTERFACE
   //-----------------------

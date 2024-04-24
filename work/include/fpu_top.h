@@ -16,12 +16,12 @@ class FPU {
     FpuRf registerFile;
     FpuPipeline pipeline;
     FpuPredecoder predecoder;
-    Controller controller;
     bool fpuReady;
 
   public:
     FPU();
     ~FPU();
+    Controller controller;
     void resetFPU();
     void clockEvent();
     bool pollReady();

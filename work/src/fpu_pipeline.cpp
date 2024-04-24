@@ -129,26 +129,27 @@ void FpuPipeline::advanceStages(){ //TODO: also check for hazards.
 
 
 void FpuPipeline::executeStep(){
+  FpuPipeObj& exOp = pipeline.at(EXECUTE_STEP);
   if(!execute_done) { //If we are not done executing the op in execute step. Flag reset by stallCheck() if we advance
     #ifndef FORWARDING
-      if(pipeline.at(EXECUTE_STEP).stalledByCtrl){mem_done = false; return;}
+      if(exOp.stalledByCtrl){mem_done = false; return;}
     #else
-      pipeline.at(EXECUTE_STEP).fw_data = fw_data;
-      pipeline.at(EXECUTE_STEP).fw_addr = fw_addr;
+      exOp.fw_data = fw_data;
+      exOp.fw_addr = fw_addr;
     #endif
     bool speculative = false;
     bool more_cycles_rem = false;
-    if(pipeline.at(EXECUTE_STEP).speculative){
+    if(exOp.speculative){
       speculative = true; //Wait until operation has been committed before executing
     }
-    else if (pipeline.at(EXECUTE_STEP).remaining_ex_cycles > 1){
+    else if (exOp.remaining_ex_cycles > 1){
       more_cycles_rem = true;
     }
-    else if(!(pipeline.at(EXECUTE_STEP).toMem || pipeline.at(EXECUTE_STEP).fromMem) && !pipeline.at(EXECUTE_STEP).isEmpty()) { //If we reach this point, we can assume that this operation has not been executed yet (or have been decremented enugh).
+    else if(!(exOp.toMem || exOp.fromMem) && !exOp.isEmpty()) { //If we reach this point, we can assume that this operation has not been executed yet (or have been decremented enugh).
       executeOp(pipeline.at(EXECUTE_STEP), registerFilePtr);
       #ifdef FORWARDING
-        fw_data = pipeline.at(EXECUTE_STEP).data;
-        fw_addr = pipeline.at(EXECUTE_STEP).addrTo;
+        fw_data = exOp.data;
+        fw_addr = exOp.addrTo;
       #endif
     }
     execute_done = !speculative  && !more_cycles_rem;
@@ -158,16 +159,30 @@ void FpuPipeline::executeStep(){
 }
 
 void FpuPipeline::memoryStep(){
-  if (MEMORY_STEP == EXECUTE_STEP && !execute_done || pipeline.at(MEMORY_STEP).stalledByCtrl) {
+  FpuPipeObj& memOp = pipeline.at(MEMORY_STEP);
+  if (MEMORY_STEP == EXECUTE_STEP && !execute_done || memOp.stalledByCtrl) {
     mem_done = false;
-  } else if ((pipeline.at(MEMORY_STEP).fromMem || pipeline.at(MEMORY_STEP).toMem)){
+  } else if ((memOp.fromMem || memOp.toMem)){
     //Add op to queue if its not been added yet!
-    if (!pipeline.at(MEMORY_STEP).mem_result_valid){
+    if(!memOp.added_to_mem_queue){
+      x_mem_req_t mem_req_s = {};
+    mem_req_s.id = memOp.id;
+    mem_req_s.addr = memOp.toMem ? memOp.addrTo : memOp.addrFrom.front();
+    mem_req_s.wdata = memOp.toMem ?  registerFilePtr->read(memOp.addrFrom.front()).bitpattern: 0;
+    mem_req_s.last = 1;
+    mem_req_s.size = memOp.size;
+    mem_req_s.mode = memOp.mode;
+    mem_req_s.we = memOp.toMem ? 1 : 0;
+    mem_req_queue.push_back(mem_req_s);
+    memOp.added_to_mem_queue = 1;
+    }
+
+    if (!memOp.mem_result_valid){
       return;
     }
     mem_done = true;
-    if (pipeline.at(MEMORY_STEP).fromMem){ //Why do we not just add this directly?
-      pipeline.at(MEMORY_STEP).data.bitpattern = pipeline.at(MEMORY_STEP).mem_result;
+    if (memOp.fromMem){ //Why do we not just add this directly?
+      memOp.data.bitpattern = memOp.mem_result;
     }
   }
 
