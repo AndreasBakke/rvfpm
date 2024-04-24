@@ -130,6 +130,12 @@ void FpuPipeline::advanceStages(){ //TODO: also check for hazards.
 
 void FpuPipeline::executeStep(){
   if(!execute_done) { //If we are not done executing the op in execute step. Flag reset by stallCheck() if we advance
+    #ifndef FORWARDING
+      if(pipeline.at(EXECUTE_STEP).stalledByCtrl){mem_done = false; return;}
+    #else
+      pipeline.at(EXECUTE_STEP).fw_data = fw_data;
+      pipeline.at(EXECUTE_STEP).fw_addr = fw_addr;
+    #endif
     bool speculative = false;
     bool more_cycles_rem = false;
     if(pipeline.at(EXECUTE_STEP).speculative){
@@ -140,6 +146,10 @@ void FpuPipeline::executeStep(){
     }
     else if(!(pipeline.at(EXECUTE_STEP).toMem || pipeline.at(EXECUTE_STEP).fromMem) && !pipeline.at(EXECUTE_STEP).isEmpty()) { //If we reach this point, we can assume that this operation has not been executed yet (or have been decremented enugh).
       executeOp(pipeline.at(EXECUTE_STEP), registerFilePtr);
+      #ifdef FORWARDING
+        fw_data = pipeline.at(EXECUTE_STEP).data;
+        fw_addr = pipeline.at(EXECUTE_STEP).addrTo;
+      #endif
     }
     execute_done = !speculative  && !more_cycles_rem;
   } else {
@@ -148,14 +158,15 @@ void FpuPipeline::executeStep(){
 }
 
 void FpuPipeline::memoryStep(){
-  if (MEMORY_STEP == EXECUTE_STEP && !execute_done) {
+  if (MEMORY_STEP == EXECUTE_STEP && !execute_done || pipeline.at(MEMORY_STEP).stalledByCtrl) {
     mem_done = false;
   } else if ((pipeline.at(MEMORY_STEP).fromMem || pipeline.at(MEMORY_STEP).toMem)){
+    //Add op to queue if its not been added yet!
     if (!pipeline.at(MEMORY_STEP).mem_result_valid){
       return;
     }
     mem_done = true;
-    if (pipeline.at(MEMORY_STEP).fromMem){
+    if (pipeline.at(MEMORY_STEP).fromMem){ //Why do we not just add this directly?
       pipeline.at(MEMORY_STEP).data.bitpattern = pipeline.at(MEMORY_STEP).mem_result;
     }
   }

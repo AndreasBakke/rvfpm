@@ -58,9 +58,18 @@ void execute_R4TYPE(FpuPipeObj& op, FpuRf* registerFile){
   std::feclearexcept(FE_ALL_EXCEPT); //Clear all flags
   RTYPE dec_instr = {.instr = op.instr};
   //Get data from registerFile
+  //TODO: Or from forwarded data if forwarded
   FPNumber data1 = registerFile->read(op.addrFrom[0]);
   FPNumber data2 = registerFile->read(op.addrFrom[1]);
   FPNumber data3 = registerFile->read(op.addrFrom[2]);
+  #ifdef FORWARDING
+    if(op.stalledByCtrl){
+      data1 = op.addrFrom[0] == op.fw_addr ? op.fw_data : data1;
+      data2 = op.addrFrom[1] == op.fw_addr ? op.fw_data : data2;
+      data3 = op.addrFrom[2] == op.fw_addr ? op.fw_data : data3;
+    }
+  #endif
+
   //Compute result -- will be added to pipeline
   switch (dec_instr.parts_r4type.opcode)
   {
@@ -112,9 +121,18 @@ void execute_R4TYPE(FpuPipeObj& op, FpuRf* registerFile){
 
 void execute_RTYPE(FpuPipeObj& op, FpuRf* registerFile){
   std::feclearexcept(FE_ALL_EXCEPT); //Clear all flags
-  RTYPE dec_instr = {.instr = op.instr}; //"Decode" into ITYPE
+  RTYPE dec_instr = {.instr = op.instr}; //"Decode" into RTYPE
+
   FPNumber data1 = registerFile->read(op.addrFrom[0]);
   FPNumber data2 = registerFile->read(op.addrFrom[1]);
+  #ifdef FORWARDING
+    if(op.stalledByCtrl){
+      std::cout << "used fwd data RTYPE " << op.fw_data.f << std::endl;
+
+      data1 = op.addrFrom[0] == op.fw_addr ? op.fw_data : data1;
+      data2 = op.addrFrom[1] == op.fw_addr ? op.fw_data : data2;
+    }
+  #endif
   switch (dec_instr.parts.funct7)
   {
   case FADD_S:
@@ -357,9 +375,16 @@ void execute_RTYPE(FpuPipeObj& op, FpuRf* registerFile){
 void execute_ITYPE(FpuPipeObj& op, FpuRf* registerFile){
 }
 void execute_STYPE(FpuPipeObj& op, FpuRf* registerFile){
+  //TODO: Get from forwarded data if forwarded
   if (registerFile != nullptr) {
     op.data = registerFile->read(op.addrFrom.front());
   }
+  #ifdef FORWARDING
+    if(op.stalledByCtrl){
+      std::cout << "used fwd data STYPE " << op.fw_data.f << std::endl;
+      op.data = op.addrFrom[0] == op.fw_addr ? op.fw_data : op.data;
+    }
+  #endif
 }
 
 

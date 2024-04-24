@@ -19,7 +19,7 @@ xif:
 fpu_pipeline:
   num_pipeline_stages: 3 #Number of stages in the FPU pipeline
   queue_depth: 2 #Depth of the FPU instruction queue - set to 0 to disable
-  steps:  #step 0 is the last step in the pipeline
+  steps:  #step 0 is the final step in the pipeline
     execute_step: 2
     memory_step: 1
     writeback_step: 0
@@ -27,8 +27,8 @@ fpu_pipeline:
     - RAW
     - WAR
     - WAW
-  OOO: false #Out of order execution - Not yet implemented
-  forwarding: false #Forward/bypass result to next operation - Not yet implemented
+  OOO: true #Out of order execution - Not yet implemented
+  forwarding: true #Forward/bypass result to next operation
 
 execute_cycles: #Number of cycles for execution of each instruction
   default: 1
@@ -37,7 +37,7 @@ execute_cycles: #Number of cycles for execution of each instruction
 
 defines: #Will be added as defines
   - RF_RESET_VALUE 0.0 #Reset value for the register file. NAN used if not specified
-  - SOME_DEF
+  # - NO_ROUNDING #Use cpp default rounding mode
   # - TESTFLOAT
 
 constInts: #Will be added as constInts

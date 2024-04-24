@@ -12,6 +12,7 @@
 #include "fpu_decode.h"
 #include "fpu_execute.h"
 #include "xif_config.h"
+#include "fp_number.h"
 #include <deque> //Double ended queue
 
 class FpuPipeline {
@@ -33,6 +34,11 @@ class FpuPipeline {
     bool result_valid; //set by core, polled in rvfpm.sv
     x_result_t result; //set by core, polled in rvfpm.sv
     bool result_ready; //set by rvfpm.sv, polled in core
+
+    #ifdef FORWARDING
+      FPNumber fw_data; //Forwarded data
+      unsigned int fw_addr; //Address of forwarded data.
+    #endif
 
   public:
     FpuPipeline(FpuRf* rf_pointer);

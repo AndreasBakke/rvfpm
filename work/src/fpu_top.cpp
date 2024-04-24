@@ -41,6 +41,7 @@ void FPU::resetFPU(){
 
 void FPU::clockEvent(){
   pipeline.step();
+  controller.detectHazards();
 };
 
 bool FPU::pollReady(){
