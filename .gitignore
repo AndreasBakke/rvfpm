@@ -13,5 +13,6 @@ work/work/
 work/tests/*/*
 *.vstf
 *.wlf
-work/include/defines.h
-work/src/defines.svh
+work/include/config.h
+work/src/config.svh
+thesis/

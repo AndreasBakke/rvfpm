@@ -16,12 +16,12 @@ class FPU {
     FpuRf registerFile;
     FpuPipeline pipeline;
     FpuPredecoder predecoder;
-    Controller controller;
     bool fpuReady;
 
   public:
     FPU();
     ~FPU();
+    Controller controller;
     void resetFPU();
     void clockEvent();
     bool pollReady();
@@ -29,7 +29,7 @@ class FPU {
     void addAcceptedInstruction(uint32_t instruction, unsigned int id, unsigned int operand_a, unsigned int operand_b, unsigned int operand_c, unsigned int mode, bool commit_valid, unsigned int commit_id, bool commit_kill);//and other necessary inputs (should be somewhat close to in_xif type)
 
     //Issue/Commit interface
-    void predecodeInstruction(uint32_t instruction, unsigned int id, bool& accept, bool& loadstore, bool& use_rs_a, bool& use_rs_b, bool& use_rs_c);
+    void predecodeInstruction(uint32_t instruction, unsigned int id, bool& accept, bool& loadstore, bool& writeback, bool& use_rs_a, bool& use_rs_b, bool& use_rs_c);
     void resetPredecoder();
     void commitInstruction(unsigned int id, bool kill);
     void executeStep();
@@ -42,9 +42,9 @@ class FPU {
     void memoryStep();
 
     //Result interface
-    void writeResult(bool result_ready);
     void pollResult(bool& result_valid, x_result_t& result);
-    void resultStep();
+    void resetResult(unsigned int id);
+    void writebackStep();
 
     //Backdoor functions
     FpuPipeObj testFloatOp();

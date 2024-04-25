@@ -20,3 +20,4 @@ FpuPipeObj decode_RTYPE(uint32_t instr, unsigned int operand_a, unsigned int ope
 FpuPipeObj decode_R4TYPE(uint32_t instr, unsigned int operand_a, unsigned int operand_b, unsigned int operand_c);
 FpuPipeObj decode_ITYPE(uint32_t instr, unsigned int operand_a);
 FpuPipeObj decode_STYPE(uint32_t instr, unsigned int operand_a);
+FpuPipeObj decode_CSRTYPE(uint32_t instr, unsigned int operand_a);

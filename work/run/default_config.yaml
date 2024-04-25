@@ -4,8 +4,6 @@ fpu:
   extensions:
     # - ZFINX
     # - ZFMin
-    # etc
-
 
 xif:
   XLEN: 32
@@ -21,13 +19,16 @@ xif:
 fpu_pipeline:
   num_pipeline_stages: 3 #Number of stages in the FPU pipeline
   queue_depth: 2 #Depth of the FPU instruction queue - set to 0 to disable
-
-  OOO: false #Out of order execution - Not yet implemented
-  forwarding: false #Forward/bypass result to next operation - Not yet implemented
-  steps:  #step 0 is the last step in the pipeline
+  steps:  #step 0 is the final step in the pipeline
     execute_step: 2
     memory_step: 1
     writeback_step: 0
+  hazards: #Hazards the controller will check
+    - RAW
+    - WAR
+    - WAW
+  OOO: true #Out of order execution - Not yet implemented
+  forwarding: true #Forward/bypass result to next operation
 
 execute_cycles: #Number of cycles for execution of each instruction
   default: 1
@@ -36,8 +37,9 @@ execute_cycles: #Number of cycles for execution of each instruction
 
 defines: #Will be added as defines
   - RF_RESET_VALUE 0.0 #Reset value for the register file. NAN used if not specified
-  - SOME_DEF
+  - FCSR_RM_RESET_VALUE 0b000 #Rounding mode set on reset. 0 (RNE) used by default
+  # - NO_ROUNDING #Use cpp default rounding mode
   # - TESTFLOAT
 
-# constInts: #Will be added as constInts
-#   #...
+constInts: #Will be added as constInts
+  #...

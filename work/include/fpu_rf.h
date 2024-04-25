@@ -53,6 +53,7 @@ class FpuRf {
     //fcsr-flags
     unsigned int raiseFlags(unsigned int flags);
     unsigned int setFlags(unsigned int flags); //Overrides current flags
+    unsigned int getFlags();
     unsigned int clearFlags();
     void raiseInvalidFlag();
     void raiseDevideByZeroFlag();

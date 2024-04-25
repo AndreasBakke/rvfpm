@@ -9,7 +9,7 @@
 #include "fpu_pipe.h"
 #include "fpu_rf.h"
 #include "fpu_instructions.h"
-#include "fpu_config.h"
+#include "xif_config.h"
 #include <cstdint>
 #include <cfenv>
 #include <limits>
@@ -24,7 +24,7 @@ void execute_R4TYPE(FpuPipeObj& op, FpuRf* registerFile);
 void execute_ITYPE(FpuPipeObj& op, FpuRf* registerFile);
 void execute_STYPE(FpuPipeObj& op, FpuRf* registerFile);
 void execute_ISTYPE(FpuPipeObj& op, FpuRf* registerFile);
-
+void execute_CSRTYPE(FpuPipeObj& op, FpuRf* registerFile);
 
 void setRoundingMode(unsigned int rm);
 

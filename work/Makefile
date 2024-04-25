@@ -24,7 +24,7 @@ N_GUI_OPTS = -c -do "run $(SIM_LENGTH); quit"
 sim_full:
 	make setup
 	vlog -work work src/in_xif.sv
-	vlog -work work src/defines.svh
+	vlog -work work src/config.svh
 	vlog -work work src/pa_rvfpm.sv
 	vlog -work work src/rvfpm.sv
 	vlog -work work sim/inTest_rvfpm.sv

@@ -10,3 +10,5 @@ fpu_pipeline:
 
 execute_cycles:
   default: 1
+  FDIV: 11
+  FSQRT: 11

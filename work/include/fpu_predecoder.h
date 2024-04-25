@@ -9,7 +9,7 @@
 #include <cstdint>
 #include "fpu_decode.h"
 #include "fpu_pipe.h"
-#include "fpu_config.h"
+#include "xif_config.h"
 
 
 
@@ -24,7 +24,7 @@ class FpuPredecoder {
   FpuPredecoder(bool& fpuReady);
   ~FpuPredecoder();
 
-  void predecodeInstruction(uint32_t instruction, unsigned int id, bool& accept, bool& loadstore, bool& use_rs_a, bool& use_rs_b, bool& use_rs_c);
+  void predecodeInstruction(uint32_t instruction, unsigned int id, bool& accept, bool& loadstore, bool& writeback, bool& use_rs_a, bool& use_rs_b, bool& use_rs_c);
   void reset();
 };
 

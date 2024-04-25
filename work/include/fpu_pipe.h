@@ -13,7 +13,7 @@
 
 struct FpuPipeObj {
   uint32_t instr; //Save instruction
-  unsigned int id = 0;  //from Core-V-XIF standard
+  unsigned int id = 99;  //from Core-V-XIF standard
   FPNumber operand_a;
   FPNumber operand_b;
   FPNumber operand_c;
@@ -33,8 +33,14 @@ struct FpuPipeObj {
   bool speculative = 0; //Set to 1 in decode, so empty operations isn't speculative. Set to 0 when commited do not execute if 1
   unsigned int size = 0;
   unsigned int mode = 0;
+  bool added_to_mem_queue = 0;
   bool mem_result_valid = 0;
   uint32_t mem_result = 0;
+  bool stalledByCtrl = 0;
+  #ifdef FORWARDING
+    FPNumber fw_data;
+    unsigned int fw_addr;
+  #endif
 
 
   bool isEmpty() const {
@@ -52,8 +58,7 @@ struct FpuPipeObj {
         size == 0 &&
         mode == 0 &&
         !mem_result_valid &&
-        mem_result == 0;
-        // uDataToXreg == 0 &&
-        // dataToXreg == 0;
+        mem_result == 0 &&
+        !stalledByCtrl;
   }
 };

@@ -39,6 +39,12 @@ extern "C" {
     stalled = fpu->pollReady();
   };
 
+  void resolve_forwards(void* fpu_ptr){
+    FPU* fpu = static_cast<FPU*>(fpu_ptr);
+    #ifdef FORWARDING
+      fpu->controller.resolveForwards();
+    #endif
+  };
   //-----------------------
   // ISSUE/COMMIT INTERFACE
   //-----------------------
@@ -54,9 +60,9 @@ extern "C" {
     fpu->resetPredecoder();
   };
 
-  void predecode_instruction(void* fpu_ptr, uint32_t instruction, unsigned int id,  bool& accept, bool& loadstore, bool& use_rs_a, bool& use_rs_b, bool& use_rs_c){
+  void predecode_instruction(void* fpu_ptr, uint32_t instruction, unsigned int id,  bool& accept, bool& loadstore, bool& writeback, bool& use_rs_a, bool& use_rs_b, bool& use_rs_c){
     FPU* fpu = static_cast<FPU*>(fpu_ptr);
-    fpu->predecodeInstruction(instruction, id, accept, loadstore, use_rs_a, use_rs_b, use_rs_c);
+    fpu->predecodeInstruction(instruction, id, accept, loadstore, writeback, use_rs_a, use_rs_b, use_rs_c);
   };
 
   void commit_instruction(void* fpu_ptr, unsigned int id, bool kill){
@@ -94,7 +100,6 @@ extern "C" {
   void write_sv_state(void* fpu_ptr, bool mem_ready, bool result_ready){
     FPU* fpu = static_cast<FPU*>(fpu_ptr);
     fpu->writeMemoryResponse(mem_ready, 0, 0, 0);
-    fpu->writeResult(result_ready);
   };
 
   void write_memory_result(void* fpu_ptr, unsigned int id, uint32_t rdata, bool err, bool dbg){
@@ -111,20 +116,26 @@ extern "C" {
   // RESULT INTERFACE
   //-----------------------
 
-  void poll_res(void* fpu_ptr, bool& result_valid, unsigned int& id, unsigned int& data, unsigned int& rd, unsigned int& ecswe, unsigned int& ecsdata){
+  void poll_res(void* fpu_ptr, bool& result_valid, unsigned int& id, unsigned int& data, unsigned int& rd, bool& we, unsigned int& ecswe, unsigned int& ecsdata){
     FPU* fpu = static_cast<FPU*>(fpu_ptr);
     x_result_t result = {};
     fpu->pollResult(result_valid, result);
     id = result.id;
     data = result.data;
     rd = result.rd;
+    we = result.we;
     ecswe = result.ecswe;
     ecsdata = result.ecsdata;
   };
 
-  void resultStep(void* fpu_ptr) {
+  void reset_result(void* fpu_ptr, unsigned int id){
     FPU* fpu = static_cast<FPU*>(fpu_ptr);
-    fpu->resultStep();
+    fpu->resetResult(id);
+  }
+
+  void writebackStep(void* fpu_ptr) {
+    FPU* fpu = static_cast<FPU*>(fpu_ptr);
+    fpu->writebackStep();
   };
 
   //-----------------------

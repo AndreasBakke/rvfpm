@@ -11,7 +11,8 @@
 #include "fpu_instructions.h"
 #include "fpu_decode.h"
 #include "fpu_execute.h"
-#include "fpu_config.h"
+#include "xif_config.h"
+#include "fp_number.h"
 #include <deque> //Double ended queue
 
 class FpuPipeline {
@@ -34,6 +35,7 @@ class FpuPipeline {
     x_result_t result; //set by core, polled in rvfpm.sv
     bool result_ready; //set by rvfpm.sv, polled in core
 
+
   public:
     FpuPipeline(FpuRf* rf_pointer);
     ~FpuPipeline();
@@ -43,11 +45,16 @@ class FpuPipeline {
     void step(); //Advance pipeline by one step (called by clock in interface)
     void executeStep();
     void memoryStep();
-    void resultStep(); //wb
+    void writebackStep(); //wb
+    void addResult(FpuPipeObj op);
     void advanceStages(); //Move non-stalled stages one step forward
     void stallCheck(); //Set stalled if pipeline(& optionally queue) is full
     bool isStalled();
     bool isEmpty();
+    #ifdef FORWARDING
+      FPNumber fw_data; //Forwarded data
+      unsigned int fw_addr; //Address of forwarded data.
+    #endif
 
     //Issue/Commit interface
     void addOpToQueue(FpuPipeObj op);
@@ -55,10 +62,11 @@ class FpuPipeline {
     FpuPipeObj getWaitingOp();
     void commitInstruction(unsigned int id, bool kill);
 
-    //Resultinterface
-    void writeResult(bool result_ready);
-    void pollResult(bool& result_valid_ptr, x_result_t& result_ptr);
+    //Memory request interface
+    std::deque<x_mem_req_t> mem_req_queue;
 
+    //Resultinterface
+    std::deque<x_result_t> result_queue;
     void flush();
     int getNumStages();
     int getQueueDepth();

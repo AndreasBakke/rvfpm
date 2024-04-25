@@ -6,7 +6,7 @@
 */
 
 #include "fpu_pipeline.h"
-#include "fpu_config.h"
+#include "xif_config.h"
 #include <iostream>
 
 
@@ -40,8 +40,7 @@ void FpuPipeline::step(){
   //Check for memory dependencies and request throough interface
   //Pipeline stucture set in run/setup.yaml
 
-  //The execute step is the only step called on positive clock edge (due to some executions requiring multiple clock cycles)
-  //Memory and writeback is done combinatorially
+  //All steps done "combinatorially" on negative clock edge, we only decrement remaining_ex_cycles and advance/check for stalls.
 
   #ifdef TESTFLOAT
     executeOp(waitingOp, registerFilePtr); //Values are loaded to register using bd_load
@@ -130,17 +129,28 @@ void FpuPipeline::advanceStages(){ //TODO: also check for hazards.
 
 
 void FpuPipeline::executeStep(){
+  FpuPipeObj& exOp = pipeline.at(EXECUTE_STEP);
   if(!execute_done) { //If we are not done executing the op in execute step. Flag reset by stallCheck() if we advance
+    #ifndef FORWARDING
+      if(exOp.stalledByCtrl){mem_done = false; return;}
+    #else
+      exOp.fw_data = fw_data;
+      exOp.fw_addr = fw_addr;
+    #endif
     bool speculative = false;
     bool more_cycles_rem = false;
-    if(pipeline.at(EXECUTE_STEP).speculative){
+    if(exOp.speculative){
       speculative = true; //Wait until operation has been committed before executing
     }
-    else if (pipeline.at(EXECUTE_STEP).remaining_ex_cycles > 1){
+    else if (exOp.remaining_ex_cycles > 1){
       more_cycles_rem = true;
     }
-    else if(!(pipeline.at(EXECUTE_STEP).toMem || pipeline.at(EXECUTE_STEP).fromMem) && !pipeline.at(EXECUTE_STEP).isEmpty()) { //If we reach this point, we can assume that this operation has not been executed yet (or have been decremented enugh).
+    else if(!(exOp.toMem || exOp.fromMem) && !exOp.isEmpty()) { //If we reach this point, we can assume that this operation has not been executed yet (or have been decremented enugh).
       executeOp(pipeline.at(EXECUTE_STEP), registerFilePtr);
+      #ifdef FORWARDING
+        fw_data = exOp.data;
+        fw_addr = exOp.addrTo;
+      #endif
     }
     execute_done = !speculative  && !more_cycles_rem;
   } else {
@@ -148,26 +158,41 @@ void FpuPipeline::executeStep(){
   }
 }
 
-void FpuPipeline::memoryStep(){ //Todo: what should this be now?
-  if (MEMORY_STEP == EXECUTE_STEP && !execute_done) {
+void FpuPipeline::memoryStep(){
+  FpuPipeObj& memOp = pipeline.at(MEMORY_STEP);
+  if (MEMORY_STEP == EXECUTE_STEP && !execute_done || memOp.stalledByCtrl) {
     mem_done = false;
-  } else if ((pipeline.at(MEMORY_STEP).fromMem || pipeline.at(MEMORY_STEP).toMem)){
-    if (!pipeline.at(MEMORY_STEP).mem_result_valid){
+  } else if ((memOp.fromMem || memOp.toMem)){
+    //Add op to queue if its not been added yet!
+    if(!memOp.added_to_mem_queue){
+      x_mem_req_t mem_req_s = {};
+    mem_req_s.id = memOp.id;
+    mem_req_s.addr = memOp.toMem ? memOp.addrTo : memOp.addrFrom.front();
+    STYPE dec_instr = {.instr = memOp.instr}; //For step-by-step - comparrison purposes we dont use addrFrom (So the data is present for flw aswell)
+    mem_req_s.wdata = registerFilePtr->read(dec_instr.parts.rs2).bitpattern;
+    mem_req_s.last = 1;
+    mem_req_s.size = memOp.size;
+    mem_req_s.mode = memOp.mode;
+    mem_req_s.we = memOp.toMem ? 1 : 0;
+    mem_req_queue.push_back(mem_req_s);
+    memOp.added_to_mem_queue = 1;
+    }
+
+    if (!memOp.mem_result_valid){
       return;
     }
     mem_done = true;
-    if (pipeline.at(MEMORY_STEP).fromMem){
-      pipeline.at(MEMORY_STEP).data.bitpattern = pipeline.at(MEMORY_STEP).mem_result;
+    if (memOp.fromMem){ //Why do we not just add this directly?
+      memOp.data.bitpattern = memOp.mem_result;
     }
   }
 
-  //TODO: bør kunne velge om store-operations skal gjøres her! I tilfelle det er en del av pipeline-strukturen til brukeren
    else {
     mem_done = true;
   }
 }
 
-void FpuPipeline::resultStep(){
+void FpuPipeline::writebackStep(){
   if (wb_done) {
     return;
   }
@@ -175,30 +200,28 @@ void FpuPipeline::resultStep(){
     wb_done = false;
     return;
   }
+  addResult(pipeline.at(WRITEBACK_STEP));
   wb_done = true;
-  if (!pipeline.at(WRITEBACK_STEP).isEmpty()){
-    result_valid = 1;
-    result.id = pipeline.at(WRITEBACK_STEP).id;
-    if (!pipeline.at(WRITEBACK_STEP).toMem && !pipeline.at(WRITEBACK_STEP).fromMem) {
-      result.ecswe   = 0b010;
-      result.ecsdata = 0b001100;
-      result.rd = pipeline.at(WRITEBACK_STEP).addrTo;
-      result.data = pipeline.at(WRITEBACK_STEP).data.bitpattern;
-    }
-  } else if (pipeline.at(WRITEBACK_STEP).toXReg) {
-    result_valid = 1;
-    result.id = pipeline.at(WRITEBACK_STEP).id;
-    result.data = pipeline.at(WRITEBACK_STEP).data.u;
-    result.rd = pipeline.at(WRITEBACK_STEP).addrTo;
-  } else if (!pipeline.at(WRITEBACK_STEP).isEmpty()) {
-    result_valid = 1;
-    result.id = pipeline.at(WRITEBACK_STEP).id;
-  }
-
-  if (result_valid) {
-    wb_done = result_ready;
-  }
 }
+
+void FpuPipeline::addResult(FpuPipeObj op){
+  x_result_t result_s = {};
+  result_s.id = op.id;
+  if (!op.fromMem && !op.toMem){
+    result_s.rd = op.addrTo;
+    result_s.data = op.data.bitpattern;
+  }
+  if(op.toXReg){ //TODO: or is ZFINX
+    result_s.we = 1;
+  }
+  if(!op.toXReg && !op.toMem && !op.fromMem){ //TODO: and not ZFINX
+    result_s.ecswe   = 0b010;
+    result_s.ecsdata = 0b001100;
+  }
+  if (!op.isEmpty()){
+    result_queue.push_back(result_s);
+  }
+};
 
 
 
@@ -211,6 +234,7 @@ void FpuPipeline::stallCheck(){
   } else if (!waitingOp.isEmpty()){
     stalled = true;
   }
+
 }
 
 bool FpuPipeline::isStalled(){
@@ -228,35 +252,6 @@ bool FpuPipeline::isEmpty(){
 };
 
 
-//Checkforhazards
-//Hazard type?
-//Could include
-//step of pipeline
-//Addresses involved
-//IDs involved
-//ID stalled
-
-// //Return array of theese. OOO can use the information to reorder
-// bool FpuPipeLine::checkForHazards(){
-//   bool stallEx = checkExecuteHazards();
-//   bool stallMem = checkMemoryHazards(); // If write to Mem and there is a writeback to be done to the same register. Stall
-//   bool stallWB = checkWritebackHazards();//None?
-//   //Execute step:
-//   // IF addrFrom of execute step is the same as the toAddr of steps in front in pipeline
-//   // Not if forwarding is enabled
-//   // And not if its the same step
-// }
-
-
-//If addrFrom of execute step is the same as the toAddr of memory or writeback step, stall
-//But not if forwarding is enabled
-
-//Reorder
-//See if any stalling can be avoided by reordering executions
-//OBS: Be careful not to reorder anything that might affect results
-//eg. do not reorder operations if there are dependencies between instructions regarding targets
-// Especially nice to do if a division/sqrt is done, we can do other operations first, if we have empty queues later.
-//This would reduce the overal execution time
 
 void FpuPipeline::commitInstruction(unsigned int id, bool kill){
   for (auto& op : pipeline) {
@@ -288,19 +283,6 @@ void FpuPipeline::commitInstruction(unsigned int id, bool kill){
     }
   }
 };
-
-//--------------------------
-// Result interface
-//--------------------------
-void FpuPipeline::writeResult(bool result_ready){
-  this->result_ready = result_ready;
-};
-
-void FpuPipeline::pollResult(bool& result_valid_ptr, x_result_t& result_ptr){
-  result_valid_ptr = this->result_valid;
-  result_ptr = this->result;
-};
-
 
 //--------------------------
 // Pipeline functions

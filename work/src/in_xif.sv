@@ -25,7 +25,7 @@
   limitations under the License.
 */
 
-`include "defines.svh"
+`include "config.svh"
 package in_xif;
   parameter NUM_F_REGS        = `NUM_F_REGS;
   parameter XLEN              = `XLEN;

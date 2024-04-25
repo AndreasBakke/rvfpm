@@ -7,7 +7,7 @@
 */
 
 
-`include "defines.svh"
+`include "config.svh"
 `include "pa_rvfpm.sv"
 import pa_rvfpm::*;
 import in_xif::*;
@@ -74,19 +74,22 @@ module rvfpm #(
   import "DPI-C" function void clock_event(input chandle fpu_ptr);
   import "DPI-C" function void poll_ready(input chandle fpu_ptr, output logic fpu_ready);
   import "DPI-C" function void destroy_fpu(input chandle fpu_ptr);
+  import "DPI-C" function void resolve_forwards(input chandle fpu_ptr);
   import "DPI-C" function int unsigned getRFContent(input chandle fpu_ptr, input int addr);
   import "DPI-C" function void add_accepted_instruction(input chandle fpu_ptr, input int instr, input int unsigned id, input int unsigned operand_a, input int unsigned operand_b, input int unsigned operand_c, input int unsigned mode, input logic commit_valid, input int unsigned commit_id, input logic commit_kill);
   import "DPI-C" function void reset_predecoder(input chandle fpu_ptr);
-  import "DPI-C" function void predecode_instruction(input chandle fpu_ptr, input int instr, input int unsigned id, output logic accept, output logic loadstore, output logic use_rs_a, output logic use_rs_b, output logic use_rs_c);
+  import "DPI-C" function void predecode_instruction(input chandle fpu_ptr, input int instr, input int unsigned id, output logic accept, output logic loadstore, output logic writeback, output logic use_rs_a, output logic use_rs_b, output logic use_rs_c);
   import "DPI-C" function void commit_instruction(input chandle fpu_ptr, input int unsigned id, input logic kill);
   import "DPI-C" function void executeStep(input chandle fpu_ptr);
   import "DPI-C" function void poll_memory_request(input chandle fpu_ptr, output logic mem_valid, output int unsigned id, output int unsigned addr, output int unsigned wdata, output logic last, output int unsigned size, output int unsigned mode, output logic we);
   import "DPI-C" function void write_sv_state(input chandle fpu_ptr, input logic mem_ready, input logic result_ready);
-  import "DPI-C" function void poll_res(input chandle fpu_ptr, output logic result_valid, output int unsigned id, output int unsigned data, output int unsigned rd, output int unsigned ecswe, output int unsigned ecsdata); //TODO: add remaining signals in interface
+  import "DPI-C" function void poll_res(input chandle fpu_ptr, output logic result_valid, output int unsigned id, output int unsigned data, output int unsigned rd, output logic we, output int unsigned ecswe, output int unsigned ecsdata); //TODO: add remaining signals in interface
   import "DPI-C" function void write_memory_result(input chandle fpu_ptr, input int unsigned id, input int unsigned rdata, input logic err, input logic dbg);
-  import "DPI-C" function void resultStep(input chandle fpu_ptr);
+  import "DPI-C" function void writebackStep(input chandle fpu_ptr);
   import "DPI-C" function void memoryStep(input chandle fpu_ptr);
   import "DPI-C" function void reset_memory_request(input chandle fpu_ptr, input int unsigned id);
+  import "DPI-C" function void reset_result(input chandle fpu_ptr, input int unsigned id);
+
   //-----------------------
   //-- Local parameters
   //-----------------------
@@ -103,9 +106,9 @@ module rvfpm #(
 
   assign fpu_ready = fpu_ready_s;
 
-  logic accept_s, loadstore_s;
+  logic accept_s, loadstore_s, writeback_s;
   assign issue_resp.accept = accept_s;
-  assign issue_resp.writeback = 0;
+  assign issue_resp.writeback = writeback_s;
   assign issue_resp.dualwrite = 0;
   assign issue_resp.dualread = 0;
   assign issue_resp.loadstore = loadstore_s;
@@ -122,7 +125,6 @@ module rvfpm #(
   assign result.ecswe = result_ecswe_full[2:0];
   assign result.id = result_id_full[X_ID_WIDTH-1:0];
   assign result.rd = result_rd_full[4:0];
-  assign result.we = 0;
   assign result.exc = 0;
   assign result.exccode = 0;
   assign result.err = 0;
@@ -136,6 +138,9 @@ module rvfpm #(
   assign mem_req.size = mem_req_size_full[2:0];
   assign mem_req.mode = mem_req_mode_full[1:0];
 
+  `ifndef ZFINX
+    logic [FLEN-1:0] registerFile[NUM_F_REGS]; //For verification
+  `endif
 
   always_ff @(posedge ck or negedge rst) begin: la_main
     if (!rst) begin
@@ -146,9 +151,14 @@ module rvfpm #(
     else if (enable) begin //Call clocked functions
       clock_event(fpu);
       poll_ready(fpu, fpu_ready_s);
+      if (mem_valid && mem_ready) begin
+        reset_memory_request(fpu, mem_req.id);
+      end
+      if (result_valid && result_ready) begin
+        reset_result(fpu, result_id_full);
+      end
     end
   end
-
 
   always_ff @(negedge ck) begin
     if (enable) begin
@@ -156,27 +166,28 @@ module rvfpm #(
       if(accept_s) begin
         add_accepted_instruction(fpu, issue_req.instr, issue_req.id, issue_req.rs[0], issue_req.rs[1], issue_req.rs[2], issue_req.mode, commit_valid, commit.id, commit.commit_kill);
       end
-      if (mem_valid && mem_ready) begin
-        reset_memory_request(fpu, mem_req.id);
-      end
       if (mem_result_valid) begin
         write_memory_result(fpu, mem_result.id, mem_result.rdata, mem_result.err, mem_result.dbg);
       end
       executeStep(fpu);
       memoryStep(fpu);
-      resultStep(fpu);
+      writebackStep(fpu);
+      if(FORWARDING == 1) begin
+        resolve_forwards(fpu);
+      end
       poll_memory_request(fpu, mem_valid, mem_id_full, mem_req.addr, mem_req.wdata, mem_req.last, mem_req_size_full, mem_req_mode_full, mem_req.we);
-      poll_res(fpu, result_valid, result_id_full, result.data, result_rd_full, result_ecswe_full, result_ecsdata_full);
+      poll_res(fpu, result_valid, result_id_full, result.data, result_rd_full, result.we, result_ecswe_full, result_ecsdata_full);
     end
   end
 
   always_latch begin
     issue_ready = fpu_ready_s;
     if (issue_valid && fpu_ready_s) begin
-      predecode_instruction(fpu, issue_req.instr, issue_req.id, accept_s, loadstore_s, use_rs_i[0], use_rs_i[1], use_rs_i[2]);
+      predecode_instruction(fpu, issue_req.instr, issue_req.id, accept_s, loadstore_s, writeback_s, use_rs_i[0], use_rs_i[1], use_rs_i[2]);
     end else begin
       accept_s = 0;
       loadstore_s = 0;
+      writeback_s = 0;
     end
 
     if (commit_valid) begin
@@ -186,6 +197,13 @@ module rvfpm #(
     write_sv_state(fpu, mem_ready, result_ready);
   end
 
+  always @(posedge ck) begin
+    `ifndef ZFINX
+    for (int i = 0; i < NUM_F_REGS; ++i) begin
+      assign registerFile[i] = getRFContent(fpu, i); // Use assign to connect wire to array index
+    end
+  `endif
+  end
 
 endmodule;
 

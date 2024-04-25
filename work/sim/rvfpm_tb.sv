@@ -7,7 +7,7 @@
   Then run vsim using -sv_lib bin/lib_rvfpm -novopt work.rvfpm_tb -suppress 12110
 */
 `timescale 1ns/1ps
-`include "../src/defines.svh"
+`include "../src/config.svh"
 import in_xif::*;
 module rvfpm_tb;
   //-----------------------

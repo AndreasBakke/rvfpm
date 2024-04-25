@@ -41,6 +41,7 @@ void FPU::resetFPU(){
 
 void FPU::clockEvent(){
   pipeline.step();
+  controller.detectHazards();
 };
 
 bool FPU::pollReady(){
@@ -51,8 +52,8 @@ bool FPU::pollReady(){
 //--------------------------
 // Issue interface
 //--------------------------
-void FPU::predecodeInstruction(uint32_t instruction, unsigned int id, bool& accept, bool& loadstore, bool& use_rs_a, bool& use_rs_b, bool& use_rs_c){
-  predecoder.predecodeInstruction(instruction, id, accept, loadstore, use_rs_a, use_rs_b, use_rs_c);
+void FPU::predecodeInstruction(uint32_t instruction, unsigned int id, bool& accept, bool& loadstore, bool& writeback, bool& use_rs_a, bool& use_rs_b, bool& use_rs_c){
+  predecoder.predecodeInstruction(instruction, id, accept, loadstore, writeback, use_rs_a, use_rs_b, use_rs_c);
 };
 
 void FPU::resetPredecoder(){
@@ -109,16 +110,16 @@ void FPU::memoryStep(){
 //--------------------------
 // Result interface
 //--------------------------
-void FPU::writeResult(bool result_ready){
-  pipeline.writeResult(result_ready);
-};
-
 void FPU::pollResult(bool& result_valid, x_result_t& result){
-  pipeline.pollResult(result_valid, result);
+  controller.pollResult(result_valid, result);
 };
 
-void FPU::resultStep(){
-  pipeline.resultStep();
+void FPU::resetResult(unsigned int id){
+  controller.resetResult(id);
+}
+
+void FPU::writebackStep(){
+  pipeline.writebackStep();
 };
 
 //--------------------------

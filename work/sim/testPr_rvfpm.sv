@@ -23,7 +23,9 @@ program automatic testPr_rvfpm #(
     init();
     fillRF();
     $display("--- %t: started RTYPE ---", $time);
-
+    doCSRType(.csr(2), .funct3(1), .rs1(6), .rd(0), .operand_a(1),.rs_valid_i(3'b001)); //Test CSR write
+    doCSRType(.csr(2), .funct3(2), .rs1(6), .rd(0)); //Test CSR read
+    //csr write
     repeat(NUM_TESTS) doRTYPE();
     doRTYPE(.rd(19)); //Test with specified destination
 
@@ -300,6 +302,20 @@ program automatic testPr_rvfpm #(
         end
       end
     join_none
+  endtask;
+
+
+  task doCSRType(input int unsigned csr = 12'b000000000011, input int unsigned rs1 = 6, input int unsigned funct3 = 3'b011, input int rd = 0, input int unsigned operand_a = 0, input logic[2:0] rs_valid_i = 3'b000);
+    automatic logic [31:0] instr_csr = 0;
+    automatic logic[X_ID_WIDTH-1:0] issue_id = 0;
+    @(posedge uin_rvfpm.ck)
+    instr_csr[31:20] = csr; //imm
+    instr_csr[19:15] = rs1; //rs1 (base)
+    instr_csr[14:12] = funct3; //rm (W)
+    instr_csr[11:7] = rd;  //rd (dest)
+    instr_csr[6:0] = 7'b1110011;  //OPCODE
+    issue_id = id;
+    doIssueInst(instr_csr, id, operand_a, 0, 0, rs_valid_i);
   endtask;
 
   task automatic doIssueInst(input logic[31:0] instruction = 0, input logic[X_ID_WIDTH-1:0] id = 0, input int unsigned operand_a = 0, input int unsigned operand_b = 0, input int unsigned operand_c = 0, input logic[2:0] rs_valid_i = 3'b000); //Issue instruction to coproc

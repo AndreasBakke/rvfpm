@@ -6,18 +6,21 @@
 */
 
 #include "fpu_rf.h"
+#include <iostream>
 
 
 FpuRf::FpuRf(int depth) : NUM_F_REGISTERS(depth), registerFile(depth) {
   resetFpuRf();
-  fcsr = {.v = 0};
 }
 
 FpuRf::~FpuRf() {
 }
 
 void FpuRf::resetFpuRf(){
-  fcsr.v=0;
+  fcsr.v=0; //Set to 0
+  #ifdef FCSR_RM_RESET_VALUE
+    fcsr.parts.frm = FCSR_RM_RESET_VALUE;
+  #endif
   for (auto &reg : registerFile) {
     #ifdef RF_RESET_VALUE
       reg = {.f = RF_RESET_VALUE}; //Initialize
@@ -59,6 +62,10 @@ unsigned int FpuRf::raiseFlags(unsigned int flags){
 
 unsigned int FpuRf::setFlags(unsigned int flags){
   fcsr.parts_cons.flags = flags;
+  return fcsr.parts_cons.flags;
+};
+
+unsigned int FpuRf::getFlags(){
   return fcsr.parts_cons.flags;
 };
 

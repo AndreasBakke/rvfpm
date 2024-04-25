@@ -4,7 +4,7 @@
 #
 #   Description:
 #   Uses default_config.yaml and other user defined yaml files to
-#   to write pa_defines.sv and defines.h to ensure that the same
+#   to write config.svh and config.h to ensure that the same
 #   parameters are used for both systemverilog and cpp.
 ######################################################################
 
@@ -13,8 +13,8 @@ import os
 import yaml
 
 #TODO: add path variable to enable run from multiple folders
-sv_path = "src/defines.svh"
-cpp_path = "include/defines.h"
+sv_path = "src/config.svh"
+cpp_path = "include/config.h"
 
 header  = "//####################################################################\n"
 header += "// rvfpm - 2024\n"
@@ -115,14 +115,20 @@ def write_cpp_params(data):
   try:
     write_data(cpp_path, "\n//Pipeline-parameters\n")
     for param in data["fpu_pipeline"]:
-      if param == "steps":  #Not needed in pa_rvfpm as of yet
+      if param == "steps":
         write_data(cpp_path, "\nenum pipelineConfig {\n") if len(data["fpu_pipeline"]["steps"])>0 else None
         for step in data["fpu_pipeline"]["steps"]:
           write_data(cpp_path, "  "+str(step).upper()+" = "+str(data["fpu_pipeline"]["steps"][step])+",\n")
         write_data(cpp_path, "};\n") if len(data["fpu_pipeline"]["steps"])>0 else None
         continue
+      if param == "hazards":
+        for hazard in data["fpu_pipeline"]["hazards"]:
+          write_data(cpp_path, "#define CTRL_"+str(hazard).upper()+"\n")
+        continue
       if data["fpu_pipeline"][param] == True:
         write_data(cpp_path, "const int "+str(param).upper()+"=1;\n")
+        if param == "forwarding" or param == "OOO":
+          write_data(cpp_path, "#define "+str(param).upper()+"\n")
       elif data["fpu_pipeline"][param] == False:
         write_data(cpp_path, "const int "+str(param).upper()+"=0;\n")
       else:

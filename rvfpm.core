@@ -25,9 +25,9 @@ filesets:
       - work/src/fpu_rf.cpp
       - work/src/controller.cpp
       - work/src/fpu_top.cpp
-      - work/include/defines.h: { is_include_file: true }
+      - work/include/config.h: { is_include_file: true }
       - work/include/fp_number.h: { is_include_file: true }
-      - work/include/fpu_config.h: { is_include_file: true }
+      - work/include/xif_config.h: { is_include_file: true }
       - work/include/fpu_execute.h: { is_include_file: true }
       - work/include/fpu_instructions.h: { is_include_file: true }
       - work/include/fpu_decode.h: { is_include_file: true }
