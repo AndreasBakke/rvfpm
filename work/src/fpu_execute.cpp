@@ -127,8 +127,6 @@ void execute_RTYPE(FpuPipeObj& op, FpuRf* registerFile){
   FPNumber data2 = registerFile->read(op.addrFrom[1]);
   #ifdef FORWARDING
     if(op.stalledByCtrl){
-      std::cout << "used fwd data RTYPE " << op.fw_data.f << std::endl;
-
       data1 = op.addrFrom[0] == op.fw_addr ? op.fw_data : data1;
       data2 = op.addrFrom[1] == op.fw_addr ? op.fw_data : data2;
     }
@@ -381,7 +379,6 @@ void execute_STYPE(FpuPipeObj& op, FpuRf* registerFile){
   }
   #ifdef FORWARDING
     if(op.stalledByCtrl){
-      std::cout << "used fwd data STYPE " << op.fw_data.f << std::endl;
       op.data = op.addrFrom[0] == op.fw_addr ? op.fw_data : op.data;
     }
   #endif

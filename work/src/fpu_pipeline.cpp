@@ -168,7 +168,8 @@ void FpuPipeline::memoryStep(){
       x_mem_req_t mem_req_s = {};
     mem_req_s.id = memOp.id;
     mem_req_s.addr = memOp.toMem ? memOp.addrTo : memOp.addrFrom.front();
-    mem_req_s.wdata = memOp.toMem ?  registerFilePtr->read(memOp.addrFrom.front()).bitpattern: 0;
+    STYPE dec_instr = {.instr = memOp.instr}; //For step-by-step - comparrison purposes we dont use addrFrom (So the data is present for flw aswell)
+    mem_req_s.wdata = registerFilePtr->read(dec_instr.parts.rs2).bitpattern;
     mem_req_s.last = 1;
     mem_req_s.size = memOp.size;
     mem_req_s.mode = memOp.mode;

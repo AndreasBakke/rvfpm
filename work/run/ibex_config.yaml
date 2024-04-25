@@ -12,6 +12,3 @@ execute_cycles:
   default: 1
   FDIV: 11
   FSQRT: 11
-
-defines: #Will be added as defines
-  - RF_RESET_VALUE 00.00

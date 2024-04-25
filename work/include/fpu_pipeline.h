@@ -35,10 +35,6 @@ class FpuPipeline {
     x_result_t result; //set by core, polled in rvfpm.sv
     bool result_ready; //set by rvfpm.sv, polled in core
 
-    #ifdef FORWARDING
-      FPNumber fw_data; //Forwarded data
-      unsigned int fw_addr; //Address of forwarded data.
-    #endif
 
   public:
     FpuPipeline(FpuRf* rf_pointer);
@@ -55,6 +51,10 @@ class FpuPipeline {
     void stallCheck(); //Set stalled if pipeline(& optionally queue) is full
     bool isStalled();
     bool isEmpty();
+    #ifdef FORWARDING
+      FPNumber fw_data; //Forwarded data
+      unsigned int fw_addr; //Address of forwarded data.
+    #endif
 
     //Issue/Commit interface
     void addOpToQueue(FpuPipeObj op);

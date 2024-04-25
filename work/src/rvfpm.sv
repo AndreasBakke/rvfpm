@@ -138,6 +138,9 @@ module rvfpm #(
   assign mem_req.size = mem_req_size_full[2:0];
   assign mem_req.mode = mem_req_mode_full[1:0];
 
+  `ifndef ZFINX
+    logic [FLEN-1:0] registerFile[NUM_F_REGS]; //For verification
+  `endif
 
   always_ff @(posedge ck or negedge rst) begin: la_main
     if (!rst) begin
@@ -166,12 +169,12 @@ module rvfpm #(
       if (mem_result_valid) begin
         write_memory_result(fpu, mem_result.id, mem_result.rdata, mem_result.err, mem_result.dbg);
       end
-      if(FORWARDING == 1) begin
-        resolve_forwards(fpu);
-      end
       executeStep(fpu);
       memoryStep(fpu);
       writebackStep(fpu);
+      if(FORWARDING == 1) begin
+        resolve_forwards(fpu);
+      end
       poll_memory_request(fpu, mem_valid, mem_id_full, mem_req.addr, mem_req.wdata, mem_req.last, mem_req_size_full, mem_req_mode_full, mem_req.we);
       poll_res(fpu, result_valid, result_id_full, result.data, result_rd_full, result.we, result_ecswe_full, result_ecsdata_full);
     end
@@ -194,6 +197,13 @@ module rvfpm #(
     write_sv_state(fpu, mem_ready, result_ready);
   end
 
+  always @(posedge ck) begin
+    `ifndef ZFINX
+    for (int i = 0; i < NUM_F_REGS; ++i) begin
+      assign registerFile[i] = getRFContent(fpu, i); // Use assign to connect wire to array index
+    end
+  `endif
+  end
 
 endmodule;
 

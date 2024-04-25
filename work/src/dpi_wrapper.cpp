@@ -41,7 +41,9 @@ extern "C" {
 
   void resolve_forwards(void* fpu_ptr){
     FPU* fpu = static_cast<FPU*>(fpu_ptr);
-    fpu->controller.resolveForwards();
+    #ifdef FORWARDING
+      fpu->controller.resolveForwards();
+    #endif
   };
   //-----------------------
   // ISSUE/COMMIT INTERFACE

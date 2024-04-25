@@ -28,27 +28,27 @@ void Controller::addAcceptedInstruction(uint32_t instruction, unsigned int id, u
     return;
   }
 
- //Need to include newOp in some way so the following: can be stled for FSW
- //We can just look through the pipeline?
- //And then in the memory step, check if op.mem_result is set OR the op is in mem_req_queue.
-  //Go through all queue stages and pipeline stages and check if the addrTo is the same as the addrFrom of the newOp
-  if (newOp.toMem) {
-    //Check if the register to store is used further ahead in the pipeline
-    for (int i = 0; i < fpu_pipeline.getNumStages(); i++){
-      if (hasSameTarget(newOp, fpu_pipeline.at(i))){
-        newOp.stalledByCtrl = 1;
+  //Check if we are encountering a RAW Hazard if we ask for mem immediatly
+  #ifdef CTRL_RAW
+    if (newOp.toMem) {
+      //Check if the register to store is used further ahead in the pipeline
+      for (int i = 0; i < fpu_pipeline.getNumStages(); i++){
+        if (hasSameTarget(newOp, fpu_pipeline.at(i))){
+          newOp.stalledByCtrl = 1;
+        }
       }
-    }
-    #ifdef INCLUDE_QUEUE
-    for (int i = 0; i < fpu_pipeline.getQueueDepth(); i++){
-      if (hasSameTarget(newOp, fpu_pipeline.at_queue(i))){
-        newOp.stalledByCtrl = 1;
+      #ifdef INCLUDE_QUEUE
+      for (int i = 0; i < fpu_pipeline.getQueueDepth(); i++){
+        if (hasSameTarget(newOp, fpu_pipeline.at_queue(i))){
+          newOp.stalledByCtrl = 1;
+        }
       }
+      #endif
     }
-    #endif
-  }
+  #endif
   if ((newOp.toMem || newOp.fromMem) && !newOp.stalledByCtrl){
-    newOp.data.bitpattern = registerFile.read(newOp.addrFrom.front()).bitpattern;
+    STYPE dec_instr = {.instr = newOp.instr}; //For step-by-step - comparrison purposes we dont use addrFrom (So the data is present for flw aswell)
+    newOp.data.bitpattern = registerFile.read(dec_instr.parts.rs2).bitpattern;
     addMemoryRequest(newOp);
   }
 
@@ -76,7 +76,6 @@ bool Controller::hasSameTarget(FpuPipeObj first, FpuPipeObj last){
   if (last.isEmpty() || first.isEmpty()) {return false;}
   if (first.toMem) {
     if (first.addrFrom.front() == last.addrTo){
-      std::cout << "store" <<std::endl;
       return true;
     }
     return false;
@@ -85,7 +84,6 @@ bool Controller::hasSameTarget(FpuPipeObj first, FpuPipeObj last){
     return false;
   }
   for (int i = 0; i < first.addrFrom.size(); i++){
-    std::cout << "other" <<std::endl;
     return true;
   }
   return false;
@@ -118,43 +116,57 @@ void Controller::detectHazards(){
   #ifdef CTRL_WAR
   //Only necessary if we reorder operations to write over results before a previous operation is done
   //Check for WAR
+  //Pretty much only stall FLW operations beeing added to wb if the target register is read from further down the line!
   #endif
 }
 
-void Controller::resolveForwards(){
+#ifdef FORWARDING
+void Controller::resolveForwards(){ //Currently only resolves memory operations that have not done a mem-rquest due to the stall.
   for (int i = WRITEBACK_STEP; i < fpu_pipeline.getNumStages(); i++){
     if (fpu_pipeline.at(i).stalledByCtrl){
-      //...
+        FpuPipeObj& op = fpu_pipeline.at(i);
+        #ifdef CTRL_RAW
+          if (op.toMem && !op.added_to_mem_queue && op.addrFrom.front() == fpu_pipeline.fw_addr){
+            op.data.bitpattern = fpu_pipeline.fw_data.bitpattern;
+            op.stalledByCtrl = 0;
+            addMemoryRequest(op);
+          }
+        #endif
+        #ifdef CTRL_WAR
+
+        #endif
     }
   }
-  #ifdef INCLUDE_QUEUE
-  for (int i = 0; i < fpu_pipeline.getQueueDepth(); i++){
-    if (fpu_pipeline.at_queue(i).stalledByCtrl){
-      FpuPipeObj& op = fpu_pipeline.at_queue(i);
-      if (op.toMem && !op.added_to_mem_queue && op.addrFrom == fw_addr){
-        op.data.bitpattern = fw_data.bitpattern;
-        op.stalledByCtrl = 0;
-        addMemoryRequest(op);
-        std::cout << "resolved" << std::endl;
+  if (QUEUE_DEPTH > 0){
+    for (int i = 0; i < fpu_pipeline.getQueueDepth(); i++){
+      if (fpu_pipeline.at_queue(i).stalledByCtrl){
+        FpuPipeObj& op = fpu_pipeline.at_queue(i);
+        #ifdef CTRL_RAW
+          if (op.toMem && !op.added_to_mem_queue && op.addrFrom.front() == fpu_pipeline.fw_addr){
+            op.data.bitpattern = fpu_pipeline.fw_data.bitpattern;
+            op.stalledByCtrl = 0;
+            addMemoryRequest(op);
+          }
+        #endif
+        #ifdef CTRL_WAR
+
+        #endif
       }
     }
   }
-  #else
+  else {
     if (fpu_pipeline.getWaitingOp().stalledByCtrl){
-      //...
+      FpuPipeObj op = fpu_pipeline.getWaitingOp();
+      if (op.toMem && !op.added_to_mem_queue && op.addrFrom.front() == fpu_pipeline.fw_addr){
+          op.data.bitpattern = fpu_pipeline.fw_data.bitpattern;
+          op.stalledByCtrl = 0;
+          addMemoryRequest(op);
+          fpu_pipeline.setWaitingOp(op);
+        }
     }
-  #endif
+  }
 }
-
-// void Controller::forwardData(){
-//   #ifdef FORWARDING
-//   //if execute done, and the operation at EXECUTE_STEP-1 has the same addrFROM as addrTO of the operation at EXECUTE_STEP, forward data
-//   //Also need to check if we should forward to the queue. (In case execute is the first stpe of the pipeline.)
-//   #endif
-// }
-
-
-
+#endif
 
 //--------------------
 // Commit interface
@@ -208,7 +220,7 @@ void Controller::addMemoryRequest(FpuPipeObj& op){
   x_mem_req_t mem_req_s = {};
   mem_req_s.id = op.id;
   mem_req_s.addr = op.toMem ? op.addrTo : op.addrFrom.front();
-  mem_req_s.wdata = op.toMem ?  op.data.bitpattern : 0;
+  mem_req_s.wdata = op.data.bitpattern;
   mem_req_s.last = 1;
   mem_req_s.size = op.size;
   mem_req_s.mode = op.mode;

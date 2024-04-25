@@ -33,7 +33,6 @@ void FpuPredecoder::predecodeInstruction(uint32_t instruction, unsigned int id, 
   use_rs_a = res.use_rs_i[0];
   use_rs_b = res.use_rs_i[1];
   use_rs_c = res.use_rs_i[2];
-  // std::cout << "current: " << instruction  << " past " << past_instruction_accepted << std::endl;
   if (res.valid) {
     accept = true;
     loadstore = res.toMem || res.fromMem;
