@@ -20,6 +20,7 @@ COREFILES = src/fpu_top.cpp src/fpu_predecoder.cpp src/controller.cpp src/fpu_de
 CONFIG:=""
 SIM_LENGTH = -all
 N_GUI_OPTS = -c -do "run $(SIM_LENGTH); quit"
+LEVEL= 1 #use LEVEL=2 for more rigerous testing - takes a long time (especially for mulAdd operations)
 
 sim_full:
 	make setup
@@ -50,19 +51,19 @@ TestFloat: #Compile and test for IEEE754 compliance
 
 TestFloat_all:
 	mkdir -p tests/$(ARCH)/rm$(args)
-	./bin/testfloat_gen_$(ARCH) f32_add 	| ./bin/rvfpm_testFloat fadd  $(args) 		| ./bin/testfloat_ver_$(ARCH) $(args)	f32_add						-errors 0 > tests/$(ARCH)/rm$(args)/f32_add.txt 2>&1
-	./bin/testfloat_gen_$(ARCH) f32_sub 	| ./bin/rvfpm_testFloat fsub  $(args) 		| ./bin/testfloat_ver_$(ARCH) $(args)	f32_sub						-errors 0 > tests/$(ARCH)/rm$(args)/f32_sub.txt 2>&1
-	./bin/testfloat_gen_$(ARCH) f32_mul 	| ./bin/rvfpm_testFloat fmul  $(args) 		| ./bin/testfloat_ver_$(ARCH) $(args)	f32_mul $(TININESS)			-errors 0 > tests/$(ARCH)/rm$(args)/f32_mul.txt 2>&1
-	./bin/testfloat_gen_$(ARCH) f32_div 	| ./bin/rvfpm_testFloat fdiv  $(args) 		| ./bin/testfloat_ver_$(ARCH) $(args)	f32_div						-errors 0 > tests/$(ARCH)/rm$(args)/f32_div.txt 2>&1
-	./bin/testfloat_gen_$(ARCH) f32_sqrt 	| ./bin/rvfpm_testFloat fsqrt $(args) 		| ./bin/testfloat_ver_$(ARCH) $(args)	f32_sqrt					-errors 0 > tests/$(ARCH)/rm$(args)/f32_sqrt.txt 2>&1
-	./bin/testfloat_gen_$(ARCH) f32_eq  	| ./bin/rvfpm_testFloat feq   $(args) 		| ./bin/testfloat_ver_$(ARCH) $(args)	f32_eq						-errors 0 > tests/$(ARCH)/rm$(args)/f32_eq.txt 2>&1
-	./bin/testfloat_gen_$(ARCH) f32_lt  	| ./bin/rvfpm_testFloat flt   $(args) 		| ./bin/testfloat_ver_$(ARCH) $(args)	f32_lt						-errors 0 > tests/$(ARCH)/rm$(args)/f32_lt.txt 2>&1
-	./bin/testfloat_gen_$(ARCH) f32_le  	| ./bin/rvfpm_testFloat fle   $(args) 		| ./bin/testfloat_ver_$(ARCH) $(args)	f32_le						-errors 0 > tests/$(ARCH)/rm$(args)/f32_le.txt 2>&1
-	./bin/testfloat_gen_$(ARCH) f32_mulAdd 	| ./bin/rvfpm_testFloat fmadd $(args) 		| ./bin/testfloat_ver_$(ARCH) $(args)	f32_mulAdd $(TININESS)	-errors 0 > tests/$(ARCH)/rm$(args)/f32_muladd.txt 2>&1
-	./bin/testfloat_gen_$(ARCH) ui32_to_f32 | ./bin/rvfpm_testFloat ui32_to_f32  $(args) | ./bin/testfloat_ver_$(ARCH) $(args)	ui32_to_f32					-errors 0 > tests/$(ARCH)/rm$(args)/f32_uitf.txt 2>&1
-	./bin/testfloat_gen_$(ARCH) i32_to_f32  | ./bin/rvfpm_testFloat i32_to_f32   $(args) | ./bin/testfloat_ver_$(ARCH) $(args)	i32_to_f32 					-errors 0 > tests/$(ARCH)/rm$(args)/f32_itf.txt 2>&1
-	./bin/testfloat_gen_$(ARCH) f32_to_ui32 | ./bin/rvfpm_testFloat f32_to_ui32  $(args) | ./bin/testfloat_ver_$(ARCH) $(args)	f32_to_ui32 				-errors 0 > tests/$(ARCH)/rm$(args)/f32_ftui.txt 2>&1
-	./bin/testfloat_gen_$(ARCH) f32_to_i32  | ./bin/rvfpm_testFloat f32_to_i32   $(args) | ./bin/testfloat_ver_$(ARCH) $(args)	f32_to_i32					-errors 0 > tests/$(ARCH)/rm$(args)/f32_fti.txt 2>&1
+	./bin/testfloat_gen_$(ARCH) f32_add 		-level $(LEVEL) 	| ./bin/rvfpm_testFloat fadd  $(args) 				| ./bin/testfloat_ver_$(ARCH) $(args)	f32_add										-errors 0 > tests/$(ARCH)/rm$(args)/f32_add.txt 2>&1
+	./bin/testfloat_gen_$(ARCH) f32_sub 		-level $(LEVEL)		| ./bin/rvfpm_testFloat fsub  $(args) 				| ./bin/testfloat_ver_$(ARCH) $(args)	f32_sub										-errors 0 > tests/$(ARCH)/rm$(args)/f32_sub.txt 2>&1
+	./bin/testfloat_gen_$(ARCH) f32_mul 		-level $(LEVEL)		| ./bin/rvfpm_testFloat fmul  $(args) 				| ./bin/testfloat_ver_$(ARCH) $(args)	f32_mul 		 $(TININESS)	-errors 0 > tests/$(ARCH)/rm$(args)/f32_mul.txt 2>&1
+	./bin/testfloat_gen_$(ARCH) f32_div 		-level $(LEVEL)		| ./bin/rvfpm_testFloat fdiv  $(args) 				| ./bin/testfloat_ver_$(ARCH) $(args)	f32_div										-errors 0 > tests/$(ARCH)/rm$(args)/f32_div.txt 2>&1
+	./bin/testfloat_gen_$(ARCH) f32_sqrt		-level $(LEVEL) 	| ./bin/rvfpm_testFloat fsqrt $(args) 				| ./bin/testfloat_ver_$(ARCH) $(args)	f32_sqrt									-errors 0 > tests/$(ARCH)/rm$(args)/f32_sqrt.txt 2>&1
+	./bin/testfloat_gen_$(ARCH) f32_eq  		-level $(LEVEL)		| ./bin/rvfpm_testFloat feq   $(args) 				| ./bin/testfloat_ver_$(ARCH) $(args)	f32_eq										-errors 0 > tests/$(ARCH)/rm$(args)/f32_eq.txt 2>&1
+	./bin/testfloat_gen_$(ARCH) f32_lt  		-level $(LEVEL)		| ./bin/rvfpm_testFloat flt   $(args) 				| ./bin/testfloat_ver_$(ARCH) $(args)	f32_lt										-errors 0 > tests/$(ARCH)/rm$(args)/f32_lt.txt 2>&1
+	./bin/testfloat_gen_$(ARCH) f32_le  		-level $(LEVEL)		| ./bin/rvfpm_testFloat fle   $(args) 				| ./bin/testfloat_ver_$(ARCH) $(args)	f32_le										-errors 0 > tests/$(ARCH)/rm$(args)/f32_le.txt 2>&1
+	./bin/testfloat_gen_$(ARCH) f32_mulAdd  -level $(LEVEL) 	| ./bin/rvfpm_testFloat fmadd $(args) 				| ./bin/testfloat_ver_$(ARCH) $(args)	f32_mulAdd   $(TININESS)	-errors 0 > tests/$(ARCH)/rm$(args)/f32_muladd.txt 2>&1
+	./bin/testfloat_gen_$(ARCH) ui32_to_f32 -level $(LEVEL) 	| ./bin/rvfpm_testFloat ui32_to_f32  $(args) 	| ./bin/testfloat_ver_$(ARCH) $(args)	ui32_to_f32								-errors 0 > tests/$(ARCH)/rm$(args)/f32_uitf.txt 2>&1
+	./bin/testfloat_gen_$(ARCH) i32_to_f32  -level $(LEVEL) 	| ./bin/rvfpm_testFloat i32_to_f32   $(args) 	| ./bin/testfloat_ver_$(ARCH) $(args)	i32_to_f32 								-errors 0 > tests/$(ARCH)/rm$(args)/f32_itf.txt 2>&1
+	./bin/testfloat_gen_$(ARCH) f32_to_ui32 -level $(LEVEL) 	| ./bin/rvfpm_testFloat f32_to_ui32  $(args) 	| ./bin/testfloat_ver_$(ARCH) $(args)	f32_to_ui32 							-errors 0 > tests/$(ARCH)/rm$(args)/f32_ftui.txt 2>&1
+	./bin/testfloat_gen_$(ARCH) f32_to_i32  -level $(LEVEL) 	| ./bin/rvfpm_testFloat f32_to_i32   $(args) 	| ./bin/testfloat_ver_$(ARCH) $(args)	f32_to_i32								-errors 0 > tests/$(ARCH)/rm$(args)/f32_fti.txt 2>&1
 
 setup:
 	make clean
