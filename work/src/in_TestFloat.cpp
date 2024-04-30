@@ -118,18 +118,20 @@ int main(int argc, char** argv) {
   uint32_t rd = 3;
   op=argv[1]; //Get operation type:
   rm=argv[2]; //Set appropriate rounding mode
+  unsigned int rm_i = 0;
   if (rm == "-rnear_even") {
-    testFPU.bd_setRoundingMode(0b000);
-  } else if (rm== "-rminMag") {
-    testFPU.bd_setRoundingMode(0b001);
-  } else if (rm== "-rmin") {
-    testFPU.bd_setRoundingMode(0b010);
-  } else if (rm== "-rmax") {
-    testFPU.bd_setRoundingMode(0b011);
+    rm_i = 0b000;
+  } else if (rm == "-rminMag") {
+    rm_i = 0b001;
+  } else if (rm == "-rmin") {
+    rm_i = 0b010;
+  } else if (rm == "-rmax") {
+    rm_i = 0b011;
   } else {
     //-rnear_maxMag & -rodd are not supported
-    testFPU.bd_setRoundingMode(0b000);
+    rm_i = 0b000;
   }
+  testFPU.bd_setRoundingMode(rm_i);
 
   if (op == "fmadd" || op == "fmsub" || op == "fnmsub" || op == "fnmadd") //Fused operations has an extra input compared to others
   {
@@ -171,19 +173,19 @@ int main(int argc, char** argv) {
         testFPU.addAcceptedInstruction(instr_rtype.instr, 0, 0, 0, 0, 0, 0, 0, 0);
       }
       else if (op == "ui32_to_f32") {
-        instr_rtype = {.parts= {OP_FP, rd, 0b000, r1, 0b00001, FCVT_S_W}};
+        instr_rtype = {.parts= {OP_FP, rd, rm_i, r1, 0b00001, FCVT_S_W}};
         testFPU.addAcceptedInstruction(instr_rtype.instr, 0, a, 0, 0, 0, 0, 0, 0);
       }
       else if (op == "i32_to_f32") {
-        instr_rtype = {.parts= {OP_FP, rd, 0b000, r1, 0b00000, FCVT_S_W}};
+        instr_rtype = {.parts= {OP_FP, rd, rm_i, r1, 0b00000, FCVT_S_W}};
         testFPU.addAcceptedInstruction(instr_rtype.instr, 0, a, 0, 0, 0, 0, 0, 0);
       }
       else if (op == "f32_to_ui32") {
-        instr_rtype = {.parts= {OP_FP, rd, 0b000, r1, 0b00001, FCVT_W_S}};
+        instr_rtype = {.parts= {OP_FP, rd, rm_i, r1, 0b00001, FCVT_W_S}};
         testFPU.addAcceptedInstruction(instr_rtype.instr, 0, 0, 0, 0, 0, 0, 0, 0);
       }
       else if (op == "f32_to_i32") {
-        instr_rtype = {.parts= {OP_FP, rd, 0b000, r1, 0b00000, FCVT_W_S}};
+        instr_rtype = {.parts= {OP_FP, rd, rm_i, r1, 0b00000, FCVT_W_S}};
         testFPU.addAcceptedInstruction(instr_rtype.instr, 0, 0, 0, 0, 0, 0, 0, 0);
       }
       FpuPipeObj result = testFPU.testFloatOp();
