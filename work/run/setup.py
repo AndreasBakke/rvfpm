@@ -55,7 +55,9 @@ def write_sv_params(data):
   try:
     write_data(sv_path, "\n//System-parameters\n")
     for param in data["fpu"]:
-      if param == "extensions" and data["fpu"][param] == None:
+      if param == "extensions":
+        for extension in data["fpu"][param]:
+          write_data(sv_path, "  `define "+str(extension).upper()+"\n")
         continue
       write_data(sv_path, "  `define "+str(param).upper()+" "+str(data["fpu"][param])+"\n")
   except Exception as e:
@@ -99,7 +101,9 @@ def write_cpp_params(data):
   try:
     write_data(cpp_path, "\n//System-parameters\n")
     for param in data["fpu"]:
-      if param == "extensions" and data["fpu"][param] == None:
+      if param == "extensions":
+        for extension in data["fpu"][param]:
+          write_data(cpp_path, "#define "+str(extension).upper())
         continue
       write_data(cpp_path, "const int "+str(param).upper()+"="+str(data["fpu"][param])+";\n")
   except Exception as e:

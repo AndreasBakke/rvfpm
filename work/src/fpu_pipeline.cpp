@@ -57,7 +57,9 @@ void FpuPipeline::advanceStages(){ //TODO: also check for hazards.
   bool all_done = execute_done && mem_done && wb_done;
   if (wb_done) {
     if (!pipeline.at(WRITEBACK_STEP).toMem && !pipeline.at(WRITEBACK_STEP).toXReg && !pipeline.at(WRITEBACK_STEP).isEmpty()){
-      registerFilePtr->write(pipeline.at(WRITEBACK_STEP).addrTo, pipeline.at(WRITEBACK_STEP).data);
+      #ifndef ZFINX
+        registerFilePtr->write(pipeline.at(WRITEBACK_STEP).addrTo, pipeline.at(WRITEBACK_STEP).data);
+      #endif
     }
     result_valid = 0;
     result = {};
@@ -211,10 +213,10 @@ void FpuPipeline::addResult(FpuPipeObj op){
     result_s.rd = op.addrTo;
     result_s.data = op.data.bitpattern;
   }
-  if(op.toXReg){ //TODO: or is ZFINX
+  if(op.toXReg){
     result_s.we = 1;
   }
-  if(!op.toXReg && !op.toMem && !op.fromMem){ //TODO: and not ZFINX
+  if(!op.toXReg && !op.toMem && !op.fromMem){
     result_s.ecswe   = 0b010;
     result_s.ecsdata = 0b001100;
   }
