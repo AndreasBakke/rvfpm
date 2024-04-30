@@ -59,9 +59,16 @@ void execute_R4TYPE(FpuPipeObj& op, FpuRf* registerFile){
   RTYPE dec_instr = {.instr = op.instr};
   //Get data from registerFile
   //TODO: Or from forwarded data if forwarded
-  FPNumber data1 = registerFile->read(op.addrFrom[0]);
-  FPNumber data2 = registerFile->read(op.addrFrom[1]);
-  FPNumber data3 = registerFile->read(op.addrFrom[2]);
+  FPNumber data1, data2, data3;
+  #ifdef ZFINX
+    data1 = op.operand_a;
+    data2 = op.operand_b;
+    data3 = op.operand_c;
+  #else
+    data1 = registerFile->read(op.addrFrom[0]);
+    data2 = registerFile->read(op.addrFrom[1]);
+    data3 = registerFile->read(op.addrFrom[2]);
+  #endif
   #ifdef FORWARDING
     if(op.stalledByCtrl){
       data1 = op.addrFrom[0] == op.fw_addr ? op.fw_data : data1;
@@ -110,11 +117,6 @@ void execute_R4TYPE(FpuPipeObj& op, FpuRf* registerFile){
     break;
   }
   op.flags |= getFlags(); //Get flags and add to result.
-
-  // if(registerFile != nullptr) {
-  //   registerFile->write(op.addrTo, op.data); //This might need to be moved to WriteBack stage
-  // }
-
 };
 
 
@@ -123,8 +125,14 @@ void execute_RTYPE(FpuPipeObj& op, FpuRf* registerFile){
   std::feclearexcept(FE_ALL_EXCEPT); //Clear all flags
   RTYPE dec_instr = {.instr = op.instr}; //"Decode" into RTYPE
 
-  FPNumber data1 = registerFile->read(op.addrFrom[0]);
-  FPNumber data2 = registerFile->read(op.addrFrom[1]);
+  FPNumber data1, data2;
+  #ifdef ZFINX
+    data1 = op.operand_a;
+    data2 = op.operand_b;
+  #else
+    data1 = registerFile->read(op.addrFrom[0]);
+    data2 = registerFile->read(op.addrFrom[1]);
+  #endif
   #ifdef FORWARDING
     if(op.stalledByCtrl){
       data1 = op.addrFrom[0] == op.fw_addr ? op.fw_data : data1;
@@ -250,6 +258,7 @@ void execute_RTYPE(FpuPipeObj& op, FpuRf* registerFile){
     }
     case 0b00001: //FCVT.WU.S
     {
+      setRoundingMode(dec_instr.parts.funct3); //Fcvt always uses RM for rounding mode
       if (std::isnan(data1.f) && !(data1.parts.mantissa & 0x00400000)) {  // Check for sNaN
         op.data.u = 0xFFFFFFFF;
         op.flags |= 0b00001;
@@ -272,6 +281,7 @@ void execute_RTYPE(FpuPipeObj& op, FpuRf* registerFile){
   }
   case FCVT_S_W: //FCVT.S.W[U]
   {
+    setRoundingMode(dec_instr.parts.funct3); //Fcvt always uses RM for rounding mode
     switch (dec_instr.parts.rs2)
     {
     case 0b00000: //FCVT.S.W
@@ -373,10 +383,9 @@ void execute_RTYPE(FpuPipeObj& op, FpuRf* registerFile){
 void execute_ITYPE(FpuPipeObj& op, FpuRf* registerFile){
 }
 void execute_STYPE(FpuPipeObj& op, FpuRf* registerFile){
-  //TODO: Get from forwarded data if forwarded
-  if (registerFile != nullptr) {
-    op.data = registerFile->read(op.addrFrom.front());
-  }
+    if (registerFile != nullptr) {
+      op.data = registerFile->read(op.addrFrom.front());
+    }
   #ifdef FORWARDING
     if(op.stalledByCtrl){
       op.data = op.addrFrom[0] == op.fw_addr ? op.fw_data : op.data;

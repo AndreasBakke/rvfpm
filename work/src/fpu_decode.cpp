@@ -46,6 +46,9 @@ FpuPipeObj decodeOp(uint32_t instruction, unsigned int id, unsigned int operand_
   result.speculative = 1;
   result.id = id;
   result.mode = mode;
+  #ifdef ZFINX
+    result.toXReg = true;
+  #endif
 
   return result;
 };
@@ -57,9 +60,18 @@ FpuPipeObj decode_R4TYPE(uint32_t instr, unsigned int operand_a, unsigned int op
   result.valid = 1;
   result.addrFrom = {dec_instr.parts_r4type.rs1, dec_instr.parts_r4type.rs2, dec_instr.parts_r4type.rs3};
   result.addrTo = {dec_instr.parts_r4type.rd};
-  result.operand_a.f = operand_a; //Only used if ZFINX
-  result.operand_b.f = operand_b; //Only used if ZFINX
-  result.operand_c.f = operand_c; //Only used if ZFINX
+  result.operand_a.bitpattern = operand_a; //Only used if ZFINX
+  result.operand_b.bitpattern = operand_b; //Only used if ZFINX
+  result.operand_c.bitpattern = operand_c; //Only used if ZFINX
+  #ifdef ZFINX
+    result.use_rs_i[0] = true;
+    result.use_rs_i[1] = true;
+    result.use_rs_i[2] = true;
+  #else
+    result.use_rs_i[0] = false;
+    result.use_rs_i[1] = false;
+    result.use_rs_i[2] = false;
+  #endif
   result.instr = instr; //save instruction
   result.instr_type = it_R4TYPE;
   return result;
@@ -74,10 +86,15 @@ FpuPipeObj decode_RTYPE(uint32_t instr, unsigned int operand_a, unsigned int ope
   result.addrTo = {dec_instr.parts.rd};
   result.instr_type = it_RTYPE; //For decoding in execution step.
   result.instr = instr; //Save instruction
-  result.operand_a.f = operand_a; //Overwritten for relevant functions
-  result.operand_b.f = operand_b; //Overwritten for relevant functions
-  result.use_rs_i[0] = false;
-  result.use_rs_i[1] = false;
+  result.operand_a.bitpattern = operand_a; //Overwritten for relevant functions
+  result.operand_b.bitpattern = operand_b; //Overwritten for relevant functions
+  #ifdef ZFINX
+    result.use_rs_i[0] = true;
+    result.use_rs_i[1] = true;
+  #else
+    result.use_rs_i[0] = false;
+    result.use_rs_i[1] = false;
+  #endif
   result.use_rs_i[2] = false;
   result.remaining_ex_cycles = NUM_CYCLES_DEFAULT; //Default number of cycles
   //Override relevant parameters based on function
