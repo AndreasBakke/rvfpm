@@ -197,13 +197,14 @@ module rvfpm #(
     write_sv_state(fpu, mem_ready, result_ready);
   end
 
-  always @(posedge ck) begin
-    `ifndef ZFINX
-    for (int i = 0; i < NUM_F_REGS; ++i) begin
-      assign registerFile[i] = getRFContent(fpu, i); // Use assign to connect wire to array index
-    end
-  `endif
-  end
+  //For debugging
+  // always @(posedge ck) begin
+  //   `ifndef ZFINX
+  //   for (int i = 0; i < NUM_F_REGS; ++i) begin
+  //     assign registerFile[i] = getRFContent(fpu, i); // Use assign to connect wire to array index
+  //   end
+  // `endif
+  // end
 
 endmodule;
 

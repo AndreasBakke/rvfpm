@@ -1,7 +1,7 @@
 ---
 fpu:
   num_f_regs : 32  #Number of registers in the FPU register file
-  extensions:
+  # extensions:
     # - ZFINX
     # - ZFMin
 
