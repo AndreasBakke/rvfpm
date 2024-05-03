@@ -6,8 +6,8 @@ fpu:
     # - ZFMin
 
 xif:
-  XLEN: 32
-  FLEN: 32
+  XLEN: 32          #Width of integer registers.
+  FLEN: 32          #Width of floating point registers.
   X_NUM_RS: 3       #Number of register file read ports that can be used by the eXtension interface
   X_ID_WIDTH: 4     #Width of ID field.
   X_MEM_WIDTH:  32  #Memory access width for loads/stores via the eXtension interface
@@ -25,9 +25,9 @@ fpu_pipeline:
     writeback_step: 0
   hazards: #Hazards the controller will check
     - RAW
-    - WAR
-    - WAW
-  OOO: true #Out of order execution - Not yet implemented
+    # - WAR
+    # - WAW
+  OOO: false #Out of order execution - Not yet implemented (only an issue if WAR or WAW is enabled)
   forwarding: true #Forward/bypass result to next operation
 
 execute_cycles: #Number of cycles for execution of each instruction
