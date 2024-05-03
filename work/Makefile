@@ -40,7 +40,7 @@ gui:
 TestFloat: #Compile and test for IEEE754 compliance
 	make clean
 	python3 run/setup.py run/testfloat_config.yaml
-	$(CXX) $(CXXFLAGS) -I ./include src/in_TestFloat.cpp $(COREFILES)  -o bin/rvfpm_testFloat
+	$(CXX) $(CXXFLAGS) -I ./include -I ./vendor src/in_TestFloat.cpp $(COREFILES)  -o bin/rvfpm_testFloat
 	chmod a+x,g+x ./bin/testfloat_ver_$(ARCH)
 	chmod a+x,g+x ./bin/testfloat_gen_$(ARCH)
 	+make -i -j4 test_all
@@ -62,17 +62,18 @@ test_max:
 
 .PHONY: test_all test_near_even test_minMag test_min test_max result_parser
 
+b=32
 TestFloat_all:
 	mkdir -p tests/$(ARCH)/rm$(args)
-	./bin/testfloat_gen_$(ARCH) f32_add 		-level $(LEVEL)	| ./bin/rvfpm_testFloat fadd  $(args)					| ./bin/testfloat_ver_$(ARCH) $(args)	f32_add										-errors 0 > tests/$(ARCH)/rm$(args)/f32_add.txt 2>&1
-	./bin/testfloat_gen_$(ARCH) f32_sub 		-level $(LEVEL)	| ./bin/rvfpm_testFloat fsub  $(args)					| ./bin/testfloat_ver_$(ARCH) $(args)	f32_sub										-errors 0 > tests/$(ARCH)/rm$(args)/f32_sub.txt 2>&1
-	./bin/testfloat_gen_$(ARCH) f32_mul 		-level $(LEVEL)	| ./bin/rvfpm_testFloat fmul  $(args)					| ./bin/testfloat_ver_$(ARCH) $(args)	f32_mul				$(TININESS)	-errors 0 > tests/$(ARCH)/rm$(args)/f32_mul.txt 2>&1
-	./bin/testfloat_gen_$(ARCH) f32_div 		-level $(LEVEL)	| ./bin/rvfpm_testFloat fdiv  $(args)					| ./bin/testfloat_ver_$(ARCH) $(args)	f32_div										-errors 0 > tests/$(ARCH)/rm$(args)/f32_div.txt 2>&1
-	./bin/testfloat_gen_$(ARCH) f32_sqrt		-level $(LEVEL)	| ./bin/rvfpm_testFloat fsqrt $(args)					| ./bin/testfloat_ver_$(ARCH) $(args)	f32_sqrt									-errors 0 > tests/$(ARCH)/rm$(args)/f32_sqrt.txt 2>&1
-	./bin/testfloat_gen_$(ARCH) f32_eq  		-level $(LEVEL)	| ./bin/rvfpm_testFloat feq   $(args)					| ./bin/testfloat_ver_$(ARCH) $(args)	f32_eq										-errors 0 > tests/$(ARCH)/rm$(args)/f32_eq.txt 2>&1
-	./bin/testfloat_gen_$(ARCH) f32_lt  		-level $(LEVEL)	| ./bin/rvfpm_testFloat flt   $(args)					| ./bin/testfloat_ver_$(ARCH) $(args)	f32_lt										-errors 0 > tests/$(ARCH)/rm$(args)/f32_lt.txt 2>&1
-	./bin/testfloat_gen_$(ARCH) f32_le  		-level $(LEVEL)	| ./bin/rvfpm_testFloat fle   $(args)					| ./bin/testfloat_ver_$(ARCH) $(args)	f32_le										-errors 0 > tests/$(ARCH)/rm$(args)/f32_le.txt 2>&1
-	./bin/testfloat_gen_$(ARCH) f32_mulAdd  -level $(LEVEL)	| ./bin/rvfpm_testFloat fmadd $(args)					| ./bin/testfloat_ver_$(ARCH) $(args)	f32_mulAdd		$(TININESS)	-errors 0 > tests/$(ARCH)/rm$(args)/f32_muladd.txt 2>&1
+	./bin/testfloat_gen_$(ARCH) f$(b)_add 		-level $(LEVEL)	| ./bin/rvfpm_testFloat fadd  $(args)					| ./bin/testfloat_ver_$(ARCH) $(args)	f$(b)_add										-errors 0 > tests/$(ARCH)/rm$(args)/f$(b)_add.txt 2>&1
+	./bin/testfloat_gen_$(ARCH) f$(b)_sub 		-level $(LEVEL)	| ./bin/rvfpm_testFloat fsub  $(args)					| ./bin/testfloat_ver_$(ARCH) $(args)	f$(b)_sub										-errors 0 > tests/$(ARCH)/rm$(args)/f$(b)_sub.txt 2>&1
+	./bin/testfloat_gen_$(ARCH) f$(b)_mul 		-level $(LEVEL)	| ./bin/rvfpm_testFloat fmul  $(args)					| ./bin/testfloat_ver_$(ARCH) $(args)	f$(b)_mul				$(TININESS)	-errors 0 > tests/$(ARCH)/rm$(args)/f$(b)_mul.txt 2>&1
+	./bin/testfloat_gen_$(ARCH) f$(b)_div 		-level $(LEVEL)	| ./bin/rvfpm_testFloat fdiv  $(args)					| ./bin/testfloat_ver_$(ARCH) $(args)	f$(b)_div										-errors 0 > tests/$(ARCH)/rm$(args)/f$(b)_div.txt 2>&1
+	./bin/testfloat_gen_$(ARCH) f$(b)_sqrt		-level $(LEVEL)	| ./bin/rvfpm_testFloat fsqrt $(args)					| ./bin/testfloat_ver_$(ARCH) $(args)	f$(b)_sqrt									-errors 0 > tests/$(ARCH)/rm$(args)/f$(b)_sqrt.txt 2>&1
+	./bin/testfloat_gen_$(ARCH) f$(b)_eq  		-level $(LEVEL)	| ./bin/rvfpm_testFloat feq   $(args)					| ./bin/testfloat_ver_$(ARCH) $(args)	f$(b)_eq										-errors 0 > tests/$(ARCH)/rm$(args)/f$(b)_eq.txt 2>&1
+	./bin/testfloat_gen_$(ARCH) f$(b)_lt  		-level $(LEVEL)	| ./bin/rvfpm_testFloat flt   $(args)					| ./bin/testfloat_ver_$(ARCH) $(args)	f$(b)_lt										-errors 0 > tests/$(ARCH)/rm$(args)/f$(b)_lt.txt 2>&1
+	./bin/testfloat_gen_$(ARCH) f$(b)_le  		-level $(LEVEL)	| ./bin/rvfpm_testFloat fle   $(args)					| ./bin/testfloat_ver_$(ARCH) $(args)	f$(b)_le										-errors 0 > tests/$(ARCH)/rm$(args)/f$(b)_le.txt 2>&1
+	./bin/testfloat_gen_$(ARCH) f$(b)_mulAdd  -level $(LEVEL)	| ./bin/rvfpm_testFloat fmadd $(args)					| ./bin/testfloat_ver_$(ARCH) $(args)	f$(b)_mulAdd		$(TININESS)	-errors 0 > tests/$(ARCH)/rm$(args)/f$(b)_muladd.txt 2>&1
 	./bin/testfloat_gen_$(ARCH) ui32_to_f32 -level $(LEVEL)	| ./bin/rvfpm_testFloat ui32_to_f32  $(args)	| ./bin/testfloat_ver_$(ARCH) $(args)	ui32_to_f32								-errors 0 > tests/$(ARCH)/rm$(args)/f32_uitf.txt 2>&1
 	./bin/testfloat_gen_$(ARCH) i32_to_f32  -level $(LEVEL)	| ./bin/rvfpm_testFloat i32_to_f32   $(args)	| ./bin/testfloat_ver_$(ARCH) $(args)	i32_to_f32								-errors 0 > tests/$(ARCH)/rm$(args)/f32_itf.txt 2>&1
 	./bin/testfloat_gen_$(ARCH) f32_to_ui32 -level $(LEVEL)	| ./bin/rvfpm_testFloat f32_to_ui32  $(args)	| ./bin/testfloat_ver_$(ARCH) $(args)	f32_to_ui32								-errors 0 > tests/$(ARCH)/rm$(args)/f32_ftui.txt 2>&1

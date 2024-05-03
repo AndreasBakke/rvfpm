@@ -11,6 +11,7 @@
 #include <iostream>
 // #include <svdpi.h>
 #include <functional>
+#include <random>
 
 extern "C" {
 
@@ -50,7 +51,7 @@ extern "C" {
   //-----------------------
 
 
-  void add_accepted_instruction(void* fpu_ptr, uint32_t instruction, unsigned int id, unsigned int operand_a, unsigned int operand_b, unsigned int operand_c, unsigned int mode, bool commit_valid, unsigned int commit_id, bool commit_kill){
+  void add_accepted_instruction(void* fpu_ptr, uint32_t instruction, unsigned int id, unsignedType operand_a, unsignedType operand_b, unsignedType operand_c, unsigned int mode, bool commit_valid, unsigned int commit_id, bool commit_kill){
     FPU* fpu = static_cast<FPU*>(fpu_ptr);
     fpu->addAcceptedInstruction(instruction, id, operand_a, operand_b, operand_c, mode, commit_valid, commit_id, commit_kill);
   };
@@ -79,7 +80,7 @@ extern "C" {
   // MEM REQ/RES INTERFACE
   //-----------------------
 
-  void poll_memory_request(void* fpu_ptr, bool& mem_valid, unsigned int& id,  unsigned int& addr, unsigned int& wdata, bool& last, unsigned int& size, unsigned int& mode, bool& we){
+  void poll_memory_request(void* fpu_ptr, bool& mem_valid, unsigned int& id,  unsigned int& addr, unsignedType& wdata, bool& last, unsigned int& size, unsigned int& mode, bool& we){
     FPU* fpu = static_cast<FPU*>(fpu_ptr);
     x_mem_req_t mem_req = {};
     fpu->pollMemoryRequest(mem_valid, mem_req);
@@ -102,7 +103,7 @@ extern "C" {
     fpu->writeMemoryResponse(mem_ready, 0, 0, 0);
   };
 
-  void write_memory_result(void* fpu_ptr, unsigned int id, uint32_t rdata, bool err, bool dbg){
+  void write_memory_result(void* fpu_ptr, unsigned int id, unsignedType rdata, bool err, bool dbg){
     FPU* fpu = static_cast<FPU*>(fpu_ptr);
     fpu->writeMemoryResult(id, rdata, err, dbg);
   };
@@ -116,7 +117,7 @@ extern "C" {
   // RESULT INTERFACE
   //-----------------------
 
-  void poll_res(void* fpu_ptr, bool& result_valid, unsigned int& id, unsigned int& data, unsigned int& rd, bool& we, unsigned int& ecswe, unsigned int& ecsdata){
+  void poll_res(void* fpu_ptr, bool& result_valid, unsigned int& id, unsignedType& data, unsigned int& rd, bool& we, unsigned int& ecswe, unsigned int& ecsdata){
     FPU* fpu = static_cast<FPU*>(fpu_ptr);
     x_result_t result = {};
     fpu->pollResult(result_valid, result);
@@ -142,7 +143,7 @@ extern "C" {
   // BACKDOOR FUNCTIONS
   //-----------------------
 
-  unsigned int getRFContent(void* fpu_ptr, int reg) { //Backdoor to read content of register file
+  unsignedType getRFContent(void* fpu_ptr, int reg) { //Backdoor to read content of register file
     FPU* fpu = static_cast<FPU*>(fpu_ptr);
     return  fpu->bd_getData(reg).bitpattern;
   }
@@ -162,9 +163,16 @@ extern "C" {
     return fpu->bd_getWaitingOpId();
   }
 
-  unsigned int randomFloat() { //Generate pseudorandom float
-    uint32_t randomInt = random();
+  unsignedType randomFloat() { //Generate pseudorandom float
+    std::random_device rd;  // a seed source for the random number engine
+    std::mt19937 gen(rd()); //Standard mersenne_twister_engine seeded with rd()
+    std::uniform_int_distribution<unsigned long long> randLongLong(//use long long. Shorter formats will leave out the upper bits.
+      std::numeric_limits<unsigned long long>::min(),
+      std::numeric_limits<unsigned long long>::max()
+    );
+    unsignedType randomInt = randLongLong(gen);
+    // std::cout << "Random float" << randomInt << std::endl;
     int sign = rand()%2;
-    return sign ? -randomInt : randomInt;
+    return randomInt;
   }
 }

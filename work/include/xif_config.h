@@ -9,6 +9,7 @@
 #pragma once
 #include "config.h"
 #include <stdint.h>
+#include "fp_number.h"
 
 typedef struct {
   bool          accept    : 1;
@@ -22,7 +23,7 @@ typedef struct {
 
 typedef struct {
   unsigned int  id    : X_ID_WIDTH;
-  uint32_t      rdata : 32;
+  unsignedType  rdata : FLEN;
   bool          err   : 1;
   bool          dbg   : 1;
 } __attribute__((packed)) x_mem_result_t;
@@ -35,14 +36,14 @@ typedef struct {
   unsigned int  size  : 3;
   unsigned int  be    : 4;
   unsigned int  attr  : 2;
-  unsigned int  wdata : 32;
+  unsignedType  wdata : FLEN;
   bool          last  : 1;
   bool          spec  : 1;
 } __attribute__((packed)) x_mem_req_t;
 
 typedef struct{
     unsigned int id  : X_ID_WIDTH;
-    unsigned int data : 32;
+    unsignedType data : FLEN;
     unsigned int rd   : 5;
     bool         we    : 1;
     unsigned int ecswe : 3;

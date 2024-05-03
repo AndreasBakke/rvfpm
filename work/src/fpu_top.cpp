@@ -75,7 +75,7 @@ FpuPipeObj FPU::testFloatOp(){
 }
 
 
-void FPU::addAcceptedInstruction(uint32_t instruction, unsigned int id, unsigned int operand_a, unsigned int operand_b, unsigned int operand_c, unsigned int mode, bool commit_valid, unsigned int commit_id, bool commit_kill){ //and other necessary inputs (should be somewhat close to in_xif type)
+void FPU::addAcceptedInstruction(uint32_t instruction, unsigned int id, unsignedType operand_a, unsignedType operand_b, unsignedType operand_c, unsigned int mode, bool commit_valid, unsigned int commit_id, bool commit_kill){ //and other necessary inputs (should be somewhat close to in_xif type)
   controller.addAcceptedInstruction(instruction, id, operand_a, operand_b, operand_c, mode, commit_valid, commit_id, commit_kill);
 }
 
@@ -91,17 +91,13 @@ void FPU::resetMemoryRequest(unsigned int id){
 };
 
 
-void FPU::writeMemoryResult(unsigned int id, uint32_t rdata, bool err, bool dbg){
+void FPU::writeMemoryResult(unsigned int id, unsignedType rdata, bool err, bool dbg){
   controller.writeMemoryResult(id, rdata, err, dbg);
 };
 void FPU::writeMemoryResponse(bool mem_ready, bool exc, unsigned int exccode, bool dbg){
   controller.writeMemoryResponse(mem_ready, exc, exccode, dbg);
 };
 
-
-// void FPU::writeMemRes(bool mem_ready, bool mem_result_valid, unsigned int id, unsigned int rdata, bool err, bool dbg){
-//   pipeline.writeMemRes(mem_ready, mem_result_valid, id, rdata, err, dbg);
-// };
 
 void FPU::memoryStep(){
   pipeline.memoryStep();
@@ -125,7 +121,7 @@ void FPU::writebackStep(){
 //--------------------------
 // Backdoor functions
 //--------------------------
-void FPU::bd_load(uint32_t instruction, unsigned int dataFromMem){
+void FPU::bd_load(uint32_t instruction, unsignedType dataFromMem){
   FpuPipeObj op = decodeOp(instruction, 0, 0, 0, 0, 0); //id is 0 for now
   op.data.bitpattern = dataFromMem;
   registerFile.write(op.addrTo, op.data);
@@ -147,7 +143,7 @@ uint32_t FPU::bd_getFcsr() {
   return registerFile.read_fcsr().v;
 }
 
-std::vector<float> FPU::bd_getRF(){
+std::vector<floatType> FPU::bd_getRF(){
   return registerFile.getRf();
 };
 

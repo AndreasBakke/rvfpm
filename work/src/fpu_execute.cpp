@@ -82,7 +82,11 @@ void execute_R4TYPE(FpuPipeObj& op, FpuRf* registerFile){
   {
   case FMADD_S:
   {
-    op.data.f = fmaf(data1.f, data2.f, data3.f);
+    #ifdef EXT_D
+      op.data.f = fma(data1.f, data2.f, data3.f);
+    #else
+      op.data.f = fmaf(data1.f, data2.f, data3.f);
+    #endif
     if((data1.f == INFINITY && data2.f == 0) || (data1.f == 0 && data2.f == INFINITY) || (data1.f == -INFINITY && data2.f == 0) || (data1.f == 0 && data2.f == -INFINITY)) { //Required by RISC-V ISA, but not IEEE 754
       std::feraiseexcept(FE_INVALID); //raise invalid
     }
@@ -90,7 +94,11 @@ void execute_R4TYPE(FpuPipeObj& op, FpuRf* registerFile){
   }
   case FMSUB_S:
   {
-    op.data.f = fmaf(data1.f, data2.f, -data3.f);
+    #ifdef EXT_D
+      op.data.f = fma(data1.f, data2.f, -data3.f);
+    #else
+      op.data.f = fmaf(data1.f, data2.f, -data3.f);
+    #endif
     if((data1.f == INFINITY && data2.f == 0) || (data1.f == 0 && data2.f == INFINITY) || (data1.f == -INFINITY && data2.f == 0) || (data1.f == 0 && data2.f == -INFINITY)) { //Required by RISC-V ISA, but not IEEE 754
       std::feraiseexcept(FE_INVALID); //raise invalid
     }
@@ -98,7 +106,11 @@ void execute_R4TYPE(FpuPipeObj& op, FpuRf* registerFile){
   }
   case FNMSUB_S:
   {
-    op.data.f = fmaf(data1.f, -data2.f, data3.f); //Counterintuitively named wrt FMADD/FMSUB
+    #ifdef EXT_D
+      op.data.f = fma(data1.f, -data2.f, data3.f);
+    #else
+      op.data.f = fmaf(data1.f, -data2.f, data3.f);
+    #endif
     if((data1.f == INFINITY && data2.f == 0) || (data1.f == 0 && data2.f == INFINITY) || (data1.f == -INFINITY && data2.f == 0) || (data1.f == 0 && data2.f == -INFINITY)) { //Required by RISC-V ISA, but not IEEE 754
       std::feraiseexcept(FE_INVALID); //raise invalid
     }
@@ -106,7 +118,11 @@ void execute_R4TYPE(FpuPipeObj& op, FpuRf* registerFile){
   }
   case FNMADD_S:
   {
-    op.data.f = fmaf(data1.f, -data2.f, -data3.f);
+    #ifdef EXT_D
+      op.data.f = fma(data1.f, -data2.f, -data3.f);
+    #else
+      op.data.f = fmaf(data1.f, -data2.f, -data3.f);
+    #endif
     if((data1.f == INFINITY && data2.f == 0) || (data1.f == 0 && data2.f == INFINITY) || (data1.f == -INFINITY && data2.f == 0) || (data1.f == 0 && data2.f == -INFINITY)) { //Required by RISC-V ISA, but not IEEE 754
       std::feraiseexcept(FE_INVALID); //raise invalid
     }
@@ -253,13 +269,13 @@ void execute_RTYPE(FpuPipeObj& op, FpuRf* registerFile){
     case 0b00000: //FCVT.W.S
     {
       op.data_signed = true;
-      op.data.s= static_cast<int32_t>(nearbyint(data1.f)); //Use nearbyint instead of round, round does not follow rounding mode set in cfenv
+      op.data.s= static_cast<signedType>(nearbyint(data1.f)); //Use nearbyint instead of round, round does not follow rounding mode set in cfenv
       break;
     }
     case 0b00001: //FCVT.WU.S
     {
       setRoundingMode(dec_instr.parts.funct3); //Fcvt always uses RM for rounding mode
-      if (std::isnan(data1.f) && !(data1.parts.mantissa & 0x00400000)) {  // Check for sNaN
+      if (isNan(data1) && !(data1.parts.mantissa & 0x00400000)) {  // Check for sNaN
         op.data.u = 0xFFFFFFFF;
         op.flags |= 0b00001;
       } else if (nearbyint(data1.f) < 0.0f || nearbyint(data1.f) > UINT32_MAX) {  // Check for out-of-range values
@@ -267,7 +283,7 @@ void execute_RTYPE(FpuPipeObj& op, FpuRf* registerFile){
         op.flags |= 0b00001;
       } else {
         // Convert if within range
-        op.data.u = static_cast<unsigned int>(nearbyint(data1.f));
+        op.data.u = static_cast<unsignedType>(nearbyint(data1.f));
       }
       break;
     }
@@ -286,12 +302,12 @@ void execute_RTYPE(FpuPipeObj& op, FpuRf* registerFile){
     {
     case 0b00000: //FCVT.S.W
     {
-      op.data.f = static_cast<float>(op.operand_a.s);
+      op.data.f = static_cast<floatType>(op.operand_a.s);
       break;
     }
     case 0b00001: //FCVT.S.WU
     {
-      op.data.f = static_cast<float>(static_cast<uint32_t>(op.operand_a.u)); //Cast to unsigned first - needs to be requested from cpu
+      op.data.f = static_cast<floatType>(static_cast<unsignedType>(op.operand_a.u)); //Cast to unsigned first - needs to be requested from cpu
       break;
     }
     default:
@@ -343,10 +359,10 @@ void execute_RTYPE(FpuPipeObj& op, FpuRf* registerFile){
         } else if (data1.f == INFINITY) //positive inf
         {
           op.data.bitpattern = 0b0010000000;
-        } else if (std::isnan(data1.f) && !(data1.bitpattern & 0x00400000)) //If leading mantissa-bit is not set -> sNaN
+        } else if (isNan(data1) && !(data1.bitpattern & 0x00400000)) //If leading mantissa-bit is not set -> sNaN
         {
           op.data.bitpattern = 0b0100000000; //SNaN
-        } else if (std::isnan(data1.f))
+        } else if (isNan(data1))
         {
           op.data.bitpattern = 0b1000000000; //QNaN
         } else if (data1.f > 0) //positive normal number
@@ -522,6 +538,14 @@ void setRoundingMode(unsigned int rm){ //Sets c++ rounding mode. FCSR is written
 //Helper function
 bool isSubnormal(FPNumber num) {
   return num.parts.exponent == 0 && num.parts.mantissa != 0;
+}
+
+bool isNan(FPNumber num) {
+  #ifndef EXT_H
+   return std::isnan(num.f);
+  #else
+    return num.parts.exponent == 0b11111 && num.parts.mantissa != 0;
+  #endif
 }
 
 // void test_isSubormal

@@ -113,8 +113,8 @@ int FpuRf::get_NUM_F_REGISTERS() {
 }
 
 
-std::vector<float> FpuRf::getRf(){
-  std::vector<float> v;
+std::vector<floatType> FpuRf::getRf(){
+  std::vector<floatType> v;
   for (int i = 0; i < registerFile.size(); i++)
   {
     v[i] = registerFile[i].f;

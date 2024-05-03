@@ -41,13 +41,27 @@ module rvfpm_tb;
   //-- Declarations
   //-----------------------
   int errorCnt; //errorCount
+  `ifdef EXT_Q
+    typedef longint unsigned unsignedType;
+    typedef longint signedType;
+  `elsif EXT_D
+    typedef longint unsigned unsignedType;
+    typedef longint signedType;
+  `elsif EXT_H
+    typedef shortint unsigned unsignedType;
+    typedef shortint signedType;
+  `else
+    typedef int unsigned unsignedType;
+    typedef int signedType;
+  `endif
   //Test interface
   inTest_rvfpm #(
     .X_ID_WIDTH(TB_X_ID_WIDTH),
     .NUM_F_REGS(TB_NUM_F_REGS),
     .PIPELINE_STAGES(TB_PIPELINE_STAGES),
     .QUEUE_DEPTH(TB_QUEUE_DEPTH),
-    .XLEN(TB_XLEN)
+    .XLEN(TB_XLEN),
+    .FLEN(TB_FLEN)
   ) uin_rvfpm ();
 
   //-----------------------
@@ -103,7 +117,7 @@ module rvfpm_tb;
     .result_ready     (uin_rvfpm.result_ready),
     .result           (uin_rvfpm.result)
   );
-  import "DPI-C" function int unsigned getRFContent(input chandle fpu_ptr, input int addr);
+  import "DPI-C" function unsignedType getRFContent(input chandle fpu_ptr, input int addr);
   import "DPI-C" function int unsigned getPipeStageId(input chandle fpu_ptr, input int stage);
   import "DPI-C" function int unsigned getQueueStageId(input chandle fpu_ptr, input int stage);
   import "DPI-C" function int unsigned getWaitingOpId(input chandle fpu_ptr);

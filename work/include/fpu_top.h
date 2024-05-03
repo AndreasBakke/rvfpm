@@ -26,7 +26,7 @@ class FPU {
     void clockEvent();
     bool pollReady();
 
-    void addAcceptedInstruction(uint32_t instruction, unsigned int id, unsigned int operand_a, unsigned int operand_b, unsigned int operand_c, unsigned int mode, bool commit_valid, unsigned int commit_id, bool commit_kill);//and other necessary inputs (should be somewhat close to in_xif type)
+    void addAcceptedInstruction(uint32_t instruction, unsigned int id, unsignedType operand_a, unsignedType operand_b, unsignedType operand_c, unsigned int mode, bool commit_valid, unsigned int commit_id, bool commit_kill);//and other necessary inputs (should be somewhat close to in_xif type)
 
     //Issue/Commit interface
     void predecodeInstruction(uint32_t instruction, unsigned int id, bool& accept, bool& loadstore, bool& writeback, bool& use_rs_a, bool& use_rs_b, bool& use_rs_c);
@@ -37,7 +37,7 @@ class FPU {
     //Memory interface
     void pollMemoryRequest(bool& mem_valid, x_mem_req_t& mem_req);
     void resetMemoryRequest(unsigned int id);
-    void writeMemoryResult(unsigned int id, uint32_t rdata, bool err, bool dbg);
+    void writeMemoryResult(unsigned int id, unsignedType rdata, bool err, bool dbg);
     void writeMemoryResponse(bool mem_ready, bool exc, unsigned int exccode, bool dbg);
     void memoryStep();
 
@@ -48,12 +48,12 @@ class FPU {
 
     //Backdoor functions
     FpuPipeObj testFloatOp();
-    void bd_load(uint32_t instruction, unsigned int dataFromMem);
+    void bd_load(uint32_t instruction, unsignedType dataFromMem);
     FPNumber bd_getData(uint32_t addr);
     void bd_setRoundingMode(unsigned int rm);
     void bd_setFcsr(uint32_t data);
     uint32_t bd_getFcsr();
-    std::vector<float> bd_getRF();
+    std::vector<floatType> bd_getRF();
     unsigned int bd_getPipeStageId(int stage);
     unsigned int bd_getQueueStageId(int stage);
     unsigned int bd_getWaitingOpId();

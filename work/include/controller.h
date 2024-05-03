@@ -30,7 +30,7 @@ class Controller {
     Controller(FpuRf& rf, FpuPipeline& pipe, bool& ready);
     ~Controller();
     void reset();
-    void addAcceptedInstruction(uint32_t instruction, unsigned int id, unsigned int operand_a, unsigned int operand_b, unsigned int operand_c, unsigned int mode, bool commit_valid, unsigned int commit_id, bool commit_kill);//and other necessary inputs (should be somewhat close to in_xif type)
+    void addAcceptedInstruction(uint32_t instruction, unsigned int id, unsignedType operand_a, unsignedType operand_b, unsignedType operand_c, unsigned int mode, bool commit_valid, unsigned int commit_id, bool commit_kill);//and other necessary inputs (should be somewhat close to in_xif type)
     bool hasSameTarget(FpuPipeObj first, FpuPipeObj last);
     void detectHazards();
     #ifdef FORWARDING
@@ -44,7 +44,7 @@ class Controller {
     void pollMemoryRequest(bool& mem_valid, x_mem_req_t& mem_req);
     void resetMemoryRequest(unsigned int id);
     void writeMemoryResponse(bool mem_ready, bool exc, unsigned int exccode, bool dbg);
-    void writeMemoryResult(unsigned int id, uint32_t rdata, bool err, bool dbg);
+    void writeMemoryResult(unsigned int id, unsignedType rdata, bool err, bool dbg);
     void pollResult(bool& result_valid_ptr, x_result_t& result_ptr);
     void resetResult(unsigned int id);
   //Mange av funksjonene fra pipeline kan flyttes hit

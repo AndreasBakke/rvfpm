@@ -9,7 +9,7 @@
 
 #include <iostream>
 
-FpuPipeObj decodeOp(uint32_t instruction, unsigned int id, unsigned int operand_a, unsigned int operand_b, unsigned int operand_c, unsigned int mode) { //Add more fields if needed by eXtension interface
+FpuPipeObj decodeOp(uint32_t instruction, unsigned int id, unsignedType operand_a, unsignedType operand_b, unsignedType operand_c, unsigned int mode) { //Add more fields if needed by eXtension interface
   //Get result of operation
   unsigned int opcode = instruction & 127 ; //Get first 7 bit
   FpuPipeObj result = {};
@@ -54,7 +54,7 @@ FpuPipeObj decodeOp(uint32_t instruction, unsigned int id, unsigned int operand_
 };
 
 
-FpuPipeObj decode_R4TYPE(uint32_t instr, unsigned int operand_a, unsigned int operand_b, unsigned int operand_c) {
+FpuPipeObj decode_R4TYPE(uint32_t instr, unsignedType operand_a, unsignedType operand_b, unsignedType operand_c) {
   RTYPE dec_instr = {.instr = instr};
   FpuPipeObj result = {};
   result.valid = 1;
@@ -77,7 +77,7 @@ FpuPipeObj decode_R4TYPE(uint32_t instr, unsigned int operand_a, unsigned int op
   return result;
 }
 
-FpuPipeObj decode_RTYPE(uint32_t instr, unsigned int operand_a, unsigned int operand_b) {
+FpuPipeObj decode_RTYPE(uint32_t instr, unsignedType operand_a, unsignedType operand_b) {
   //TODO: add execution
   RTYPE dec_instr = {.instr = instr}; //"Decode" into ITYPE
   FpuPipeObj result = {};
@@ -209,7 +209,7 @@ FpuPipeObj decode_RTYPE(uint32_t instr, unsigned int operand_a, unsigned int ope
   return result;
 }
 
-FpuPipeObj decode_ITYPE(uint32_t instr, unsigned int operand_a) {
+FpuPipeObj decode_ITYPE(uint32_t instr, unsignedType operand_a) {
   ITYPE dec_instr = {.instr = instr}; //"Decode" into ITYPE
   FpuPipeObj result = {};
   result.valid = 1;
@@ -225,7 +225,7 @@ FpuPipeObj decode_ITYPE(uint32_t instr, unsigned int operand_a) {
   return result;
 }
 
-FpuPipeObj decode_STYPE(uint32_t instr, unsigned int operand_a){
+FpuPipeObj decode_STYPE(uint32_t instr, unsignedType operand_a){
   STYPE dec_instr = {.instr = instr}; //Decode into STYPE
   FpuPipeObj result = {};
   result.valid = 1;
@@ -243,7 +243,7 @@ FpuPipeObj decode_STYPE(uint32_t instr, unsigned int operand_a){
   return result;
 }
 
-FpuPipeObj decode_CSRTYPE(uint32_t instr, unsigned int operand_a) {
+FpuPipeObj decode_CSRTYPE(uint32_t instr, unsignedType operand_a) {
   CSRTYPE dec_instr = {.instr = instr}; //Decode into CSRTYPE
   FpuPipeObj result = {};
   if (!(0x001 <= dec_instr.parts.csr <= 0x003)) { //If CSR op is not a FCSR instruction, return invalid

@@ -66,6 +66,20 @@ module rvfpm #(
 
 
 );
+  //Set up data types:
+  `ifdef EXT_Q
+    typedef logic[127:0] unsignedType; //Todo: DPI-C wont resolve logic[127:0] to uint128_t. Will not work
+    typedef logic[127:0] signedType;
+  `elsif EXT_D
+    typedef longint unsigned unsignedType;
+    typedef longint signedType;
+  `elsif EXT_H
+    typedef shortint unsigned unsignedType;
+    typedef shortint signedType;
+  `else
+    typedef int unsigned unsignedType;
+    typedef int signedType;
+  `endif
   //-----------------------
   //-- DPI-C Imports
   //-----------------------
@@ -75,16 +89,16 @@ module rvfpm #(
   import "DPI-C" function void poll_ready(input chandle fpu_ptr, output logic fpu_ready);
   import "DPI-C" function void destroy_fpu(input chandle fpu_ptr);
   import "DPI-C" function void resolve_forwards(input chandle fpu_ptr);
-  import "DPI-C" function int unsigned getRFContent(input chandle fpu_ptr, input int addr);
-  import "DPI-C" function void add_accepted_instruction(input chandle fpu_ptr, input int instr, input int unsigned id, input int unsigned operand_a, input int unsigned operand_b, input int unsigned operand_c, input int unsigned mode, input logic commit_valid, input int unsigned commit_id, input logic commit_kill);
+  import "DPI-C" function unsignedType getRFContent(input chandle fpu_ptr, input int addr);
+  import "DPI-C" function void add_accepted_instruction(input chandle fpu_ptr, input int instr, input int unsigned id, input unsignedType operand_a, input unsignedType operand_b, input unsignedType operand_c, input int unsigned mode, input logic commit_valid, input int unsigned commit_id, input logic commit_kill);
   import "DPI-C" function void reset_predecoder(input chandle fpu_ptr);
   import "DPI-C" function void predecode_instruction(input chandle fpu_ptr, input int instr, input int unsigned id, output logic accept, output logic loadstore, output logic writeback, output logic use_rs_a, output logic use_rs_b, output logic use_rs_c);
   import "DPI-C" function void commit_instruction(input chandle fpu_ptr, input int unsigned id, input logic kill);
   import "DPI-C" function void executeStep(input chandle fpu_ptr);
-  import "DPI-C" function void poll_memory_request(input chandle fpu_ptr, output logic mem_valid, output int unsigned id, output int unsigned addr, output int unsigned wdata, output logic last, output int unsigned size, output int unsigned mode, output logic we);
+  import "DPI-C" function void poll_memory_request(input chandle fpu_ptr, output logic mem_valid, output int unsigned id, output int unsigned addr, output unsignedType wdata, output logic last, output int unsigned size, output int unsigned mode, output logic we);
   import "DPI-C" function void write_sv_state(input chandle fpu_ptr, input logic mem_ready, input logic result_ready);
-  import "DPI-C" function void poll_res(input chandle fpu_ptr, output logic result_valid, output int unsigned id, output int unsigned data, output int unsigned rd, output logic we, output int unsigned ecswe, output int unsigned ecsdata); //TODO: add remaining signals in interface
-  import "DPI-C" function void write_memory_result(input chandle fpu_ptr, input int unsigned id, input int unsigned rdata, input logic err, input logic dbg);
+  import "DPI-C" function void poll_res(input chandle fpu_ptr, output logic result_valid, output int unsigned id, output unsignedType data, output int unsigned rd, output logic we, output int unsigned ecswe, output int unsigned ecsdata); //TODO: add remaining signals in interface
+  import "DPI-C" function void write_memory_result(input chandle fpu_ptr, input int unsigned id, input unsignedType rdata, input logic err, input logic dbg);
   import "DPI-C" function void writebackStep(input chandle fpu_ptr);
   import "DPI-C" function void memoryStep(input chandle fpu_ptr);
   import "DPI-C" function void reset_memory_request(input chandle fpu_ptr, input int unsigned id);

@@ -35,7 +35,7 @@ struct FpuPipeObj {
   unsigned int mode = 0;
   bool added_to_mem_queue = 0;
   bool mem_result_valid = 0;
-  uint32_t mem_result = 0;
+  unsignedType mem_result = 0;
   bool stalledByCtrl = 0;
   #ifdef FORWARDING
     FPNumber fw_data;

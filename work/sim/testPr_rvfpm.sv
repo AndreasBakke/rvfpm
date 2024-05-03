@@ -6,6 +6,7 @@
 */
 
 `timescale 1ns/1ps
+`include "../src/config.svh"
 program automatic testPr_rvfpm #(
   parameter NUM_F_REGS,
   parameter PIPELINE_STAGES,
@@ -14,7 +15,20 @@ program automatic testPr_rvfpm #(
 (
   inTest_rvfpm uin_rvfpm
 );
-  import "DPI-C" function int unsigned randomFloat(); //C++ function for random float generation
+  `ifdef EXT_Q
+    typedef longint unsigned unsignedType;
+    typedef longint signedType;
+  `elsif EXT_D
+    typedef longint unsigned unsignedType;
+    typedef longint signedType;
+  `elsif EXT_H
+    typedef shortint unsigned unsignedType;
+    typedef shortint signedType;
+  `else
+    typedef int unsigned unsignedType;
+    typedef int signedType;
+  `endif
+  import "DPI-C" function unsignedType randomFloat(); //C++ function for random float generation
 
   localparam NUM_TESTS = 100;
 
@@ -200,14 +214,16 @@ program automatic testPr_rvfpm #(
 
   task fillRF();
     //Fills register file with random value
+    unsignedType test = randomFloat();
+    // $display(test);
     for (int i=0; i<NUM_F_REGS; ++i) begin
-      doITYPE(.rd(i), .data(randomFloat()));
+      doITYPE(.rd(i), .data(test));
       @(negedge uin_rvfpm.issue_valid);
     end
     repeat(PIPELINE_STAGES) @(posedge uin_rvfpm.ck); //wait for all operations to finish
   endtask
 
-  task doRTYPE(input int funct7 = 0, input int rs2 = $urandom_range(0, NUM_F_REGS-1), input int rs1 = $urandom_range(0, NUM_F_REGS-1), input int funct3 = 0, input int rd = $urandom_range(0, NUM_F_REGS-1), input int unsigned operand_a = 0, input int unsigned operand_b = 0, input int unsigned operand_c = 0, input logic[2:0] rs_valid_i = 3'b000);
+  task doRTYPE(input int funct7 = 0, input int rs2 = $urandom_range(0, NUM_F_REGS-1), input int rs1 = $urandom_range(0, NUM_F_REGS-1), input int funct3 = 0, input int rd = $urandom_range(0, NUM_F_REGS-1), input unsignedType operand_a = 0, input unsignedType operand_b = 0, input unsignedType operand_c = 0, input logic[2:0] rs_valid_i = 3'b000);
     automatic logic[31:0]  instr_r = 0;
     @(posedge uin_rvfpm.ck)
     instr_r[31:25] = funct7;
@@ -219,7 +235,7 @@ program automatic testPr_rvfpm #(
     doIssueInst(instr_r, id, operand_a, operand_b, operand_c, rs_valid_i);
   endtask
 
-  task doR4TYPE(input int rs3 = $urandom_range(0, NUM_F_REGS-1), input int funct2 = 0,  input int rs2 = $urandom_range(0, NUM_F_REGS-1), input int rs1 = $urandom_range(0, NUM_F_REGS-1), input int funct3 = 0, input int rd = $urandom_range(0, NUM_F_REGS-1), input int unsigned opcode = 67, input int unsigned operand_a = 0, input int unsigned operand_b = 0, input int unsigned operand_c = 0, input logic[2:0] rs_valid_i = 3'b000);
+  task doR4TYPE(input int rs3 = $urandom_range(0, NUM_F_REGS-1), input int funct2 = 0,  input int rs2 = $urandom_range(0, NUM_F_REGS-1), input int rs1 = $urandom_range(0, NUM_F_REGS-1), input int funct3 = 0, input int rd = $urandom_range(0, NUM_F_REGS-1), input int unsigned opcode = 67, input unsignedType operand_a = 0, input unsignedType operand_b = 0, input unsignedType operand_c = 0, input logic[2:0] rs_valid_i = 3'b000);
     automatic logic[31:0]  instr_r4 = 0;
     @(posedge uin_rvfpm.ck)
     instr_r4[31:27] = rs3;
@@ -270,7 +286,7 @@ program automatic testPr_rvfpm #(
 
   endtask
 
-  task doITYPE(input int imm = 17, input int rs1 = 6, input int funct3 = 0, input int rd = $urandom_range(0, NUM_F_REGS-1), input int unsigned data = randomFloat()); //Default: Store random value into random register
+  task doITYPE(input int imm = 17, input int rs1 = 6, input int funct3 = 0, input int rd = $urandom_range(0, NUM_F_REGS-1), input unsignedType data = randomFloat()); //Default: Store random value into random register
     automatic logic [31:0] instr_i = 0;
     automatic logic[X_ID_WIDTH-1:0] issue_id = 0;
     @(posedge uin_rvfpm.ck)
@@ -305,7 +321,7 @@ program automatic testPr_rvfpm #(
   endtask;
 
 
-  task doCSRType(input int unsigned csr = 12'b000000000011, input int unsigned rs1 = 6, input int unsigned funct3 = 3'b011, input int rd = 0, input int unsigned operand_a = 0, input logic[2:0] rs_valid_i = 3'b000);
+  task doCSRType(input int unsigned csr = 12'b000000000011, input int unsigned rs1 = 6, input int unsigned funct3 = 3'b011, input int rd = 0, input unsignedType operand_a = 0, input logic[2:0] rs_valid_i = 3'b000);
     automatic logic [31:0] instr_csr = 0;
     automatic logic[X_ID_WIDTH-1:0] issue_id = 0;
     @(posedge uin_rvfpm.ck)
@@ -318,7 +334,7 @@ program automatic testPr_rvfpm #(
     doIssueInst(instr_csr, id, operand_a, 0, 0, rs_valid_i);
   endtask;
 
-  task automatic doIssueInst(input logic[31:0] instruction = 0, input logic[X_ID_WIDTH-1:0] id = 0, input int unsigned operand_a = 0, input int unsigned operand_b = 0, input int unsigned operand_c = 0, input logic[2:0] rs_valid_i = 3'b000); //Issue instruction to coproc
+  task automatic doIssueInst(input logic[31:0] instruction = 0, input logic[X_ID_WIDTH-1:0] id = 0, input unsignedType operand_a = 0, input unsignedType operand_b = 0, input unsignedType operand_c = 0, input logic[2:0] rs_valid_i = 3'b000); //Issue instruction to coproc
     static semaphore s = new(1);
     while (!s.try_get) @(posedge uin_rvfpm.ck);
       uin_rvfpm.issue_valid <= 1;
