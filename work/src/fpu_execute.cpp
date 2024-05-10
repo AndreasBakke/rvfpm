@@ -202,12 +202,12 @@ void execute_RTYPE(FpuPipeObj& op, FpuRf* registerFile){
     {
     case 0b000: //FMIN
     {
-      op.data.f = std::min(data1.f, data2.f);
+      op.data.f = std::fmin(data1.f, data2.f);
       break;
     }
     case 0b001: //FMAX
     {
-      op.data.f = std::max(data1.f, data2.f);
+      op.data.f = std::fmax(data1.f, data2.f);
       break;
     }
     default:
@@ -217,6 +217,7 @@ void execute_RTYPE(FpuPipeObj& op, FpuRf* registerFile){
     break;
     }
     }
+    break;
   }
   case FCMP:
   {
