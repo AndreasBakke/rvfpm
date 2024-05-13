@@ -230,7 +230,7 @@ void FpuPipeline::addResult(FpuPipeObj op){
 void FpuPipeline::stallCheck(){
   stalled = false;
   if (QUEUE_DEPTH > 0) {
-    if (!operationQueue.back().isEmpty()){
+    if (operationQueue.size()==QUEUE_DEPTH){
       stalled = true;
     }
   } else if (!waitingOp.isEmpty()){

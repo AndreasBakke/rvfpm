@@ -28,6 +28,14 @@ void Controller::addAcceptedInstruction(uint32_t instruction, unsigned int id, u
     return;
   }
 
+  if (commit_valid && commit_id == newOp.id){
+    if (commit_kill){
+      newOp = {};
+    } else {
+      newOp.speculative = 0;
+    }
+  }
+
   //Check if we are encountering a RAW Hazard if we ask for mem immediatly
   #ifdef CTRL_RAW
     if (newOp.toMem) {
@@ -46,21 +54,13 @@ void Controller::addAcceptedInstruction(uint32_t instruction, unsigned int id, u
       #endif
     }
   #endif
-  if ((newOp.toMem || newOp.fromMem) && !newOp.stalledByCtrl){
+  if ((newOp.toMem || newOp.fromMem) && !newOp.stalledByCtrl && !newOp.speculative){
     STYPE dec_instr = {.instr = newOp.instr}; //For step-by-step - comparrison purposes we dont use addrFrom (So the data is present for flw aswell)
     newOp.data.bitpattern = registerFile.read(dec_instr.parts.rs2).bitpattern;
     addMemoryRequest(newOp);
   }
 
-  if (commit_valid && commit_id == newOp.id){
-    if (commit_kill){
-      newOp = {};
-    } else {
-      newOp.speculative = 0;
-    }
-  }
-
-  if (fpu_pipeline.getQueueDepth() > 0){
+  if(QUEUE_DEPTH>0){
     fpu_pipeline.addOpToQueue(newOp);
   }
   else {
@@ -92,18 +92,15 @@ bool Controller::hasSameTarget(FpuPipeObj first, FpuPipeObj last){
 void Controller::detectHazards(){
   #ifdef CTRL_RAW
   fpu_pipeline.at(WRITEBACK_STEP).stalledByCtrl = 0;
-  for(int i=WRITEBACK_STEP+1; i<std::max(EXECUTE_STEP, MEMORY_STEP); i++){
+  for(int i=WRITEBACK_STEP+1; i<=std::max(EXECUTE_STEP, MEMORY_STEP); i++){
     fpu_pipeline.at(i).stalledByCtrl = 0;
 
-    if (fpu_pipeline.at(i).isEmpty() || fpu_pipeline.at(i).addrTo == 0){continue;}
+    if (fpu_pipeline.at(i).isEmpty() || fpu_pipeline.at(i).addrTo == 999 ){continue;}
 
     if(i != EXECUTE_STEP && i != MEMORY_STEP){continue;}//no need to stall if nothing is done
 
     //Forward data if the difference is one step
     if (hasSameTarget(fpu_pipeline.at(i), fpu_pipeline.at(WRITEBACK_STEP))){
-      fpu_pipeline.at(i).stalledByCtrl = 1;
-    }
-    if(i == EXECUTE_STEP && hasSameTarget(fpu_pipeline.at(i), fpu_pipeline.at(MEMORY_STEP))){
       fpu_pipeline.at(i).stalledByCtrl = 1;
     }
   }
@@ -199,7 +196,6 @@ void Controller::writeMemoryResult(unsigned int id, uint32_t rdata, bool err, bo
     fpu_pipeline.setWaitingOp(tmpOp);
     return;
   }
-
   for (int i = 0; i < fpu_pipeline.getQueueDepth(); i++) {
     if (fpu_pipeline.at_queue(i).id == id && !fpu_pipeline.at_queue(i).isEmpty()) {
       fpu_pipeline.at_queue(i).mem_result_valid = 1;

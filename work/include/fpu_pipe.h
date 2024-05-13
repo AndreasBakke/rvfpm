@@ -19,7 +19,7 @@ struct FpuPipeObj {
   FPNumber operand_c;
   bool use_rs_i[3] ; //which input operands are used
   std::vector<uint32_t> addrFrom;
-  uint32_t addrTo;
+  uint32_t addrTo = 999;
   FPNumber data;
   int instr_type;
   unsigned int flags : 5;
@@ -45,7 +45,7 @@ struct FpuPipeObj {
 
   bool isEmpty() const {
     return addrFrom.empty() &&
-        addrTo == 0 &&
+        addrTo == 999 &&
         instr_type == 0 &&
         flags == 0 &&
         !toXReg &&
