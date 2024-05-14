@@ -24,7 +24,7 @@ void Controller::reset(){
 
 void Controller::addAcceptedInstruction(uint32_t instruction, unsigned int id, unsigned int operand_a, unsigned int operand_b, unsigned int operand_c, unsigned int mode, bool commit_valid, unsigned int commit_id, bool commit_kill){ //and other necessary inputs (should be somewhat close to in_xif type)
   FpuPipeObj newOp = decodeOp(instruction, id, operand_a, operand_b, operand_c, mode);
-  if (newOp.id == fpu_pipeline.at(0).id && !fpu_pipeline.at(0).isEmpty()){
+  if (newOp == fpu_pipeline.at(0) && !fpu_pipeline.at(0).isEmpty()){
     return;
   }
 

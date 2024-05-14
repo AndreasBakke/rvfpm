@@ -43,6 +43,7 @@ struct FpuPipeObj {
   #endif
 
 
+
   bool isEmpty() const {
     return addrFrom.empty() &&
         addrTo == 999 &&
@@ -61,4 +62,9 @@ struct FpuPipeObj {
         mem_result == 0 &&
         !stalledByCtrl;
   }
+  bool operator==(const FpuPipeObj& rhs)const{
+    return (id == rhs.id && instr == rhs.instr && use_rs_i == rhs.use_rs_i) ;
+  }
 };
+
+
