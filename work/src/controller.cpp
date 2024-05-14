@@ -177,15 +177,16 @@ void Controller::writeMemoryResult(unsigned int id, uint32_t rdata, bool err, bo
     std::cerr << "Error in memory result - id: " << id << std::endl;
     return;
   }
+  std::cout << "id: write: " << id << std::endl;
   for (int i = 0; i < fpu_pipeline.getNumStages(); i++) {
-    if (fpu_pipeline.at(i).id == id && !fpu_pipeline.at(i).isEmpty()) {
+    if (fpu_pipeline.at(i).id == id && !fpu_pipeline.at(i).isEmpty() && !fpu_pipeline.at(i).mem_result_valid && (fpu_pipeline.at(i).toMem || fpu_pipeline.at(i).fromMem)) {
       fpu_pipeline.at(i).mem_result_valid = 1;
       fpu_pipeline.at(i).mem_result = rdata;
       return;
     }
   }
 
-  if (fpu_pipeline.getWaitingOp().id == id && !fpu_pipeline.getWaitingOp().isEmpty()) {
+  if (fpu_pipeline.getWaitingOp().id == id && !fpu_pipeline.getWaitingOp().isEmpty() && !fpu_pipeline.getWaitingOp().mem_result_valid && (fpu_pipeline.getWaitingOp().toMem || fpu_pipeline.getWaitingOp().fromMem)) {
     FpuPipeObj tmpOp = fpu_pipeline.getWaitingOp();
     tmpOp.mem_result_valid = 1;
     tmpOp.mem_result = rdata;
@@ -197,7 +198,7 @@ void Controller::writeMemoryResult(unsigned int id, uint32_t rdata, bool err, bo
     return;
   }
   for (int i = 0; i < fpu_pipeline.getQueueDepth(); i++) {
-    if (fpu_pipeline.at_queue(i).id == id && !fpu_pipeline.at_queue(i).isEmpty()) {
+    if (fpu_pipeline.at_queue(i).id == id && !fpu_pipeline.at_queue(i).isEmpty() && !fpu_pipeline.at_queue(i).mem_result_valid && (fpu_pipeline.at_queue(i).toMem || fpu_pipeline.at_queue(i).fromMem)) {
       fpu_pipeline.at_queue(i).mem_result_valid = 1;
       fpu_pipeline.at_queue(i).mem_result = rdata;
       if (fpu_pipeline.at_queue(i).toMem){ //If the store operation is done before reaching the pipeline. Remove it to save time

@@ -165,6 +165,7 @@ void FpuPipeline::memoryStep(){
   if (MEMORY_STEP == EXECUTE_STEP && !execute_done || memOp.stalledByCtrl) {
     mem_done = false;
   } else if ((memOp.fromMem || memOp.toMem)){
+    if(memOp.speculative){mem_done=false;return;}
     //Add op to queue if its not been added yet!
     if(!memOp.added_to_mem_queue){
       x_mem_req_t mem_req_s = {};
@@ -230,7 +231,7 @@ void FpuPipeline::addResult(FpuPipeObj op){
 void FpuPipeline::stallCheck(){
   stalled = false;
   if (QUEUE_DEPTH > 0) {
-    if (operationQueue.size()==QUEUE_DEPTH){
+    if (!operationQueue.back().isEmpty()){
       stalled = true;
     }
   } else if (!waitingOp.isEmpty()){
@@ -257,7 +258,7 @@ bool FpuPipeline::isEmpty(){
 
 void FpuPipeline::commitInstruction(unsigned int id, bool kill){
   for (auto& op : pipeline) {
-    if (op.id == id) {
+    if (op.id == id && op.speculative) {
       if (kill) {
         op = FpuPipeObj({});
       } else {
@@ -266,7 +267,7 @@ void FpuPipeline::commitInstruction(unsigned int id, bool kill){
       return;
     }
   }
-  if (waitingOp.id == id) {
+  if (waitingOp.id == id && waitingOp.speculative) {
     if (kill) {
       waitingOp = FpuPipeObj({});
     } else {
@@ -275,7 +276,7 @@ void FpuPipeline::commitInstruction(unsigned int id, bool kill){
     return;
   }
   for (auto& op : operationQueue) { //if the operation is in the queue, commit it
-    if (op.id == id) {
+    if (op.id == id && op.speculative) {
       if (kill) {
         op = FpuPipeObj({});
       } else {
