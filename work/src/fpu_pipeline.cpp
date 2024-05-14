@@ -55,7 +55,6 @@ void FpuPipeline::step(){
 
 void FpuPipeline::advanceStages(){ //TODO: also check for hazards.
   bool all_done = execute_done && mem_done && wb_done;
-  // std::cout << execute_done << mem_done << wb_done <<std::endl;
   if (wb_done) {
     if (!pipeline.at(WRITEBACK_STEP).toMem && !pipeline.at(WRITEBACK_STEP).toXReg && !pipeline.at(WRITEBACK_STEP).isEmpty()){
       #ifndef ZFINX
@@ -110,26 +109,24 @@ void FpuPipeline::advanceStages(){ //TODO: also check for hazards.
   if (pipeline.at(pipeline.size()-1).isEmpty()){
     pipeline.pop_back();//removes the empty op
     if (QUEUE_DEPTH > 0){
-      if (operationQueue.empty()){
-        pipeline.push_back(FpuPipeObj({}));
-      } else {
+      #ifdef QUEUE_FALLTHROUGH
+        if (operationQueue.empty()){
+          pipeline.push_back(FpuPipeObj({}));
+        } else {
+          pipeline.push_back(operationQueue.front());
+          operationQueue.pop_front();
+        }
+      #else
         pipeline.push_back(operationQueue.front());
         operationQueue.pop_front();
-      }
+        operationQueue.push_back(FpuPipeObj{});
+      #endif
     } else {
       pipeline.push_back(waitingOp);
       setWaitingOp(FpuPipeObj({}));
     }
   }
 
-  #ifdef INCLUDE_QUEUE
-    for (int i = 1; i < operationQueue.size(); i++){
-      if (operationQueue.at(i-1).isEmpty()){
-        operationQueue.at(i-1) = operationQueue.at(i);
-        operationQueue.at(i) = FpuPipeObj({});
-      }
-    }
-  #endif
 }
 
 
@@ -236,9 +233,15 @@ void FpuPipeline::addResult(FpuPipeObj op){
 void FpuPipeline::stallCheck(){
   stalled = false;
   if (QUEUE_DEPTH > 0) {
-    if (!operationQueue.back().isEmpty()){
-      stalled = true;
-    }
+    #ifdef QUEUE_FALLTHROUGH
+      if (operationQueue.size()==QUEUE_DEPTH){
+        stalled = true;
+      }
+    #else
+      if(!operationQueue.back().isEmpty()){
+        stalled = true;
+      }
+    #endif
   } else if (!waitingOp.isEmpty()){
     stalled = true;
   }
@@ -296,7 +299,9 @@ void FpuPipeline::commitInstruction(unsigned int id, bool kill){
 // Pipeline functions
 //--------------------------
 void FpuPipeline::addOpToQueue(FpuPipeObj op){
-  // operationQueue.pop_back();
+  #ifndef QUEUE_FALLTHROUGH
+  operationQueue.pop_back();
+  #endif
   operationQueue.push_back(op);//Replace empty op at the back with op. Safety is handeled in predecoder
 
 };
