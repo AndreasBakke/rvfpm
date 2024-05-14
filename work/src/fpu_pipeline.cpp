@@ -109,23 +109,24 @@ void FpuPipeline::advanceStages(){ //TODO: also check for hazards.
   if (pipeline.at(pipeline.size()-1).isEmpty()){
     pipeline.pop_back();//removes the empty op
     if (QUEUE_DEPTH > 0){
-      pipeline.push_back(operationQueue.front());
-      operationQueue.pop_front();
-      operationQueue.push_back(FpuPipeObj({})); //Push back empty op to keep size
+      #ifdef QUEUE_FALLTHROUGH
+        if (operationQueue.empty()){
+          pipeline.push_back(FpuPipeObj({}));
+        } else {
+          pipeline.push_back(operationQueue.front());
+          operationQueue.pop_front();
+        }
+      #else
+        pipeline.push_back(operationQueue.front());
+        operationQueue.pop_front();
+        operationQueue.push_back(FpuPipeObj{});
+      #endif
     } else {
       pipeline.push_back(waitingOp);
       setWaitingOp(FpuPipeObj({}));
     }
   }
 
-  #ifdef INCLUDE_QUEUE
-    for (int i = 1; i < operationQueue.size(); i++){
-      if (operationQueue.at(i-1).isEmpty()){
-        operationQueue.at(i-1) = operationQueue.at(i);
-        operationQueue.at(i) = FpuPipeObj({});
-      }
-    }
-  #endif
 }
 
 
@@ -165,7 +166,9 @@ void FpuPipeline::memoryStep(){
   if (MEMORY_STEP == EXECUTE_STEP && !execute_done || memOp.stalledByCtrl) {
     mem_done = false;
   } else if ((memOp.fromMem || memOp.toMem)){
+    if(memOp.speculative){mem_done=false;return;}
     //Add op to queue if its not been added yet!
+    if (memOp.speculative){mem_done = false;return;}
     if(!memOp.added_to_mem_queue){
       x_mem_req_t mem_req_s = {};
     mem_req_s.id = memOp.id;
@@ -230,9 +233,15 @@ void FpuPipeline::addResult(FpuPipeObj op){
 void FpuPipeline::stallCheck(){
   stalled = false;
   if (QUEUE_DEPTH > 0) {
-    if (!operationQueue.back().isEmpty()){
-      stalled = true;
-    }
+    #ifdef QUEUE_FALLTHROUGH
+      if (operationQueue.size()==QUEUE_DEPTH){
+        stalled = true;
+      }
+    #else
+      if(!operationQueue.back().isEmpty()){
+        stalled = true;
+      }
+    #endif
   } else if (!waitingOp.isEmpty()){
     stalled = true;
   }
@@ -257,7 +266,7 @@ bool FpuPipeline::isEmpty(){
 
 void FpuPipeline::commitInstruction(unsigned int id, bool kill){
   for (auto& op : pipeline) {
-    if (op.id == id) {
+    if (op.id == id && op.speculative) {
       if (kill) {
         op = FpuPipeObj({});
       } else {
@@ -266,7 +275,7 @@ void FpuPipeline::commitInstruction(unsigned int id, bool kill){
       return;
     }
   }
-  if (waitingOp.id == id) {
+  if (waitingOp.id == id && waitingOp.speculative) {
     if (kill) {
       waitingOp = FpuPipeObj({});
     } else {
@@ -275,7 +284,7 @@ void FpuPipeline::commitInstruction(unsigned int id, bool kill){
     return;
   }
   for (auto& op : operationQueue) { //if the operation is in the queue, commit it
-    if (op.id == id) {
+    if (op.id == id && op.speculative) {
       if (kill) {
         op = FpuPipeObj({});
       } else {
@@ -290,7 +299,9 @@ void FpuPipeline::commitInstruction(unsigned int id, bool kill){
 // Pipeline functions
 //--------------------------
 void FpuPipeline::addOpToQueue(FpuPipeObj op){
+  #ifndef QUEUE_FALLTHROUGH
   operationQueue.pop_back();
+  #endif
   operationQueue.push_back(op);//Replace empty op at the back with op. Safety is handeled in predecoder
 
 };
@@ -321,7 +332,7 @@ int FpuPipeline::getNumStages(){
 };
 
 int FpuPipeline::getQueueDepth(){
-  return QUEUE_DEPTH;
+  return operationQueue.size();
 };
 
 unsigned int FpuPipeline::getId_pipeline(int stage) {

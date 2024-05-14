@@ -10,6 +10,7 @@ fpu_pipeline:
     execute_step: 0
     memory_step: 0
     writeback_step: 0
+  forwarding: true
 
 execute_cycles:
   default: 1

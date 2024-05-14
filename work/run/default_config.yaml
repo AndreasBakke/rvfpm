@@ -38,6 +38,7 @@ execute_cycles: #Number of cycles for execution of each instruction
 defines: #Will be added as defines
   - RF_RESET_VALUE 0.0 #Reset value for the register file. NAN used if not specified
   - FCSR_RM_RESET_VALUE 0b000 #Rounding mode set on reset. 0 (RNE) used by default
+  - queue_fallthrough #Operate queue in fallthrough mode
   # - NO_ROUNDING #Use cpp default rounding mode
   # - TESTFLOAT
 

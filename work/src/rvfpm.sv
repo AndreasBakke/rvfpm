@@ -117,7 +117,7 @@ module rvfpm #(
 
   assign mem_req.be = 'hF;
   assign mem_req.attr = 0;
-  assign mem_req.spec = 1;
+  assign mem_req.spec = 0; //Memory is not asked for if it has not been commited.
 
   logic [31:0] result_ecswe_full, result_ecsdata_full;
   logic[31:0] result_id_full, result_rd_full;
