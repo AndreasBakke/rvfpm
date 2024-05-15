@@ -169,23 +169,23 @@ int main(int argc, char** argv) {
       //testFPU.bd_memRes(...) //Simulate memory result without delay
       RTYPE instr_rtype = {};
       if (op == "fsqrt") {
-        instr_rtype = {.parts= {OP_FP, rd, 0b000, r1, 0b00000, FSQRT_S}};
+        instr_rtype = {.parts= {OP_FP, rd, 0b000, r1, 0b00000, 0b00, FSQRT}};
         testFPU.addAcceptedInstruction(instr_rtype.instr, 0, 0, 0, 0, 0, 0, 0, 0);
       }
       else if (op == "ui32_to_f32") {
-        instr_rtype = {.parts= {OP_FP, rd, rm_i, r1, 0b00001, FCVT_S_W}};
+        instr_rtype = {.parts= {OP_FP, rd, rm_i, r1, 0b00001, 0b00, FCVT_S_W}};
         testFPU.addAcceptedInstruction(instr_rtype.instr, 0, a, 0, 0, 0, 0, 0, 0);
       }
       else if (op == "i32_to_f32") {
-        instr_rtype = {.parts= {OP_FP, rd, rm_i, r1, 0b00000, FCVT_S_W}};
+        instr_rtype = {.parts= {OP_FP, rd, rm_i, r1, 0b00000, 0b00, FCVT_S_W}};
         testFPU.addAcceptedInstruction(instr_rtype.instr, 0, a, 0, 0, 0, 0, 0, 0);
       }
       else if (op == "f32_to_ui32") {
-        instr_rtype = {.parts= {OP_FP, rd, rm_i, r1, 0b00001, FCVT_W_S}};
+        instr_rtype = {.parts= {OP_FP, rd, rm_i, r1, 0b00001, 0b00, FCVT_W_S}};
         testFPU.addAcceptedInstruction(instr_rtype.instr, 0, 0, 0, 0, 0, 0, 0, 0);
       }
       else if (op == "f32_to_i32") {
-        instr_rtype = {.parts= {OP_FP, rd, rm_i, r1, 0b00000, FCVT_W_S}};
+        instr_rtype = {.parts= {OP_FP, rd, rm_i, r1, 0b00000, 0b00, FCVT_W_S}};
         testFPU.addAcceptedInstruction(instr_rtype.instr, 0, 0, 0, 0, 0, 0, 0, 0);
       }
       FpuPipeObj result = testFPU.testFloatOp();
@@ -209,31 +209,31 @@ int main(int argc, char** argv) {
       RTYPE instr_rtype;
       if (op == "fadd")
       {
-        instr_rtype = {.parts= {OP_FP, rd, 0b000, r1, r2, FADD_S}};
+        instr_rtype = {.parts= {OP_FP, rd, 0b000, r1, r2, 0b00, FADD}};
       }
       else if (op == "fsub") //FSUB_S:
       {
-        instr_rtype = {.parts= {OP_FP, rd, 0b000, r1, r2, FSUB_S}};
+        instr_rtype = {.parts= {OP_FP, rd, 0b000, r1, r2, 0b00, FSUB}};
       }
       else if (op == "fmul") //FMUL_S:
       {
-        instr_rtype = {.parts= {OP_FP, rd, 0b000, r1, r2, FMUL_S}};
+        instr_rtype = {.parts= {OP_FP, rd, 0b000, r1, r2, 0b00, FMUL}};
       }
       else if (op == "fdiv") //FDIV_S:
       {
-        instr_rtype = {.parts= {OP_FP, rd, 0b000, r1, r2, FDIV_S}};
+        instr_rtype = {.parts= {OP_FP, rd, 0b000, r1, r2, 0b00, FDIV}};
       }
       else if (op == "feq") //FEQ.S
       {
-        instr_rtype = {.parts = {OP_FP, rd, 0b010, r1, r2, FCMP}};
+        instr_rtype = {.parts = {OP_FP, rd, 0b010, r1, r2, 0b00, FCMP}};
       }
       else if (op == "flt") //FLT.S
       {
-        instr_rtype = {.parts = {OP_FP, rd, 0b001, r1, r2, FCMP}};
+        instr_rtype = {.parts = {OP_FP, rd, 0b001, r1, r2, 0b00, FCMP}};
       }
       else if (op == "fle") //FLE.s
       {
-        instr_rtype = {.parts = {OP_FP, rd, 0b000, r1, r2, FCMP}};
+        instr_rtype = {.parts = {OP_FP, rd, 0b000, r1, r2, 0b00, FCMP}};
       }
       testFPU.addAcceptedInstruction(instr_rtype.instr, 0, 0, 0, 0, 0, 0, 0, 0);
       FpuPipeObj result = testFPU.testFloatOp();

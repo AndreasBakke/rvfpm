@@ -98,30 +98,30 @@ FpuPipeObj decode_RTYPE(uint32_t instr, unsigned int operand_a, unsigned int ope
   result.use_rs_i[2] = false;
   result.remaining_ex_cycles = NUM_CYCLES_DEFAULT; //Default number of cycles
   //Override relevant parameters based on function
-  switch (dec_instr.parts.funct7)
+  switch (dec_instr.parts.funct5)
   {
-    case FADD_S:
+    case FADD:
     {
       #ifdef NUM_CYCLES_FADD
         result.remaining_ex_cycles = NUM_CYCLES_FADD;
       #endif
       break;
     }
-    case FSUB_S:
+    case FSUB:
     {
       #ifdef NUM_CYCLES_FSUB
         result.remaining_ex_cycles = NUM_CYCLES_FSUB;
       #endif
       break;
     }
-    case FMUL_S:
+    case FMUL:
     {
       #ifdef NUM_CYCLES_FMUL
         result.remaining_ex_cycles = NUM_CYCLES_FMUL;
       #endif
       break;
     }
-    case FDIV_S:
+    case FDIV:
     {
       #ifdef NUM_CYCLES_FDIV
         result.remaining_ex_cycles = NUM_CYCLES_FDIV; //TODO: we need to check if this has been added. Thats not given
@@ -142,7 +142,7 @@ FpuPipeObj decode_RTYPE(uint32_t instr, unsigned int operand_a, unsigned int ope
       #endif
       break;
     }
-    case FSQRT_S:
+    case FSQRT:
     {
       #ifdef NUM_CYCLES_FSQRT
         result.remaining_ex_cycles = NUM_CYCLES_FSQRT; //TODO: we need to check if this has been added. Thats not given

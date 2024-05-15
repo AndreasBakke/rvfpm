@@ -139,29 +139,29 @@ void execute_RTYPE(FpuPipeObj& op, FpuRf* registerFile){
       data2 = op.addrFrom[1] == op.fw_addr ? op.fw_data : data2;
     }
   #endif
-  switch (dec_instr.parts.funct7)
+  switch (dec_instr.parts.funct5)
   {
-  case FADD_S:
+  case FADD:
   {
     op.data.f = data1.f + data2.f;
     break;
   }
-  case FSUB_S:
+  case FSUB:
   {
     op.data.f = data1.f - data2.f;
     break;
   }
-  case FMUL_S:
+  case FMUL:
   {
     op.data.f = data1.f * data2.f;
     break;
   }
-  case FDIV_S:
+  case FDIV:
   {
     op.data.f = data1.f / data2.f;
     break;
   }
-  case FSQRT_S:
+  case FSQRT:
   {
     op.data.f = sqrt(data1.f);
     break;
