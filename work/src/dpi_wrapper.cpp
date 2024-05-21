@@ -116,7 +116,7 @@ extern "C" {
   // RESULT INTERFACE
   //-----------------------
 
-  void poll_res(void* fpu_ptr, bool& result_valid, unsigned int& id, unsigned int& data, unsigned int& rd, bool& we, unsigned int& ecswe, unsigned int& ecsdata){
+  void poll_res(void* fpu_ptr, bool& result_valid, unsigned int& id, unsignedType& data, unsigned int& rd, bool& we, unsigned int& ecswe, unsigned int& ecsdata){
     FPU* fpu = static_cast<FPU*>(fpu_ptr);
     x_result_t result = {};
     fpu->pollResult(result_valid, result);

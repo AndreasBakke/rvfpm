@@ -29,8 +29,8 @@ module rvfpm_tb;
   parameter TB_X_NUM_RS          = `X_NUM_RS; //Read ports
   parameter TB_X_ID_WIDTH        = `X_ID_WIDTH;
   parameter TB_X_MEM_WIDTH       = `FLEN; //TODO: dependent on extension
-  parameter TB_X_RFR_WIDTH       = `FLEN; //Read acces width
-  parameter TB_X_RFW_WIDTH       = `FLEN; //Write acces width
+  parameter TB_X_RFR_WIDTH       = `XLEN; //Read acces width
+  parameter TB_X_RFW_WIDTH       = `XLEN; //Write acces width
   parameter TB_X_MISA            = `X_MISA; //TODO: not used
   parameter TB_X_ECS_XS          = `X_ECS_XS;        //TODO: not used
 
@@ -122,12 +122,6 @@ module rvfpm_tb;
         uin_rvfpm.pipelineIds[i] = getPipeStageId(dut.fpu, i);
       end
       uin_rvfpm.waitingOpId = getWaitingOpId(dut.fpu);
-    `endif
-    `ifdef INCLUDE_QUEUE
-      //Get entire queue for verification
-      for (int i=0; i < TB_QUEUE_DEPTH; ++i) begin
-        uin_rvfpm.queueIds[i] = getQueueStageId(dut.fpu, i);
-      end
     `endif
 
 

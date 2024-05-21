@@ -22,7 +22,7 @@ void Controller::reset(){
 
 
 
-void Controller::addAcceptedInstruction(uint32_t instruction, unsigned int id, unsigned int operand_a, unsigned int operand_b, unsigned int operand_c, unsigned int mode, bool commit_valid, unsigned int commit_id, bool commit_kill){ //and other necessary inputs (should be somewhat close to in_xif type)
+void Controller::addAcceptedInstruction(uint32_t instruction, unsigned int id, unsignedType operand_a, unsignedType operand_b, unsignedType operand_c, unsigned int mode, bool commit_valid, unsigned int commit_id, bool commit_kill){ //and other necessary inputs (should be somewhat close to in_xif type)
   FpuPipeObj newOp = decodeOp(instruction, id, operand_a, operand_b, operand_c, mode);
   if (newOp == fpu_pipeline.at(0) && !fpu_pipeline.at(0).isEmpty()){
     return;
@@ -172,7 +172,7 @@ void Controller::commitInstruction(unsigned int id, bool kill){
   fpu_pipeline.commitInstruction(id, kill);
 };
 
-void Controller::writeMemoryResult(unsigned int id, uint32_t rdata, bool err, bool dbg) {
+void Controller::writeMemoryResult(unsigned int id, unsignedType rdata, bool err, bool dbg) {
   if (err) {
     std::cerr << "Error in memory result - id: " << id << std::endl;
     return;

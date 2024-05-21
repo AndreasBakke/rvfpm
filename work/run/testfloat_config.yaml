@@ -1,4 +1,12 @@
 ---
+fpu:
+  extensions:
+    - RV64
+
+xif:
+  XLEN: 64
+  X_RFR_WIDTH: 64
+  X_RFW_WIDTH: 64
 
 fpu_pipeline:
   num_pipeline_stages: 1 #Number of stages in the FPU pipeline

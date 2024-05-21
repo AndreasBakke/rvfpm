@@ -26,9 +26,9 @@ module rvfpm #(
   //CORE-V-XIF parameters for coprocessor
   parameter X_NUM_RS          = `X_NUM_RS, //Read ports
   parameter X_ID_WIDTH        = `X_ID_WIDTH,
-  parameter X_MEM_WIDTH       = `FLEN, //TODO: dependent on extension
-  parameter X_RFR_WIDTH       = `FLEN, //Read acces width
-  parameter X_RFW_WIDTH       = `FLEN, //Write acces width
+  parameter X_MEM_WIDTH       = `FLEN,
+  parameter X_RFR_WIDTH       = `XLEN, //Read acces width
+  parameter X_RFW_WIDTH       = `XLEN, //Write acces width
   parameter X_MISA            = `X_MISA, //TODO: not used
   parameter X_ECS_XS          = `X_ECS_XS        //TODO: not used
 )
@@ -66,6 +66,15 @@ module rvfpm #(
 
 
 );
+
+`ifdef RV64
+  typedef longint unsigned unsignedType;
+  typedef longint signedType;
+`else
+  typedef int unsigned unsignedType;
+  typedef int signedType;
+`endif
+
   //-----------------------
   //-- DPI-C Imports
   //-----------------------
@@ -83,7 +92,7 @@ module rvfpm #(
   import "DPI-C" function void executeStep(input chandle fpu_ptr);
   import "DPI-C" function void poll_memory_request(input chandle fpu_ptr, output logic mem_valid, output int unsigned id, output int unsigned addr, output int unsigned wdata, output logic last, output int unsigned size, output int unsigned mode, output logic we);
   import "DPI-C" function void write_sv_state(input chandle fpu_ptr, input logic mem_ready, input logic result_ready);
-  import "DPI-C" function void poll_res(input chandle fpu_ptr, output logic result_valid, output int unsigned id, output int unsigned data, output int unsigned rd, output logic we, output int unsigned ecswe, output int unsigned ecsdata); //TODO: add remaining signals in interface
+  import "DPI-C" function void poll_res(input chandle fpu_ptr, output logic result_valid, output int unsigned id, output unsignedType data, output int unsigned rd, output logic we, output int unsigned ecswe, output int unsigned ecsdata); //TODO: add remaining signals in interface
   import "DPI-C" function void write_memory_result(input chandle fpu_ptr, input int unsigned id, input int unsigned rdata, input logic err, input logic dbg);
   import "DPI-C" function void writebackStep(input chandle fpu_ptr);
   import "DPI-C" function void memoryStep(input chandle fpu_ptr);

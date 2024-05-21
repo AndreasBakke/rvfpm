@@ -2,6 +2,7 @@
 fpu:
   extensions:
   #  - ZFINX #Remember to update Mabi and ARCH in common.mk
+  - ZFMin
 
 fpu_pipeline:
   num_pipeline_stages: 1 #Number of stages in the FPU pipeline

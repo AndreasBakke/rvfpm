@@ -9,7 +9,7 @@
 
 #include <iostream>
 
-FpuPipeObj decodeOp(uint32_t instruction, unsigned int id, unsigned int operand_a, unsigned int operand_b, unsigned int operand_c, unsigned int mode) { //Add more fields if needed by eXtension interface
+FpuPipeObj decodeOp(uint32_t instruction, unsigned int id, unsignedType operand_a, unsignedType operand_b, unsignedType operand_c, unsigned int mode) { //Add more fields if needed by eXtension interface
   //Get result of operation
   unsigned int opcode = instruction & 127 ; //Get first 7 bit
   FpuPipeObj result = {};
@@ -54,15 +54,21 @@ FpuPipeObj decodeOp(uint32_t instruction, unsigned int id, unsigned int operand_
 };
 
 
-FpuPipeObj decode_R4TYPE(uint32_t instr, unsigned int operand_a, unsigned int operand_b, unsigned int operand_c) {
+FpuPipeObj decode_R4TYPE(uint32_t instr, unsignedType operand_a, unsignedType operand_b, unsignedType operand_c) {
   RTYPE dec_instr = {.instr = instr};
   FpuPipeObj result = {};
   result.valid = 1;
   result.addrFrom = {dec_instr.parts_r4type.rs1, dec_instr.parts_r4type.rs2, dec_instr.parts_r4type.rs3};
   result.addrTo = {dec_instr.parts_r4type.rd};
-  result.operand_a.bitpattern = operand_a; //Only used if ZFINX
-  result.operand_b.bitpattern = operand_b; //Only used if ZFINX
-  result.operand_c.bitpattern = operand_c; //Only used if ZFINX
+  #ifdef RV64
+    result.operand_a.bitpattern_64 = operand_a; //Only used if ZFINX
+    result.operand_b.bitpattern_64 = operand_b; //Only used if ZFINX
+    result.operand_c.bitpattern_64 = operand_c; //Only used if ZFINX
+  #else
+    result.operand_a.bitpattern = operand_a; //Only used if ZFINX
+    result.operand_b.bitpattern = operand_b; //Only used if ZFINX
+    result.operand_c.bitpattern = operand_c; //Only used if ZFINX
+  #endif
   #ifdef ZFINX
     result.use_rs_i[0] = true;
     result.use_rs_i[1] = true;
@@ -77,7 +83,7 @@ FpuPipeObj decode_R4TYPE(uint32_t instr, unsigned int operand_a, unsigned int op
   return result;
 }
 
-FpuPipeObj decode_RTYPE(uint32_t instr, unsigned int operand_a, unsigned int operand_b) {
+FpuPipeObj decode_RTYPE(uint32_t instr, unsignedType operand_a, unsignedType operand_b) {
   //TODO: add execution
   RTYPE dec_instr = {.instr = instr}; //"Decode" into ITYPE
   FpuPipeObj result = {};
@@ -86,8 +92,13 @@ FpuPipeObj decode_RTYPE(uint32_t instr, unsigned int operand_a, unsigned int ope
   result.addrTo = {dec_instr.parts.rd};
   result.instr_type = it_RTYPE; //For decoding in execution step.
   result.instr = instr; //Save instruction
-  result.operand_a.bitpattern = operand_a; //Overwritten for relevant functions
-  result.operand_b.bitpattern = operand_b; //Overwritten for relevant functions
+  #ifdef RV64
+    result.operand_a.bitpattern_64 = operand_a; //Only used if ZFINX
+    result.operand_b.bitpattern_64 = operand_b; //Only used if ZFINX
+  #else
+    result.operand_a.bitpattern = operand_a; //Overwritten for relevant functions
+    result.operand_b.bitpattern = operand_b; //Overwritten for relevant functions
+  #endif
   #ifdef ZFINX
     result.use_rs_i[0] = true;
     result.use_rs_i[1] = true;
@@ -209,7 +220,7 @@ FpuPipeObj decode_RTYPE(uint32_t instr, unsigned int operand_a, unsigned int ope
   return result;
 }
 
-FpuPipeObj decode_ITYPE(uint32_t instr, unsigned int operand_a) {
+FpuPipeObj decode_ITYPE(uint32_t instr, unsignedType operand_a) {
   ITYPE dec_instr = {.instr = instr}; //"Decode" into ITYPE
   FpuPipeObj result = {};
   result.valid = 1;
@@ -220,19 +231,27 @@ FpuPipeObj decode_ITYPE(uint32_t instr, unsigned int operand_a) {
   result.fromMem = 1;
   result.instr = instr; //Save instruction
   result.instr_type = it_ITYPE;
-  result.operand_a.bitpattern = operand_a;
+  #ifdef RV64
+    result.operand_a.bitpattern_64 = operand_a; //Only used if ZFINX
+  #else
+    result.operand_a.bitpattern = operand_a;
+  #endif
   result.size = dec_instr.parts.funct3; //Size of word
   return result;
 }
 
-FpuPipeObj decode_STYPE(uint32_t instr, unsigned int operand_a){
+FpuPipeObj decode_STYPE(uint32_t instr, unsignedType operand_a){
   STYPE dec_instr = {.instr = instr}; //Decode into STYPE
   FpuPipeObj result = {};
   result.valid = 1;
   result.addrFrom = {dec_instr.parts.rs2};
   int32_t upper_offset = (dec_instr.parts.offset << 25) >> 20;
   int32_t lower_offset = dec_instr.parts.imm_4_0;
-  result.operand_a.bitpattern = operand_a;
+  #ifdef RV64
+    result.operand_a.bitpattern_64 = operand_a; //Only used if ZFINX
+  #else
+    result.operand_a.bitpattern = operand_a;
+  #endif
   int32_t full_offset = 0 | upper_offset | lower_offset; //Sign extend - TODO: Extension independent
   result.addrTo = {operand_a + full_offset};
   result.toMem = true;
@@ -243,7 +262,7 @@ FpuPipeObj decode_STYPE(uint32_t instr, unsigned int operand_a){
   return result;
 }
 
-FpuPipeObj decode_CSRTYPE(uint32_t instr, unsigned int operand_a) {
+FpuPipeObj decode_CSRTYPE(uint32_t instr, unsignedType operand_a) {
   CSRTYPE dec_instr = {.instr = instr}; //Decode into CSRTYPE
   FpuPipeObj result = {};
   if (!(0x001 <= dec_instr.parts.csr <= 0x003)) { //If CSR op is not a FCSR instruction, return invalid

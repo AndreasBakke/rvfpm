@@ -8,6 +8,7 @@
 
 #pragma once
 #include "config.h"
+#include "fp_number.h"
 #include <stdint.h>
 
 typedef struct {
@@ -42,7 +43,7 @@ typedef struct {
 
 typedef struct{
     unsigned int id  : X_ID_WIDTH;
-    unsigned int data : 32;
+    unsignedType data : 32;
     unsigned int rd   : 5;
     bool         we    : 1;
     unsigned int ecswe : 3;
