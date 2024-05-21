@@ -172,7 +172,7 @@ void Controller::commitInstruction(unsigned int id, bool kill){
   fpu_pipeline.commitInstruction(id, kill);
 };
 
-void Controller::writeMemoryResult(unsigned int id, unsignedType rdata, bool err, bool dbg) {
+void Controller::writeMemoryResult(unsigned int id, uint32_t rdata, bool err, bool dbg) {
   if (err) {
     std::cerr << "Error in memory result - id: " << id << std::endl;
     return;
