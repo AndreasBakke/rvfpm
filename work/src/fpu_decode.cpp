@@ -9,7 +9,7 @@
 
 #include <iostream>
 
-FpuPipeObj decodeOp(uint32_t instruction, unsigned int id, unsignedType operand_a, unsignedType operand_b, unsignedType operand_c, unsigned int mode) { //Add more fields if needed by eXtension interface
+FpuPipeObj decodeOp(uint32_t instruction, unsigned int id, unsignedType operand_a, unsignedType operand_b, unsignedType operand_c, unsigned int mode) {
   //Get result of operation
   unsigned int opcode = instruction & 127 ; //Get first 7 bit
   FpuPipeObj result = {};
@@ -84,7 +84,6 @@ FpuPipeObj decode_R4TYPE(uint32_t instr, unsignedType operand_a, unsignedType op
 }
 
 FpuPipeObj decode_RTYPE(uint32_t instr, unsignedType operand_a, unsignedType operand_b) {
-  //TODO: add execution
   RTYPE dec_instr = {.instr = instr}; //"Decode" into ITYPE
   FpuPipeObj result = {};
   result.valid = 1;
@@ -135,7 +134,7 @@ FpuPipeObj decode_RTYPE(uint32_t instr, unsignedType operand_a, unsignedType ope
     case FDIV:
     {
       #ifdef NUM_CYCLES_FDIV
-        result.remaining_ex_cycles = NUM_CYCLES_FDIV; //TODO: we need to check if this has been added. Thats not given
+        result.remaining_ex_cycles = NUM_CYCLES_FDIV;
       #endif
       break;
     }
@@ -156,7 +155,7 @@ FpuPipeObj decode_RTYPE(uint32_t instr, unsignedType operand_a, unsignedType ope
     case FSQRT:
     {
       #ifdef NUM_CYCLES_FSQRT
-        result.remaining_ex_cycles = NUM_CYCLES_FSQRT; //TODO: we need to check if this has been added. Thats not given
+        result.remaining_ex_cycles = NUM_CYCLES_FSQRT;
       #endif
       result.addrFrom = {dec_instr.parts.rs1, 999}; //sqrt only dependent on rs1
       break;

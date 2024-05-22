@@ -8,18 +8,15 @@
 #include "controller.h"
 
 Controller::Controller(FpuRf& rf, FpuPipeline& pipe, bool& ready) : registerFile(rf), fpu_pipeline(pipe), fpuReady(ready){
-
 }
 
 Controller::~Controller(){};
-
 
 void Controller::reset(){
   mem_valid = false;
   mem_ready = false;
   mem_req = {};
 }
-
 
 
 void Controller::addAcceptedInstruction(uint32_t instruction, unsigned int id, unsignedType operand_a, unsignedType operand_b, unsignedType operand_c, unsigned int mode, bool commit_valid, unsigned int commit_id, bool commit_kill){ //and other necessary inputs (should be somewhat close to in_xif type)
@@ -54,8 +51,9 @@ void Controller::addAcceptedInstruction(uint32_t instruction, unsigned int id, u
       #endif
     }
   #endif
+
   if ((newOp.toMem || newOp.fromMem) && !newOp.stalledByCtrl && !newOp.speculative){
-    STYPE dec_instr = {.instr = newOp.instr}; //For step-by-step - comparrison purposes we dont use addrFrom (So the data is present for flw aswell)
+    STYPE dec_instr = {.instr = newOp.instr};
     newOp.data.bitpattern = registerFile.read(dec_instr.parts.rs2).bitpattern;
     addMemoryRequest(newOp);
   }
@@ -64,7 +62,7 @@ void Controller::addAcceptedInstruction(uint32_t instruction, unsigned int id, u
     fpu_pipeline.addOpToQueue(newOp);
   }
   else {
-    fpu_pipeline.setWaitingOp(newOp); //set waitingOp (if queue=0, this will be empty given the instruction is accepted
+    fpu_pipeline.setWaitingOp(newOp); //set waitingOp (if queue=0), this will be empty given the instruction is accepted
   }
 }
 
@@ -75,16 +73,13 @@ void Controller::addAcceptedInstruction(uint32_t instruction, unsigned int id, u
 bool Controller::hasSameTarget(FpuPipeObj first, FpuPipeObj last){
   if (last.isEmpty() || first.isEmpty()) {return false;}
   if (first.toMem) {
-    if (first.addrFrom.front() == last.addrTo){
+    if (first.addrFrom.front() == last.addrTo){ //Only need to check in one direction
       return true;
     }
     return false;
   }
   if(first.fromMem){ //No overlap if we are reading from memory
     return false;
-  }
-  for (int i = 0; i < first.addrFrom.size(); i++){
-    return true;
   }
   return false;
 }
@@ -97,9 +92,9 @@ void Controller::detectHazards(){
 
     if (fpu_pipeline.at(i).isEmpty() || fpu_pipeline.at(i).addrTo == 999 ){continue;}
 
-    if(i != EXECUTE_STEP && i != MEMORY_STEP){continue;}//no need to stall if nothing is done
+    if(i != EXECUTE_STEP && i != MEMORY_STEP){continue;}//no need to stall if nothing is done at the step
 
-    //Forward data if the difference is one step
+    //Stall operation if the target register is the same as the one we are writing to
     if (hasSameTarget(fpu_pipeline.at(i), fpu_pipeline.at(WRITEBACK_STEP))){
       fpu_pipeline.at(i).stalledByCtrl = 1;
     }
@@ -107,23 +102,20 @@ void Controller::detectHazards(){
   #endif
 
   #ifdef CTRL_WAW
-  //Also a non-issue if we dont reorder operations. Then it is intended by the user i guess...
-    //Check for WAW hazards
+    // Not implemted as OOO is not implemented - Thought to be handled by CPU
   #endif
   #ifdef CTRL_WAR
-  //Only necessary if we reorder operations to write over results before a previous operation is done
-  //Check for WAR
-  //Pretty much only stall FLW operations beeing added to wb if the target register is read from further down the line!
+    // Not implemted as OOO is not implemented - Thought to be handled by CPU
   #endif
 }
 
 #ifdef FORWARDING
-void Controller::resolveForwards(){ //Currently only resolves memory operations that have not done a mem-rquest due to the stall.
+void Controller::resolveForwards(){ //Currently only resolves memory operations that have not done a mem-request due to the stall.
   for (int i = WRITEBACK_STEP; i < fpu_pipeline.getNumStages(); i++){
     if (fpu_pipeline.at(i).stalledByCtrl){
         FpuPipeObj& op = fpu_pipeline.at(i);
         #ifdef CTRL_RAW
-          if (op.toMem && !op.added_to_mem_queue && op.addrFrom.front() == fpu_pipeline.fw_addr){
+          if (op.toMem && !op.added_to_mem_queue && op.addrFrom.front() == fpu_pipeline.fw_addr){ //Fw data if address is correct
             op.data.bitpattern = fpu_pipeline.fw_data.bitpattern;
             op.stalledByCtrl = 0;
             addMemoryRequest(op);
@@ -134,7 +126,7 @@ void Controller::resolveForwards(){ //Currently only resolves memory operations 
         #endif
     }
   }
-  if (QUEUE_DEPTH > 0){
+  if (QUEUE_DEPTH > 0){ //also check the queue
     for (int i = 0; i < fpu_pipeline.getQueueDepth(); i++){
       if (fpu_pipeline.at_queue(i).stalledByCtrl){
         FpuPipeObj& op = fpu_pipeline.at_queue(i);
@@ -151,7 +143,7 @@ void Controller::resolveForwards(){ //Currently only resolves memory operations 
       }
     }
   }
-  else {
+  else { //Check waitingOp if no queue is used
     if (fpu_pipeline.getWaitingOp().stalledByCtrl){
       FpuPipeObj op = fpu_pipeline.getWaitingOp();
       if (op.toMem && !op.added_to_mem_queue && op.addrFrom.front() == fpu_pipeline.fw_addr){
@@ -208,7 +200,7 @@ void Controller::writeMemoryResult(unsigned int id, uint32_t rdata, bool err, bo
 //--------------------
 // Memory interface
 //--------------------
-void Controller::addMemoryRequest(FpuPipeObj& op){
+void Controller::addMemoryRequest(FpuPipeObj& op){ //Add to mem_req_queue
   x_mem_req_t mem_req_s = {};
   mem_req_s.id = op.id;
   mem_req_s.addr = op.toMem ? op.addrTo : op.addrFrom.front();

@@ -26,9 +26,9 @@ fpu_pipeline:
     writeback_step: 0
   hazards: #Hazards the controller will check
     - RAW
-    # - WAR
-    # - WAW
-  OOO: false #Out of order execution - Not yet implemented (only an issue if WAR or WAW is enabled)
+    # - WAR - Not implemted as OOO is not implemented - Thought to be handled by CPU
+    # - WAW - Not implemted as OOO is not implemented - Thought to be handled by CPU
+  OOO: false #Out of order execution - Not yet implemented  - Thought to be handled by CPU
   forwarding: true #Forward/bypass result to next operation
 
 execute_cycles: #Number of cycles for execution of each instruction

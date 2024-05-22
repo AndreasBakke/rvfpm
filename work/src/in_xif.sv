@@ -112,31 +112,5 @@ package in_xif;
     logic                        err;     // Did the instruction cause a bus error?
   } x_result_t;
 
-  // Issue interface
-  // logic               issue_valid;
-  // logic               issue_ready;
-  // x_issue_req_t       issue_req;
-  // x_issue_resp_t      issue_resp;
-
-  // // Commit interface
-  // logic               commit_valid;
-  // x_commit_t          commit;
-
-  // // Memory (request/response) interface
-  // logic               mem_valid;
-  // logic               mem_ready;
-  // x_mem_req_t         mem_req;
-  // x_mem_resp_t        mem_resp;
-
-  // // Memory result interface
-  // logic               mem_result_valid;
-  // x_mem_result_t      mem_result;
-
-  // // Result interface
-  // logic               result_valid;
-  // logic               result_ready;
-  // x_result_t          result;
-
-
 endpackage : in_xif
 

@@ -78,7 +78,7 @@ def write_sv_params(data):
       if param == "queue_depth" and data["fpu_pipeline"][param] != 0:
         write_data(sv_path, "  `define INCLUDE_QUEUE\n")
 
-      if param == "steps":  #Not needed in pa_rvfpm as of yet
+      if param == "steps":
         continue
       if data["fpu_pipeline"][param] == True:
         write_data(sv_path, "  `define "+str(param).upper()+" 1\n")

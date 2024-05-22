@@ -36,9 +36,9 @@ FPNumber FpuRf::read(int r_address) {
   return registerFile[r_address];
 }
 
-int FpuRf::write(int w_address, FPNumber data) { //Return int to give error messageS?
+int FpuRf::write(int w_address, FPNumber data) {
   if (0 <= w_address && w_address <= NUM_F_REGISTERS) {
-    registerFile[w_address] = data; //Might need more management about multiple writes and giving pri.
+    registerFile[w_address] = data;
     return 1; //Success
   }
   return 0;
@@ -48,7 +48,7 @@ int FpuRf::write(int w_address, FPNumber data) { //Return int to give error mess
 //Fcsr
 int FpuRf::write_fcsr(uint32_t data){
   fcsr = {.v = data};
-  return 1; //?
+  return 1;
 };
 
 FCSR_type FpuRf::read_fcsr(){
@@ -103,7 +103,7 @@ unsigned int FpuRf::readfrm(){
 };
 
 
-//HelperFunctions
+//Helper functions
 int FpuRf::get_length() {
   return registerFile.size();
 }

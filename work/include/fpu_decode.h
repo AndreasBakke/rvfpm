@@ -15,7 +15,6 @@
 #include <limits>
 
 FpuPipeObj decodeOp(uint32_t instruction, unsigned int id, unsignedType operand_a, unsignedType operand_b, unsignedType operand_c, unsigned int mode);
-
 FpuPipeObj decode_RTYPE(uint32_t instr, unsignedType operand_a, unsignedType operand_b);
 FpuPipeObj decode_R4TYPE(uint32_t instr, unsignedType operand_a, unsignedType operand_b, unsignedType operand_c);
 FpuPipeObj decode_ITYPE(uint32_t instr, unsignedType operand_a);

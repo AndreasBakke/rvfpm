@@ -18,7 +18,6 @@
 #pragma STDC FENV_ACCESS ON //To set roundingmode
 
 void executeOp(FpuPipeObj& op, FpuRf* registerFile);
-
 void execute_RTYPE(FpuPipeObj& op, FpuRf* registerFile);
 void execute_R4TYPE(FpuPipeObj& op, FpuRf* registerFile);
 void execute_ITYPE(FpuPipeObj& op, FpuRf* registerFile);
@@ -26,7 +25,7 @@ void execute_STYPE(FpuPipeObj& op, FpuRf* registerFile);
 void execute_ISTYPE(FpuPipeObj& op, FpuRf* registerFile);
 void execute_CSRTYPE(FpuPipeObj& op, FpuRf* registerFile);
 
+//Helper functions
 void setRoundingMode(unsigned int rm);
-
 bool isSubnormal(FPNumber num);
 unsigned int getFlags();

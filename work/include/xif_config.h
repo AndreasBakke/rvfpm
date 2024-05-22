@@ -42,10 +42,10 @@ typedef struct {
 } __attribute__((packed)) x_mem_req_t;
 
 typedef struct{
-    unsigned int id  : X_ID_WIDTH;
-    unsignedType data : 32;
-    unsigned int rd   : 5;
-    bool         we    : 1;
-    unsigned int ecswe : 3;
-    unsigned int ecsdata : 6;
-  } __attribute__((packed)) x_result_t;
+  unsigned int id  : X_ID_WIDTH;
+  unsignedType data : 32;
+  unsigned int rd   : 5;
+  bool         we    : 1;
+  unsigned int ecswe : 3;
+  unsigned int ecsdata : 6;
+} __attribute__((packed)) x_result_t;

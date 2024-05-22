@@ -25,7 +25,6 @@ class Controller {
     x_mem_req_t mem_req; //set by core, polled in rvfpm.sv
     bool mem_ready; //set by rvfpm.sv, polled in core
 
-
   public:
     Controller(FpuRf& rf, FpuPipeline& pipe, bool& ready);
     ~Controller();
@@ -47,6 +46,5 @@ class Controller {
     void writeMemoryResult(unsigned int id, uint32_t rdata, bool err, bool dbg);
     void pollResult(bool& result_valid_ptr, x_result_t& result_ptr);
     void resetResult(unsigned int id);
-  //Mange av funksjonene fra pipeline kan flyttes hit
 
 };
