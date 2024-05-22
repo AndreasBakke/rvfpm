@@ -32,7 +32,8 @@ typedef union {
     unsigned int funct3 : 3;
     unsigned int rs1    : 5;
     unsigned int rs2    : 5;
-    unsigned int funct7 : 7;
+    unsigned int fmt    : 2;
+    unsigned int funct5 : 5;
   } parts;
   struct {
     unsigned int opcode : 7;
@@ -82,17 +83,24 @@ typedef union {
 
 
 //Enumerator for RTYPE instructions
-enum RTYPE_funct7 {
-  FADD_S            = 0,
-  FSUB_S            = 4,
-  FMUL_S            = 8,
-  FDIV_S            = 12,
-  FSGNJ             = 16,
-  FMIN_MAX          = 20,
-  FSQRT_S           = 44,
-  FCMP              = 80,
-  FCVT_W_S          = 96,
-  FCVT_S_W          = 104,
-  FCLASS_FMV_X_W    = 112, //FMW_X_W and FCLASS share the same funct5(7)
-  FMV_W_X           = 120
+enum RTYPE_funct5 {
+  FADD            = 0,
+  FSUB            = 1,
+  FMUL            = 2,
+  FDIV            = 3,
+  FSGNJ             = 4,
+  FMIN_MAX          = 5,
+  FSQRT           = 11,
+  FCMP              = 20,
+  FCVT_W_S          = 24,
+  FCVT_S_W          = 26,
+  FCLASS_FMV_X_W    = 28, //FMW_X_W and FCLASS share the same funct5(7)
+  FMV_W_X           = 30
+};
+
+enum RISCV_FMT {
+  S = 0b00,
+  D = 0b01,
+  H = 0b10,
+  Q = 0b11
 };

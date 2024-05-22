@@ -77,6 +77,10 @@ TestFloat_all:
 	./bin/testfloat_gen_$(ARCH) i32_to_f32  -level $(LEVEL)	| ./bin/rvfpm_testFloat i32_to_f32   $(args)	| ./bin/testfloat_ver_$(ARCH) $(args)	i32_to_f32								-errors 0 > tests/$(ARCH)/rm$(args)/f32_itf.txt 2>&1
 	./bin/testfloat_gen_$(ARCH) f32_to_ui32 -level $(LEVEL)	| ./bin/rvfpm_testFloat f32_to_ui32  $(args)	| ./bin/testfloat_ver_$(ARCH) $(args)	f32_to_ui32								-errors 0 > tests/$(ARCH)/rm$(args)/f32_ftui.txt 2>&1
 	./bin/testfloat_gen_$(ARCH) f32_to_i32  -level $(LEVEL)	| ./bin/rvfpm_testFloat f32_to_i32   $(args)	| ./bin/testfloat_ver_$(ARCH) $(args)	f32_to_i32								-errors 0 > tests/$(ARCH)/rm$(args)/f32_fti.txt 2>&1
+	./bin/testfloat_gen_$(ARCH) ui64_to_f32 -level $(LEVEL)	| ./bin/rvfpm_testFloat ui64_to_f32  $(args)	| ./bin/testfloat_ver_$(ARCH) $(args)	ui64_to_f32								-errors 0 > tests/$(ARCH)/rm$(args)/f32_ui64tf.txt 2>&1
+	./bin/testfloat_gen_$(ARCH) i64_to_f32  -level $(LEVEL)	| ./bin/rvfpm_testFloat i64_to_f32   $(args)	| ./bin/testfloat_ver_$(ARCH) $(args)	i64_to_f32								-errors 0 > tests/$(ARCH)/rm$(args)/f32_i64tf.txt 2>&1
+	./bin/testfloat_gen_$(ARCH) f32_to_ui64 -level $(LEVEL)	| ./bin/rvfpm_testFloat f32_to_ui64  $(args)	| ./bin/testfloat_ver_$(ARCH) $(args)	f32_to_ui64								-errors 0 > tests/$(ARCH)/rm$(args)/f32_ftui64.txt 2>&1
+	./bin/testfloat_gen_$(ARCH) f32_to_i64  -level $(LEVEL)	| ./bin/rvfpm_testFloat f32_to_i64   $(args)	| ./bin/testfloat_ver_$(ARCH) $(args)	f32_to_i64								-errors 0 > tests/$(ARCH)/rm$(args)/f32_fti64.txt 2>&1
 
 setup:
 	make clean

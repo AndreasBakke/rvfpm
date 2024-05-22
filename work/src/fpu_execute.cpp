@@ -139,29 +139,29 @@ void execute_RTYPE(FpuPipeObj& op, FpuRf* registerFile){
       data2 = op.addrFrom[1] == op.fw_addr ? op.fw_data : data2;
     }
   #endif
-  switch (dec_instr.parts.funct7)
+  switch (dec_instr.parts.funct5)
   {
-  case FADD_S:
+  case FADD:
   {
     op.data.f = data1.f + data2.f;
     break;
   }
-  case FSUB_S:
+  case FSUB:
   {
     op.data.f = data1.f - data2.f;
     break;
   }
-  case FMUL_S:
+  case FMUL:
   {
     op.data.f = data1.f * data2.f;
     break;
   }
-  case FDIV_S:
+  case FDIV:
   {
     op.data.f = data1.f / data2.f;
     break;
   }
-  case FSQRT_S:
+  case FSQRT:
   {
     op.data.f = sqrt(data1.f);
     break;
@@ -259,17 +259,16 @@ void execute_RTYPE(FpuPipeObj& op, FpuRf* registerFile){
   }
   case FCVT_W_S:
   {
+    setRoundingMode(dec_instr.parts.funct3); //Fcvt always uses RM for rounding mode
     switch (dec_instr.parts.rs2)
     {
     case 0b00000: //FCVT.W.S
     {
-      op.data_signed = true;
       op.data.s= static_cast<int32_t>(nearbyint(data1.f)); //Use nearbyint instead of round, round does not follow rounding mode set in cfenv
       break;
     }
     case 0b00001: //FCVT.WU.S
     {
-      setRoundingMode(dec_instr.parts.funct3); //Fcvt always uses RM for rounding mode
       if (std::isnan(data1.f) && !(data1.parts.mantissa & 0x00400000)) {  // Check for sNaN
         op.data.u = 0xFFFFFFFF;
         op.flags |= 0b00001;
@@ -279,6 +278,27 @@ void execute_RTYPE(FpuPipeObj& op, FpuRf* registerFile){
       } else {
         // Convert if within range
         op.data.u = static_cast<unsigned int>(nearbyint(data1.f));
+      }
+      break;
+    }
+    case 0b00010: //FCVT.L.S //64 bit conversion (only if XLEN = 64)
+    {
+      op.data.s_64 = static_cast<int64_t>(nearbyintl(data1.f));
+      break;
+    }
+    case 0b00011: //FCVT.LU.S
+    {
+      if (std::isnan(data1.f) && !(data1.parts.mantissa & 0x00400000)) {  // Check for sNaN
+        op.data.u_64 = 0xFFFFFFFFFFFFFFFF;
+        op.flags |= 0b00001;
+      } else if (nearbyintl(data1.f) < 0.0f || data1.f > UINT64_MAX) {  // Check for out-of-range values
+        op.data.u_64 = 0xFFFFFFFFFFFFFFFF;
+        op.flags |= 0b00001;
+      } else if(!std::isfinite(data1.f)){
+        op.data.u_64 = 0xFFFFFFFFFFFFFFFF;
+        op.flags |= 0b00001;
+      } else {
+        op.data.u_64 = static_cast<uint64_t>(nearbyintl(data1.f));
       }
       break;
     }
@@ -302,7 +322,17 @@ void execute_RTYPE(FpuPipeObj& op, FpuRf* registerFile){
     }
     case 0b00001: //FCVT.S.WU
     {
-      op.data.f = static_cast<float>(static_cast<uint32_t>(op.operand_a.u)); //Cast to unsigned first - needs to be requested from cpu
+      op.data.f = static_cast<float>(op.operand_a.u);
+      break;
+    }
+    case 0b00010: //FCVT.S.L
+    {
+      op.data.f = static_cast<float>(op.operand_a.s_64);
+      break;
+    }
+    case 0b00011: //FCVT.S.LU
+    {
+      op.data.f = static_cast<float>(op.operand_a.u_64);
       break;
     }
     default:
@@ -317,7 +347,6 @@ void execute_RTYPE(FpuPipeObj& op, FpuRf* registerFile){
     {
     case 0b000: //FMV_X_W
     {
-      op.data_signed = true;
       op.data.s = data1.bitpattern;
       break;
     }

@@ -42,8 +42,8 @@ package in_xif;
   parameter X_NUM_RS          = `X_NUM_RS; //Read ports
   parameter X_ID_WIDTH        = `X_ID_WIDTH;
   parameter X_MEM_WIDTH       = `FLEN; //TODO: dependent on extension
-  parameter X_RFR_WIDTH       = `FLEN; //Read acces width
-  parameter X_RFW_WIDTH       = `FLEN; //Write acces width
+  parameter X_RFR_WIDTH       = `XLEN; //Read acces width
+  parameter X_RFW_WIDTH       = `XLEN; //Write acces width
   parameter X_MISA            = `X_MISA; //TODO: not used
   parameter X_ECS_XS          = `X_ECS_XS;        //TODO: not used
 

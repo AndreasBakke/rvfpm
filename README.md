@@ -1,11 +1,12 @@
 # RISC-V Floating-point Coprocessor Model (rvfpm)
-The RISC-V Floating-point Coprocessor Model (rvfpm) is a customizable model for verification, design exploration and performance modeling. It provides an easy to configure model, supporting the RISC-V "F" and "Zfinx" extensions, a variety of pipeline structures and optimizations using the eXtension Interface for ease of integration.
+The RISC-V Floating-point Coprocessor Model (rvfpm) is a customizable model for verification, design exploration and performance modeling. It provides an easy to configure model, supporting the 32- and 64-bit RISC-V "F" and "Zfinx" extensions, a variety of pipeline structures and optimizations using the eXtension Interface for ease of integration.
 
 ## Status
 Compiled, tested and verified on x86_64 using GCC 12.0.0. Ibex verification done in [Ibex fork](https://github.com/AndreasBakke/rvfpm_ibex_testing).
 |Extension|Status| Comment |
 |---|---|---|
-|"F"|Implemented. 100% compliance using Berkeley Testfloat| Default extension.|
+|"F"|Implemented. 100% compliance using Berkeley TestFloat| Default extension.|
+|"RV64F"| Implemented. 100% compliance using Berkeley TestFloat. Not tested functionally. | Enable by setting RV64 in config. |
 |"Zfinx"| Implemented. | Verified functionally using Ibex. |
 |"D", "Q" |In progress.| Branch "precisions"|
 |"Zfh", "Zfhmin"| In progress.| Branch "precisions"|
@@ -18,7 +19,7 @@ Compiled, tested and verified on x86_64 using GCC 12.0.0. Ibex verification done
 The rvfpm core is structured as above. All files relevant to it, and its verification can be found in work/. Headerfiles are located in work/include, and need to be included during compilation. Core cpp files are located in work/src.
 
 ### Interface
-The RISC-V Floating-point Coprocessor Model implements all but the compressed interface of the eXtension Interface. Using [rvfpm.sv](work/src/rvfpm.sv) located in work/src, relevant functions in the C++ core are called using DPI-C. 
+The RISC-V Floating-point Coprocessor Model implements all but the compressed interface of the eXtension Interface. Using [rvfpm.sv](work/src/rvfpm.sv) located in work/src, relevant functions in the C++ core are called using DPI-C.
 
 ## Configuration and compilation
 Prerequisites:
@@ -26,7 +27,7 @@ Prerequisites:
 - Pyyaml: ```pip3 install pyyaml```
 - Simulator tool - depending on use-case of rvfpm.
 
-The core is configured using Yaml configurations in work/run. If no config is specified using CONFIG="path/to/config/" the [default config](work/run/default_config.yaml) will be used. 
+The core is configured using Yaml configurations in work/run. If no config is specified using CONFIG="path/to/config/" the [default config](work/run/default_config.yaml) will be used.
 
 Depending on the target, adapt compiler, flags and simulation tools in the [Makefile](work/Makefile) in work/.
 
@@ -47,7 +48,8 @@ A summary of tests performed, and errors encountered can be seen below. Refer to
 |Extension|Tests preformed|Errors|
 |---|---|---|
 F | 58,260,633,824 | 0
+RV64F | 580,448 | 0
 D | 0 | 0
 
 ## Functional verification
-For instructions not available in Berkeley Testfloat, functional verification were done by integrating rvfpm into lowRISCs [Ibex](https://github.com/lowRISC/ibex) in a seperate [Ibex fork](https://github.com/AndreasBakke/rvfpm_ibex_testing).
+For instructions not available in Berkeley TestFloat, functional verification were done by integrating rvfpm into lowRISCs [Ibex](https://github.com/lowRISC/ibex) in a seperate [Ibex fork](https://github.com/AndreasBakke/rvfpm_ibex_testing).
