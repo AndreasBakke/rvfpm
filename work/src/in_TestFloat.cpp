@@ -176,7 +176,9 @@ int main(int argc, char** argv) {
     //-rnear_maxMag & -rodd are not supported
     rm_i = 0b000;
   }
-  testFPU.bd_setRoundingMode(rm_i);
+  CSRTYPE rm_instr = {.parts= {CSR, 0, 0b001, 0, 0x002}}; //Set rounding mode
+  testFPU.addAcceptedInstruction(rm_instr.instr, 0, rm_i, 0, 0, 0, 0, 0, 0);
+  testFPU.testFloatOp();
 
   if (op == "fmadd" || op == "fmsub" || op == "fnmsub" || op == "fnmadd") //Fused operations has an extra input compared to others
   {
