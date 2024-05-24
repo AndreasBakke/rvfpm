@@ -57,8 +57,7 @@ void executeOp(FpuPipeObj& op, FpuRf* registerFile) {
 void execute_R4TYPE(FpuPipeObj& op, FpuRf* registerFile){
   std::feclearexcept(FE_ALL_EXCEPT); //Clear all flags
   RTYPE dec_instr = {.instr = op.instr};
-  //Get data from registerFile
-  //TODO: Or from forwarded data if forwarded
+  //Get data from registerFile or from forwarded data if forwarded
   FPNumber data1, data2, data3;
   #ifdef ZFINX
     data1 = op.operand_a;
@@ -83,7 +82,7 @@ void execute_R4TYPE(FpuPipeObj& op, FpuRf* registerFile){
   case FMADD_S:
   {
     op.data.f = fmaf(data1.f, data2.f, data3.f);
-    if((data1.f == INFINITY && data2.f == 0) || (data1.f == 0 && data2.f == INFINITY) || (data1.f == -INFINITY && data2.f == 0) || (data1.f == 0 && data2.f == -INFINITY)) { //Required by RISC-V ISA, but not IEEE 754
+    if((data1.f == INFINITY && data2.f == 0) || (data1.f == 0 && data2.f == INFINITY) || (data1.f == -INFINITY && data2.f == 0) || (data1.f == 0 && data2.f == -INFINITY)) {
       std::feraiseexcept(FE_INVALID); //raise invalid
     }
     break;
@@ -204,7 +203,7 @@ void execute_RTYPE(FpuPipeObj& op, FpuRf* registerFile){
     {
       op.data.f = std::fmin(data1.f, data2.f);
       //Fmin is not sensitive to 0 sign
-      if (data1.f = 0 && data2.f == 0)
+      if (data1.f == 0 && data2.f == 0)
       {
         op.data.f = data1.parts.sign ? data1.f : data2.f;
       }
@@ -214,7 +213,7 @@ void execute_RTYPE(FpuPipeObj& op, FpuRf* registerFile){
     {
       op.data.f = std::fmax(data1.f, data2.f);
       //Fmax is not sensitive to 0 sign
-      if (data1.f = 0 && data2.f == 0)
+      if (data1.f == 0 && data2.f == 0)
       {
         op.data.f = data1.parts.sign ? data2.f : data1.f;
       }

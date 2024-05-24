@@ -61,14 +61,11 @@ class FpuRf {
     void raiseUnderflowFlag();
     void raiseInexactFlag();
 
-  //fcsr-rm
+    //fcsr-rm
     void setfrm(unsigned int rm);
     unsigned int readfrm();
     //Helper functions
     int get_NUM_F_REGISTERS();
     int get_length();
     std::vector<float> getRf();
-
-
-
 };

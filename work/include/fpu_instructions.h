@@ -11,7 +11,7 @@ enum {
 } instr_type;
 
 
-//One operation for each opcode (or multiple for RTYPE and CSR)
+//One operation for each opcode (or multiple for R4TYPE and CSR)
 enum  {
   FLW       = 7,
   FSW       = 39,
@@ -42,7 +42,7 @@ typedef union {
     unsigned int rs1    : 5;
     unsigned int rs2    : 5;
     unsigned int fmt    : 2;
-    unsigned int rs3    : 5; //rs3
+    unsigned int rs3    : 5;
   } parts_r4type;
 } RTYPE;
 
@@ -54,7 +54,6 @@ typedef union { //Only used for FLW
     unsigned int funct3     : 3;
     unsigned int rs1        : 5;
     unsigned int offset  : 12;
-    //Etc for all fields that are of type RTYPE. Then the instructions can be mapped when the type is R.
   } parts;
 } ITYPE;
 
@@ -84,17 +83,17 @@ typedef union {
 
 //Enumerator for RTYPE instructions
 enum RTYPE_funct5 {
-  FADD            = 0,
-  FSUB            = 1,
-  FMUL            = 2,
-  FDIV            = 3,
+  FADD              = 0,
+  FSUB              = 1,
+  FMUL              = 2,
+  FDIV              = 3,
   FSGNJ             = 4,
   FMIN_MAX          = 5,
-  FSQRT           = 11,
+  FSQRT             = 11,
   FCMP              = 20,
   FCVT_W_S          = 24,
   FCVT_S_W          = 26,
-  FCLASS_FMV_X_W    = 28, //FMW_X_W and FCLASS share the same funct5(7)
+  FCLASS_FMV_X_W    = 28, //FMW_X_W and FCLASS share the same funct5
   FMV_W_X           = 30
 };
 

@@ -16,7 +16,6 @@ filesets:
   files_dpi:
     files:
       - work/src/fpu_top.cpp
-      - work/src/fp_number.cpp
       - work/src/fpu_execute.cpp
       - work/src/dpi_wrapper.cpp
       - work/src/fpu_decode.cpp

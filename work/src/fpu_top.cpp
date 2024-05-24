@@ -8,11 +8,6 @@
 #include <iostream>
 
 FPU::FPU () : registerFile(NUM_F_REGS),  pipeline(&registerFile), predecoder(fpuReady), controller(registerFile, pipeline, fpuReady) {
-  #ifndef ZFINX
-    // registerFile(rfDepth)
-  #else
-    //Todo: Expand to support ZFINX
-  #endif
 
   //check for illegal options
   if (WRITEBACK_STEP > EXECUTE_STEP){
@@ -98,11 +93,6 @@ void FPU::writeMemoryResponse(bool mem_ready, bool exc, unsigned int exccode, bo
   controller.writeMemoryResponse(mem_ready, exc, exccode, dbg);
 };
 
-
-// void FPU::writeMemRes(bool mem_ready, bool mem_result_valid, unsigned int id, unsigned int rdata, bool err, bool dbg){
-//   pipeline.writeMemRes(mem_ready, mem_result_valid, id, rdata, err, dbg);
-// };
-
 void FPU::memoryStep(){
   pipeline.memoryStep();
 }
@@ -126,7 +116,7 @@ void FPU::writebackStep(){
 // Backdoor functions
 //--------------------------
 void FPU::bd_load(uint32_t instruction, unsigned int dataFromMem){
-  FpuPipeObj op = decodeOp(instruction, 0, 0, 0, 0, 0); //id is 0 for now
+  FpuPipeObj op = decodeOp(instruction, 0, 0, 0, 0, 0);
   op.data.bitpattern = dataFromMem;
   registerFile.write(op.addrTo, op.data);
 };

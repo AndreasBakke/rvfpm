@@ -56,6 +56,7 @@ std::string floatToHex(float floatValue) {
   return oss.str();
 }
 
+//Adapted from floatToHex
 std::string doubleToHex(double doubleValue) {
   // Create an output string stream with hexadecimal formatting and no showbase
   std::ostringstream oss;
@@ -150,11 +151,8 @@ std::string convFlags(unsigned int flags) {
 
 }
 
-
-
 //Initialize testFPU
 FPU testFPU = FPU();
-
 
 int main(int argc, char** argv) {
   std::string op, rm, input1, input2, input3, input4, flags;
@@ -178,7 +176,9 @@ int main(int argc, char** argv) {
     //-rnear_maxMag & -rodd are not supported
     rm_i = 0b000;
   }
-  testFPU.bd_setRoundingMode(rm_i);
+  CSRTYPE rm_instr = {.parts= {CSR, 0, 0b001, 0, 0x002}}; //Set rounding mode
+  testFPU.addAcceptedInstruction(rm_instr.instr, 0, rm_i, 0, 0, 0, 0, 0, 0);
+  testFPU.testFloatOp();
 
   if (op == "fmadd" || op == "fmsub" || op == "fnmsub" || op == "fnmadd") //Fused operations has an extra input compared to others
   {
@@ -212,8 +212,6 @@ int main(int argc, char** argv) {
       instr_load = {.parts= {7, r2, 0b010, 0, 0}};
       testFPU.bd_load(instr_load.instr, b);
       //Do operation
-      //Todo: provide data from XREG/MEM proactivly
-      //testFPU.bd_memRes(...) //Simulate memory result without delay
       RTYPE instr_rtype = {};
       if (op == "fsqrt") {
         instr_rtype = {.parts= {OP_FP, rd, 0b000, r1, 0b00000, 0b00, FSQRT}};
@@ -253,8 +251,6 @@ int main(int argc, char** argv) {
       instr_load = {.parts= {7, r2, 0b010, 0, 0}};
       testFPU.bd_load(instr_load.instr, b);
       //Do operation
-      //Todo: provide data from XREG/MEM proactivly
-      //testFPU.bd_memRes(...) //Simulate memory result without delay
       RTYPE instr_rtype = {};
        if (op == "ui64_to_f32") {
         instr_rtype = {.parts= {OP_FP, rd, rm_i, r1, 0b00011, 0b00, FCVT_S_W}};

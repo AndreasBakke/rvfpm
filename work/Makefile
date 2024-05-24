@@ -15,7 +15,7 @@ endif
 
 
 #Filepaths for the c++ core
-COREFILES = src/fpu_top.cpp src/fpu_predecoder.cpp src/controller.cpp src/fpu_decode.cpp src/fpu_execute.cpp src/fpu_pipeline.cpp src/fpu_rf.cpp  src/fp_number.cpp
+COREFILES = src/fpu_top.cpp src/fpu_predecoder.cpp src/controller.cpp src/fpu_decode.cpp src/fpu_execute.cpp src/fpu_pipeline.cpp src/fpu_rf.cpp
 
 CONFIG:=""
 SIM_LENGTH = -all
@@ -26,7 +26,6 @@ sim_full:
 	make setup
 	vlog -work work src/in_xif.sv
 	vlog -work work src/config.svh
-	vlog -work work src/pa_rvfpm.sv
 	vlog -work work src/rvfpm.sv
 	vlog -work work sim/inTest_rvfpm.sv
 	vlog -work work sim/assertions_rvfpm.sv

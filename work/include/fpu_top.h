@@ -57,5 +57,4 @@ class FPU {
     unsigned int bd_getPipeStageId(int stage);
     unsigned int bd_getQueueStageId(int stage);
     unsigned int bd_getWaitingOpId();
-
 };

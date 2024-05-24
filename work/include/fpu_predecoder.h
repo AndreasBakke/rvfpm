@@ -27,5 +27,3 @@ class FpuPredecoder {
   void predecodeInstruction(uint32_t instruction, unsigned int id, bool& accept, bool& loadstore, bool& writeback, bool& use_rs_a, bool& use_rs_b, bool& use_rs_c);
   void reset();
 };
-
-//75866375 past 75866375

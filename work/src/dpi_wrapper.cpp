@@ -45,11 +45,10 @@ extern "C" {
       fpu->controller.resolveForwards();
     #endif
   };
+
   //-----------------------
   // ISSUE/COMMIT INTERFACE
   //-----------------------
-
-
   void add_accepted_instruction(void* fpu_ptr, uint32_t instruction, unsigned int id, unsigned int operand_a, unsigned int operand_b, unsigned int operand_c, unsigned int mode, bool commit_valid, unsigned int commit_id, bool commit_kill){
     FPU* fpu = static_cast<FPU*>(fpu_ptr);
     fpu->addAcceptedInstruction(instruction, id, operand_a, operand_b, operand_c, mode, commit_valid, commit_id, commit_kill);
@@ -78,7 +77,6 @@ extern "C" {
   //-----------------------
   // MEM REQ/RES INTERFACE
   //-----------------------
-
   void poll_memory_request(void* fpu_ptr, bool& mem_valid, unsigned int& id,  unsigned int& addr, unsigned int& wdata, bool& last, unsigned int& size, unsigned int& mode, bool& we){
     FPU* fpu = static_cast<FPU*>(fpu_ptr);
     x_mem_req_t mem_req = {};
@@ -141,7 +139,6 @@ extern "C" {
   //-----------------------
   // BACKDOOR FUNCTIONS
   //-----------------------
-
   unsigned int getRFContent(void* fpu_ptr, int reg) { //Backdoor to read content of register file
     FPU* fpu = static_cast<FPU*>(fpu_ptr);
     return  fpu->bd_getData(reg).bitpattern;

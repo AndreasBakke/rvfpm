@@ -9,7 +9,6 @@ filesets:
     files:
       - work/src/config.svh: { is_include_file: true }
       - work/src/in_xif.sv
-      - work/src/pa_rvfpm.sv: { is_include_file: true }
     file_type: systemVerilogSource
 
 

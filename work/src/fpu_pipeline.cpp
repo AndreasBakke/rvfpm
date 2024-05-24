@@ -39,7 +39,6 @@ void FpuPipeline::step(){
   //Operations are decoded before adding to the pipeline
   //Check for memory dependencies and request throough interface
   //Pipeline stucture set in run/setup.yaml
-
   //All steps done "combinatorially" on negative clock edge, we only decrement remaining_ex_cycles and advance/check for stalls.
 
   #ifdef TESTFLOAT
@@ -53,7 +52,7 @@ void FpuPipeline::step(){
 };
 
 
-void FpuPipeline::advanceStages(){ //TODO: also check for hazards.
+void FpuPipeline::advanceStages(){
   bool all_done = execute_done && mem_done && wb_done;
   if (wb_done) {
     if (!pipeline.at(WRITEBACK_STEP).toMem && !pipeline.at(WRITEBACK_STEP).toXReg && !pipeline.at(WRITEBACK_STEP).isEmpty()){
@@ -167,13 +166,13 @@ void FpuPipeline::memoryStep(){
     mem_done = false;
   } else if ((memOp.fromMem || memOp.toMem)){
     if(memOp.speculative){mem_done=false;return;}
-    //Add op to queue if its not been added yet!
+    //Add op to queue if its not been added yet
     if (memOp.speculative){mem_done = false;return;}
     if(!memOp.added_to_mem_queue){
       x_mem_req_t mem_req_s = {};
     mem_req_s.id = memOp.id;
     mem_req_s.addr = memOp.toMem ? memOp.addrTo : memOp.addrFrom.front();
-    STYPE dec_instr = {.instr = memOp.instr}; //For step-by-step - comparrison purposes we dont use addrFrom (So the data is present for flw aswell)
+    STYPE dec_instr = {.instr = memOp.instr};
     mem_req_s.wdata = registerFilePtr->read(dec_instr.parts.rs2).bitpattern;
     mem_req_s.last = 1;
     mem_req_s.size = memOp.size;
@@ -187,8 +186,8 @@ void FpuPipeline::memoryStep(){
       return;
     }
     mem_done = true;
-    if (memOp.fromMem){ //Why do we not just add this directly?
-      memOp.data.bitpattern = memOp.mem_result;
+    if (memOp.fromMem){
+      memOp.data.bitpattern = memOp.mem_result; //Add result to op. Written at WB step
     }
   }
 
@@ -205,11 +204,11 @@ void FpuPipeline::writebackStep(){
     wb_done = false;
     return;
   }
-  addResult(pipeline.at(WRITEBACK_STEP));
+  addResult(pipeline.at(WRITEBACK_STEP)); //Add to result queue. Handled by controller
   wb_done = true;
 }
 
-void FpuPipeline::addResult(FpuPipeObj op){
+void FpuPipeline::addResult(FpuPipeObj op){ //Set relevant eXtension Interface values and add to queue
   x_result_t result_s = {};
   result_s.id = op.id;
   if (!op.fromMem && !op.toMem){
@@ -300,7 +299,7 @@ void FpuPipeline::commitInstruction(unsigned int id, bool kill){
 //--------------------------
 void FpuPipeline::addOpToQueue(FpuPipeObj op){
   #ifndef QUEUE_FALLTHROUGH
-  operationQueue.pop_back();
+  operationQueue.pop_back(); //Remove empty op at the back if we are using fallthrough. Safety is handeled in predecoder
   #endif
   operationQueue.push_back(op);//Replace empty op at the back with op. Safety is handeled in predecoder
 

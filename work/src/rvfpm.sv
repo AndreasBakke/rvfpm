@@ -8,8 +8,6 @@
 
 
 `include "config.svh"
-`include "pa_rvfpm.sv"
-import pa_rvfpm::*;
 import in_xif::*;
 
 module rvfpm #(
