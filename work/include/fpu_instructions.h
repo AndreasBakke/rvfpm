@@ -15,10 +15,10 @@ enum {
 enum  {
   FLW       = 7,
   FSW       = 39,
-  FMADD_S   = 67,
-  FMSUB_S   = 71,
-  FNMSUB_S  = 75,
-  FNMADD_S  = 79,
+  FMADD     = 67,
+  FMSUB     = 71,
+  FNMSUB    = 75,
+  FNMADD    = 79,
   OP_FP     = 83,
   CSR       = 115
 };

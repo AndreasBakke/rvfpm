@@ -86,7 +86,7 @@ void FPU::resetMemoryRequest(unsigned int id){
 };
 
 
-void FPU::writeMemoryResult(unsigned int id, uint32_t rdata, bool err, bool dbg){
+void FPU::writeMemoryResult(unsigned int id, loadType rdata, bool err, bool dbg){
   controller.writeMemoryResult(id, rdata, err, dbg);
 };
 void FPU::writeMemoryResponse(bool mem_ready, bool exc, unsigned int exccode, bool dbg){
@@ -115,9 +115,13 @@ void FPU::writebackStep(){
 //--------------------------
 // Backdoor functions
 //--------------------------
-void FPU::bd_load(uint32_t instruction, unsigned int dataFromMem){
+void FPU::bd_load(uint32_t instruction, loadType dataFromMem){
   FpuPipeObj op = decodeOp(instruction, 0, 0, 0, 0, 0);
-  op.data.bitpattern = dataFromMem;
+  #ifdef EXT_D
+    op.data.bitpattern_64 = dataFromMem;
+  #else
+    op.data.bitpattern = dataFromMem;
+  #endif
   registerFile.write(op.addrTo, op.data);
 };
 

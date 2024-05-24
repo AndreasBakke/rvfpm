@@ -21,16 +21,16 @@ FpuPipeObj decodeOp(uint32_t instruction, unsigned int id, unsignedType operand_
   case FSW:
     result = decode_STYPE(instruction, operand_a);
     break;
-  case FMADD_S:
+  case FMADD:
     result = decode_R4TYPE(instruction, operand_a, operand_b, operand_c);
     break;
-  case FMSUB_S:
+  case FMSUB:
     result = decode_R4TYPE(instruction, operand_a, operand_b, operand_c);
     break;
-  case FNMSUB_S:
+  case FNMSUB:
     result = decode_R4TYPE(instruction, operand_a, operand_b, operand_c);
     break;
-  case FNMADD_S:
+  case FNMADD:
     result = decode_R4TYPE(instruction, operand_a, operand_b, operand_c);
     break;
   case OP_FP:

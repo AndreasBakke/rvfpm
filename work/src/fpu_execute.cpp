@@ -76,45 +76,59 @@ void execute_R4TYPE(FpuPipeObj& op, FpuRf* registerFile){
     }
   #endif
 
-  //Compute result -- will be added to pipeline
+  //Switch signs to match relevant op.
   switch (dec_instr.parts_r4type.opcode)
   {
-  case FMADD_S:
+  case FMADD:
   {
-    op.data.f = fmaf(data1.f, data2.f, data3.f);
-    if((data1.f == INFINITY && data2.f == 0) || (data1.f == 0 && data2.f == INFINITY) || (data1.f == -INFINITY && data2.f == 0) || (data1.f == 0 && data2.f == -INFINITY)) {
-      std::feraiseexcept(FE_INVALID); //raise invalid
-    }
     break;
   }
-  case FMSUB_S:
+  case FMSUB:
   {
-    op.data.f = fmaf(data1.f, data2.f, -data3.f);
-    if((data1.f == INFINITY && data2.f == 0) || (data1.f == 0 && data2.f == INFINITY) || (data1.f == -INFINITY && data2.f == 0) || (data1.f == 0 && data2.f == -INFINITY)) { //Required by RISC-V ISA, but not IEEE 754
-      std::feraiseexcept(FE_INVALID); //raise invalid
-    }
+    data3.f = -data3.f;
     break;
   }
-  case FNMSUB_S:
+  case FNMSUB:
   {
-    op.data.f = fmaf(data1.f, -data2.f, data3.f); //Counterintuitively named wrt FMADD/FMSUB
-    if((data1.f == INFINITY && data2.f == 0) || (data1.f == 0 && data2.f == INFINITY) || (data1.f == -INFINITY && data2.f == 0) || (data1.f == 0 && data2.f == -INFINITY)) { //Required by RISC-V ISA, but not IEEE 754
-      std::feraiseexcept(FE_INVALID); //raise invalid
-    }
+    data2.f = -data2.f;
     break;
   }
-  case FNMADD_S:
+  case FNMADD:
   {
-    op.data.f = fmaf(data1.f, -data2.f, -data3.f);
-    if((data1.f == INFINITY && data2.f == 0) || (data1.f == 0 && data2.f == INFINITY) || (data1.f == -INFINITY && data2.f == 0) || (data1.f == 0 && data2.f == -INFINITY)) { //Required by RISC-V ISA, but not IEEE 754
-      std::feraiseexcept(FE_INVALID); //raise invalid
-    }
+    data2.f = -data2.f;
+    data3.f = -data3.f;
     break;
   }
   default:
+  {
     std::feraiseexcept(FE_INVALID); //Invalid operation
     break;
   }
+  }
+
+  //Execute
+  switch (dec_instr.parts_r4type.fmt)
+  {
+  case S:
+  {
+    op.data.f = fmaf(data1.f, data2.f, data3.f);
+    if((data1.f == INFINITY && data2.f == 0) || (data1.f == 0 && data2.f == INFINITY) || (data1.f == -INFINITY && data2.f == 0) || (data1.f == 0 && data2.f == -INFINITY)) { //Required by RISC-V ISA, but not IEEE 754
+      std::feraiseexcept(FE_INVALID); //raise invalid
+    }
+    break;
+  }
+  case D:
+  {
+    op.data.d = fma(data1.d, data2.d, data3.d);
+    if((data1.d == INFINITY && data2.d == 0) || (data1.d == 0 && data2.d == INFINITY) || (data1.d == -INFINITY && data2.d == 0) || (data1.d == 0 && data2.d == -INFINITY)) { //Required by RISC-V ISA, but not IEEE 754
+      std::feraiseexcept(FE_INVALID); //raise invalid
+    }
+    break;
+  }
+  }
+
+
+
   op.flags |= getFlags(); //Get flags and add to result.
 };
 
@@ -280,27 +294,29 @@ void execute_RTYPE(FpuPipeObj& op, FpuRf* registerFile){
       }
       break;
     }
-    case 0b00010: //FCVT.L.S //64 bit conversion (only if XLEN = 64)
-    {
-      op.data.s_64 = static_cast<int64_t>(nearbyintl(data1.f));
-      break;
-    }
-    case 0b00011: //FCVT.LU.S
-    {
-      if (std::isnan(data1.f) && !(data1.parts.mantissa & 0x00400000)) {  // Check for sNaN
-        op.data.u_64 = 0xFFFFFFFFFFFFFFFF;
-        op.flags |= 0b00001;
-      } else if (nearbyintl(data1.f) < 0.0f || data1.f > UINT64_MAX) {  // Check for out-of-range values
-        op.data.u_64 = 0xFFFFFFFFFFFFFFFF;
-        op.flags |= 0b00001;
-      } else if(!std::isfinite(data1.f)){
-        op.data.u_64 = 0xFFFFFFFFFFFFFFFF;
-        op.flags |= 0b00001;
-      } else {
-        op.data.u_64 = static_cast<uint64_t>(nearbyintl(data1.f));
+    #ifdef RV64
+      case 0b00010: //FCVT.L.S //64 bit conversion for RV64F
+      {
+        op.data.s_64 = static_cast<int64_t>(nearbyintl(data1.f));
+        break;
       }
-      break;
-    }
+      case 0b00011: //FCVT.LU.S
+      {
+        if (std::isnan(data1.f) && !(data1.parts.mantissa & 0x00400000)) {  // Check for sNaN
+          op.data.u_64 = 0xFFFFFFFFFFFFFFFF;
+          op.flags |= 0b00001;
+        } else if (nearbyintl(data1.f) < 0.0f || data1.f > UINT64_MAX) {  // Check for out-of-range values
+          op.data.u_64 = 0xFFFFFFFFFFFFFFFF;
+          op.flags |= 0b00001;
+        } else if(!std::isfinite(data1.f)){
+          op.data.u_64 = 0xFFFFFFFFFFFFFFFF;
+          op.flags |= 0b00001;
+        } else {
+          op.data.u_64 = static_cast<uint64_t>(nearbyintl(data1.f));
+        }
+        break;
+      }
+    #endif
     default:
     {
       op.data.s = 0;
@@ -324,16 +340,18 @@ void execute_RTYPE(FpuPipeObj& op, FpuRf* registerFile){
       op.data.f = static_cast<float>(op.operand_a.u);
       break;
     }
-    case 0b00010: //FCVT.S.L
-    {
-      op.data.f = static_cast<float>(op.operand_a.s_64);
-      break;
-    }
-    case 0b00011: //FCVT.S.LU
-    {
-      op.data.f = static_cast<float>(op.operand_a.u_64);
-      break;
-    }
+    #ifdef RV64
+      case 0b00010: //FCVT.S.L
+      {
+        op.data.f = static_cast<float>(op.operand_a.s_64);
+        break;
+      }
+      case 0b00011: //FCVT.S.LU
+      {
+        op.data.f = static_cast<float>(op.operand_a.u_64);
+        break;
+      }
+    #endif
     default:
       std::feraiseexcept(FE_INVALID); //raise invalid
       break;

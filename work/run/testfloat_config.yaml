@@ -2,6 +2,7 @@
 fpu:
   extensions:
     - RV64
+    - EXT_D
 
 xif:
   XLEN: 64

@@ -155,14 +155,17 @@ std::string convFlags(unsigned int flags) {
 FPU testFPU = FPU();
 
 int main(int argc, char** argv) {
-  std::string op, rm, input1, input2, input3, input4, flags;
+  std::string op, fmt, rm, input1, input2, input3, input4, flags;
+  unsigned int instr_fmt;
   //Use first 4 registers
   uint32_t r1 = 0;
   uint32_t r2 = 1;
   uint32_t r3 = 2;
   uint32_t rd = 3;
   op=argv[1]; //Get operation type:
-  rm=argv[2]; //Set appropriate rounding mode
+  fmt=argv[2]; //Get format
+
+  rm=argv[3]; //Set appropriate rounding mode
   unsigned int rm_i = 0;
   if (rm == "-rnear_even") {
     rm_i = 0b000;
@@ -179,33 +182,45 @@ int main(int argc, char** argv) {
   CSRTYPE rm_instr = {.parts= {CSR, 0, 0b001, 0, 0x002}}; //Set rounding mode
   testFPU.addAcceptedInstruction(rm_instr.instr, 0, rm_i, 0, 0, 0, 0, 0, 0);
   testFPU.testFloatOp();
-
+  loadType a, b, c;
   if (op == "fmadd" || op == "fmsub" || op == "fnmsub" || op == "fnmadd") //Fused operations has an extra input compared to others
   {
     while (std::cin >> input1 >> input2 >> input3 >> input4 >> flags) {
-      unsigned int a = hexToUnsignedInt(input1);
-      unsigned int b = hexToUnsignedInt(input2);
-      unsigned int c = hexToUnsignedInt(input3);
+      if (fmt=="D") {
+        instr_fmt = D;
+        a = hexToUnsignedInt64(input1);
+        b = hexToUnsignedInt64(input2);
+        c = hexToUnsignedInt64(input3);
+      } else {
+        instr_fmt = S;
+        a = hexToUnsignedInt(input1);
+        b = hexToUnsignedInt(input2);
+        c = hexToUnsignedInt(input3);
+      }
       uint32_t r1 = 1;
       uint32_t r2 = 2;
       uint32_t r3 = 3;
-      ITYPE instr_load = {.parts= {7, r1, 0b010, 0, 0}};
+      ITYPE instr_load = {.parts= {7, r1, 0b010, instr_fmt, 0}};
       testFPU.bd_load(instr_load.instr, a);
-      instr_load = {.parts= {7, r2, 0b010, 0, 0}};
+      instr_load = {.parts= {7, r2, 0b010, instr_fmt, 0}};
       testFPU.bd_load(instr_load.instr, b);
-      instr_load = {.parts= {7, r3, 0b010, 0, 0}};
+      instr_load = {.parts= {7, r3, 0b010, instr_fmt, 0}};
       testFPU.bd_load(instr_load.instr, c);
 
-      RTYPE instr_r4type = {.parts_r4type= {FMADD_S, 0, 0b000, r1, r2, 0b00, r3}};
+      RTYPE instr_r4type = {.parts_r4type= {FMADD, 0, 0b000, r1, r2, instr_fmt, r3}};
       testFPU.addAcceptedInstruction(instr_r4type.instr, 0, 0, 0, 0, 0, 0, 0, 0);
       FpuPipeObj result = testFPU.testFloatOp();
-      std::cout << input1 << " " << input2 << " " << input3 << " " << floatToHex(result.data.f) << " " << convFlags(result.flags)  << std::endl;
+      if (fmt=="D") {
+          std::cout << input1 << " " << input2 << " " << input3 << " " << doubleToHex(result.data.d) << " " << convFlags(result.flags)  << std::endl;
+      } else {
+          std::cout << input1 << " " << input2 << " " << input3 << " " << floatToHex(result.data.f) << " " << convFlags(result.flags)  << std::endl;
+      }
     }
   } else if (op == "fsqrt" || op == "ui32_to_f32" || op == "i32_to_f32" || op == "f32_to_ui32" || op == "f32_to_i32") { //fsqrt uses only three inputs
     while (std::cin >> input1 >> input2 >> flags) {
-      unsigned int a = hexToUnsignedInt(input1);
-      unsigned int b = hexToUnsignedInt(input2);
-      unsigned int c = hexToUnsignedInt(input3);
+      a = hexToUnsignedInt(input1);
+      b = hexToUnsignedInt(input2);
+      c = hexToUnsignedInt(input3);
       //Load values
       ITYPE instr_load = {.parts= {7, r1, 0b010, 0, 0}};
       testFPU.bd_load(instr_load.instr, a);
@@ -242,9 +257,9 @@ int main(int argc, char** argv) {
     }
     } else if ( op == "ui64_to_f32" || op == "i64_to_f32" || op == "f32_to_ui64" || op == "f32_to_i64") { //fsqrt uses only three inputs
     while (std::cin >> input1 >> input2 >> flags) {
-      unsigned long a = hexToUnsignedInt64(input1);
-      unsigned long b = hexToUnsignedInt64(input2);
-      unsigned long c = hexToUnsignedInt64(input3);
+      a = hexToUnsignedInt64(input1);
+      b = hexToUnsignedInt64(input2);
+      c = hexToUnsignedInt64(input3);
       //Load values
       ITYPE instr_load = {.parts= {7, r1, 0b010, 0, 0}};
       testFPU.bd_load(instr_load.instr, a);
@@ -277,9 +292,9 @@ int main(int argc, char** argv) {
     }
   } else {
     while (std::cin >> input1 >> input2 >> input3 >> flags) {
-      unsigned int a = hexToUnsignedInt(input1);
-      unsigned int b = hexToUnsignedInt(input2);
-      unsigned int c = hexToUnsignedInt(input3);
+      a = hexToUnsignedInt(input1);
+      b = hexToUnsignedInt(input2);
+      c = hexToUnsignedInt(input3);
       //Load values
       ITYPE instr_load = {.parts= {7, r1, 0b010, 0, 0}};
       testFPU.bd_load(instr_load.instr, a);
