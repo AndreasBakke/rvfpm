@@ -203,7 +203,7 @@ void execute_RTYPE(FpuPipeObj& op, FpuRf* registerFile){
     {
       op.data.f = std::fmin(data1.f, data2.f);
       //Fmin is not sensitive to 0 sign
-      if (data1.f = 0 && data2.f == 0)
+      if (data1.f == 0 && data2.f == 0)
       {
         op.data.f = data1.parts.sign ? data1.f : data2.f;
       }
@@ -213,7 +213,7 @@ void execute_RTYPE(FpuPipeObj& op, FpuRf* registerFile){
     {
       op.data.f = std::fmax(data1.f, data2.f);
       //Fmax is not sensitive to 0 sign
-      if (data1.f = 0 && data2.f == 0)
+      if (data1.f == 0 && data2.f == 0)
       {
         op.data.f = data1.parts.sign ? data2.f : data1.f;
       }
