@@ -162,7 +162,7 @@ void FpuPipeline::executeStep(){
 
 void FpuPipeline::memoryStep(){
   FpuPipeObj& memOp = pipeline.at(MEMORY_STEP);
-  if (MEMORY_STEP == EXECUTE_STEP && !execute_done || memOp.stalledByCtrl) {
+  if ((MEMORY_STEP == EXECUTE_STEP && !execute_done )|| memOp.stalledByCtrl) {
     mem_done = false;
   } else if ((memOp.fromMem || memOp.toMem)){
     if(memOp.speculative){mem_done=false;return;}

@@ -27,6 +27,5 @@ void execute_CSRTYPE(FpuPipeObj& op, FpuRf* registerFile);
 
 //Helper functions
 void setRoundingMode(unsigned int rm);
-bool isSubnormal(float num);
-bool isSubnormal(double num);
+bool isSubnormal(FPNumber num);
 unsigned int getFlags();

@@ -23,7 +23,7 @@ filesets:
       - work/src/fpu_predecoder.cpp
       - work/src/fpu_rf.cpp
       - work/src/controller.cpp
-      - work/src/fpu_top.cpp
+      - work/src/fp_number.cpp
       - work/include/config.h: { is_include_file: true }
       - work/include/fp_number.h: { is_include_file: true }
       - work/include/xif_config.h: { is_include_file: true }

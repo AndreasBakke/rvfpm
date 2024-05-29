@@ -32,7 +32,7 @@ FPNumber::FPNumber(signed int value){
 FPNumber FPNumber::operator+(){
   if(this->fmt == RISCV_FMT::D){
     #ifndef EXT_D
-      std::cerr << "Attempting to use Double format without the D-extension. Set EXT_D in config to enable." << std::endl;
+      std::cerr << "Attempting to use Double format without the D-extension. Set EXT_D in config to enable. Operator: +" << std::endl;
       abort();
     #endif
     return FPNumber(this->data.d);
@@ -42,7 +42,7 @@ FPNumber FPNumber::operator+(){
 FPNumber FPNumber::operator-(){
   if(this->fmt == RISCV_FMT::D){
     #ifndef EXT_D
-      std::cerr << "Attempting to use Double format without the D-extension. Set EXT_D in config to enable." << std::endl;
+      std::cerr << "Attempting to use Double format without the D-extension. Set EXT_D in config to enable. Operator: -" << std::endl;
       abort();
     #endif
     return FPNumber(-this->data.d);
@@ -53,7 +53,7 @@ FPNumber FPNumber::operator-(){
 FPNumber FPNumber::operator+(FPNumber num){
   if(num.fmt == RISCV_FMT::D){
     #ifndef EXT_D
-      std::cerr << "Attempting to use Double format without the D-extension. Set EXT_D in config to enable." << std::endl;
+      std::cerr << "Attempting to use Double format without the D-extension. Set EXT_D in config to enable. Operator: + num" << std::endl;
       abort();
     #endif
     return FPNumber(this->data.d + num.data.d);
@@ -64,7 +64,7 @@ FPNumber FPNumber::operator+(FPNumber num){
 FPNumber FPNumber::operator-(FPNumber num){
   if(num.fmt == RISCV_FMT::D){
     #ifndef EXT_D
-      std::cerr << "Attempting to use Double format without the D-extension. Set EXT_D in config to enable." << std::endl;
+      std::cerr << "Attempting to use Double format without the D-extension. Set EXT_D in config to enable. Operator: - num" << std::endl;
       abort();
     #endif
     return FPNumber(this->data.d - num.data.d);
@@ -75,7 +75,7 @@ FPNumber FPNumber::operator-(FPNumber num){
 FPNumber FPNumber::operator/(FPNumber num){
   if(num.fmt == RISCV_FMT::D){
     #ifndef EXT_D
-      std::cerr << "Attempting to use Double format without the D-extension. Set EXT_D in config to enable." << std::endl;
+      std::cerr << "Attempting to use Double format without the D-extension. Set EXT_D in config to enable. Operator: /num" << std::endl;
       abort();
     #endif
     return FPNumber(this->data.d / num.data.d);
@@ -86,7 +86,7 @@ FPNumber FPNumber::operator/(FPNumber num){
 FPNumber FPNumber::operator*(FPNumber num){
   if(num.fmt == RISCV_FMT::D){
     #ifndef EXT_D
-      std::cerr << "Attempting to use Double format without the D-extension. Set EXT_D in config to enable." << std::endl;
+      std::cerr << "Attempting to use Double format without the D-extension. Set EXT_D in config to enable. Operator: *num" << std::endl;
       abort();
     #endif
     return FPNumber(this->data.d * num.data.d);
@@ -97,7 +97,7 @@ FPNumber FPNumber::operator*(FPNumber num){
 bool FPNumber::operator==(FPNumber num){
   if(num.fmt == RISCV_FMT::D){
     #ifndef EXT_D
-      std::cerr << "Attempting to use Double format without the D-extension. Set EXT_D in config to enable." << std::endl;
+      std::cerr << "Attempting to use Double format without the D-extension. Set EXT_D in config to enable. Operator: ==" << std::endl;
       abort();
     #endif
     return this->data.d == num.data.d;
@@ -108,7 +108,7 @@ bool FPNumber::operator==(FPNumber num){
 bool FPNumber::operator<=(FPNumber num){
   if(num.fmt == RISCV_FMT::D){
     #ifndef EXT_D
-      std::cerr << "Attempting to use Double format without the D-extension. Set EXT_D in config to enable." << std::endl;
+      std::cerr << "Attempting to use Double format without the D-extension. Set EXT_D in config to enable. Operator: <=" << std::endl;
       abort();
     #endif
     return this->data.d <= num.data.d;
@@ -119,7 +119,7 @@ bool FPNumber::operator<=(FPNumber num){
 bool FPNumber::operator>=(FPNumber num){
   if(num.fmt == RISCV_FMT::D){
     #ifndef EXT_D
-      std::cerr << "Attempting to use Double format without the D-extension. Set EXT_D in config to enable." << std::endl;
+      std::cerr << "Attempting to use Double format without the D-extension. Set EXT_D in config to enable. Operator: >=" << std::endl;
       abort();
     #endif
     return this->data.d >= num.data.d;
@@ -130,7 +130,7 @@ bool FPNumber::operator>=(FPNumber num){
 bool FPNumber::operator>(FPNumber num){
   if(num.fmt == RISCV_FMT::D){
     #ifndef EXT_D
-      std::cerr << "Attempting to use Double format without the D-extension. Set EXT_D in config to enable." << std::endl;
+      std::cerr << "Attempting to use Double format without the D-extension. Set EXT_D in config to enable. Operator: >" << std::endl;
       abort();
     #endif
     return this->data.d > num.data.d;
@@ -141,7 +141,7 @@ bool FPNumber::operator>(FPNumber num){
 bool FPNumber::operator<(FPNumber num){
   if(num.fmt == RISCV_FMT::D){
     #ifndef EXT_D
-      std::cerr << "Attempting to use Double format without the D-extension. Set EXT_D in config to enable." << std::endl;
+      std::cerr << "Attempting to use Double format without the D-extension. Set EXT_D in config to enable. Operator: <" << std::endl;
       abort();
     #endif
     return this->data.d < num.data.d;
@@ -152,7 +152,7 @@ bool FPNumber::operator<(FPNumber num){
 bool FPNumber::getSign(){
   if(this->fmt == RISCV_FMT::D){
     #ifndef EXT_D
-      std::cerr << "Attempting to use Double format without the D-extension. Set EXT_D in config to enable." << std::endl;
+      std::cerr << "Attempting to use Double format without the D-extension. Set EXT_D in config to enable. Operator: getSign()" << std::endl;
       abort();
     #endif
     return this->data.d_parts.sign;
@@ -163,7 +163,7 @@ bool FPNumber::getSign(){
 void FPNumber::setSign(bool sign){
   if(this->fmt == RISCV_FMT::D){
     #ifndef EXT_D
-      std::cerr << "Attempting to use Double format without the D-extension. Set EXT_D in config to enable." << std::endl;
+      std::cerr << "Attempting to use Double format without the D-extension. Set EXT_D in config to enable. Operator: setSign()" << std::endl;
       abort();
     #endif
     this->data.d_parts.sign = sign;
@@ -171,6 +171,28 @@ void FPNumber::setSign(bool sign){
     this->data.parts.sign = sign;
   }
 };
+
+unsigned int FPNumber::getExponent(){
+  if(this->fmt == RISCV_FMT::D){
+    #ifndef EXT_D
+      std::cerr << "Attempting to use Double format without the D-extension. Set EXT_D in config to enable. Operator: getExponent()" << std::endl;
+      abort();
+    #endif
+    return this->data.d_parts.exponent;
+  }
+  return this->data.parts.exponent;
+}
+
+unsigned long FPNumber::getMantissa(){
+  if(this->fmt == RISCV_FMT::D){
+    #ifndef EXT_D
+      std::cerr << "Attempting to use Double format without the D-extension. Set EXT_D in config to enable. Operator: getMantissa()" << std::endl;
+      abort();
+    #endif
+    return this->data.d_parts.mantissa;
+  }
+  return this->data.parts.mantissa;
+}
 
 FPNumber& FPNumber::operator=(FPNumber num){
   this->data = num.data;
@@ -216,7 +238,7 @@ FPNumber::FPNumber(unsigned long value){
 
 FPNumber::FPNumber(double value) {
   #ifndef EXT_D
-    std::cerr << "Attempting to use Double format without the D-extension. Set EXT_D in config to enable." << std::endl;
+    std::cerr << "Attempting to use Double format without the D-extension. Set EXT_D in config to enable. Operator: FPNumber(double)" << std::endl;
   #endif
   this->fmt = RISCV_FMT::D;
   data.d = value;
@@ -224,7 +246,7 @@ FPNumber::FPNumber(double value) {
 
 FPNumber& FPNumber::operator=(double value) {
   #ifndef EXT_D
-    std::cerr << "Attempting to use Double format without the D-extension. Set EXT_D in config to enable." << std::endl;
+    std::cerr << "Attempting to use Double format without the D-extension. Set EXT_D in config to enable. Operator: =(double)" << std::endl;
   #endif
   this->data.d = value;
   this->fmt = RISCV_FMT::D;
@@ -243,7 +265,7 @@ FPNumber& FPNumber::operator=(long value){
 
 bool FPNumber::operator==(double value) {
   #ifndef EXT_D
-    std::cerr << "Attempting to use Double format without the D-extension. Set EXT_D in config to enable." << std::endl;
+    std::cerr << "Attempting to use Double format without the D-extension. Set EXT_D in config to enable. Operator: ==(double)" << std::endl;
   #endif
   return this->data.d == value;
 }

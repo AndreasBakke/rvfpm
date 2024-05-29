@@ -82,7 +82,8 @@ class FPNumber {
     void setSign(bool sign);
 
     unsigned int getExponent();
-    unsigned int getMantissa();
+    unsigned long getMantissa();
+
 
     //Assignment overload
     FPNumber& operator=(FPNumber num);

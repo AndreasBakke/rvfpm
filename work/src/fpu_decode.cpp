@@ -246,7 +246,7 @@ FpuPipeObj decode_STYPE(uint32_t instr, unsignedType operand_a){
 FpuPipeObj decode_CSRTYPE(uint32_t instr, unsignedType operand_a) {
   CSRTYPE dec_instr = {.instr = instr}; //Decode into CSRTYPE
   FpuPipeObj result = {};
-  if (!(0x001 <= dec_instr.parts.csr <= 0x003)) { //If CSR op is not a FCSR instruction, return invalid
+  if (!(0x001 <= dec_instr.parts.csr && dec_instr.parts.csr <= 0x003)) { //If CSR op is not a FCSR instruction, return invalid
     FpuPipeObj result = {};
     result.valid = 0;
     return result;

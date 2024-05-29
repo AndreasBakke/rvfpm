@@ -185,23 +185,22 @@ void execute_RTYPE(FpuPipeObj& op, FpuRf* registerFile){
   }
   case FSGNJ:
   {
-    // op.data.parts.exponent = data1.parts.exponent;
-    // op.data.parts.mantissa = data1.parts.mantissa;
+    op.data = data1;
     switch (dec_instr.parts.funct3)
     {
     case 0b000: //FSGNJ.S
     {
-      // op.data.parts.sign = data2.parts.sign;
+      op.data.setSign(data2.getSign());
       break;
     }
     case 0b001: //FSGNJN.S
     {
-      // op.data.parts.sign = !data2.parts.sign;
+      op.data.setSign(!data2.getSign());
       break;
     }
     case 0b010: //FSGNJX.S
     {
-      // op.data.parts.sign = data2.parts.sign ^ data1.parts.sign;
+      op.data.setSign(data2.getSign() ^ data1.getSign());
       break;
     }
     default:
@@ -235,13 +234,16 @@ void execute_RTYPE(FpuPipeObj& op, FpuRf* registerFile){
     {
       if (fmt == D) {
         op.data = std::fmax((double)data1, (double)data2);
+        if (data1 == 0.0 && data2 == 0.0)//Fmax is not sensitive to 0 sign
+        {
+          op.data = data1.getSign() ? data2 : data1;
+        }
       } else {
         op.data = std::fmaxf((float)data1, (float)data2);
-      }
-
-      if (data1 == 0 && data2 == 0)//Fmax is not sensitive to 0 sign
-      {
-        op.data = data1.getSign() ? data2 : data1;
+        if (data1 == 0.0f && data2 == 0.0f)//Fmax is not sensitive to 0 sign
+        {
+          op.data = data1.getSign() ? data2 : data1;
+        }
       }
       break;
     }
@@ -307,7 +309,7 @@ void execute_RTYPE(FpuPipeObj& op, FpuRf* registerFile){
           op.data = static_cast<unsigned int>(nearbyint(data1));
         }
       } else {
-        if (std::isnan((float)data1) && !((unsigned int) data1 && 0x00400000)) {  // Check for sNaN
+        if (std::isnan((float)data1) && !(data1.getMantissa() && 0x00400000)) {  // Check for sNaN
           op.data =(unsigned int) 0xFFFFFFFF;
           op.flags |= 0b00001;
         } else if (nearbyint((float)data1) < 0.0f || nearbyint((float)data1) > UINT32_MAX) {  // Check for out-of-range values
@@ -350,7 +352,7 @@ void execute_RTYPE(FpuPipeObj& op, FpuRf* registerFile){
             op.data = static_cast<uint64_t>(nearbyint((double)data1));
           }
         } else { //FCVT.LU.S
-          if (std::isnan((float)data1) && !( (unsigned int) data1 && 0x00400000)) {  // Check for sNaN
+          if (std::isnan((float)data1) && !( (data1.getMantissa() && 0x00400000)) {  // Check for sNaN
             op.data = 0xFFFFFFFFFFFFFFFF;
             op.flags |= 0b00001;
           } else if (nearbyintf(data1) < 0.0f || (float)data1 > UINT64_MAX) {  // Check for out-of-range values
@@ -460,17 +462,17 @@ void execute_RTYPE(FpuPipeObj& op, FpuRf* registerFile){
         } else if (class_data < 0) //negative normal number
         {
           op.data = 0b0000000010;
-        } else if (class_data == 0 && class_data == 1) //negative zero
+        } else if (class_data == 0 && std::signbit(class_data) == 1) //negative zero
         {
           op.data = 0b0000001000;
-        } else if (class_data == 0 && class_data == 0) //positive 0
+        } else if (class_data == 0) //positive 0
         {
           op.data = 0b0000010000;
 
         } else if (class_data == INFINITY) //positive inf
         {
           op.data = 0b0010000000;
-        } else if (std::isnan(class_data) && !( (unsigned int)data1  & (unsigned int) data1 && 0x00400000)) //If leading mantissa-bit is not set -> sNaN
+        } else if (std::isnan(class_data) && !((unsigned int) data1 & 0x00400000)) //If leading mantissa-bit is not set -> sNaN
         {
           op.data = 0b0100000000; //SNaN
         } else if (std::isnan(class_data))
@@ -481,7 +483,7 @@ void execute_RTYPE(FpuPipeObj& op, FpuRf* registerFile){
           op.data = 0b0001000000;
         } else {
           op.data = 0b0000000000;
-          std::feraiseexcept(FE_INVALID); //raise invalid
+          std::feraiseexcept(FE_INVALID); //raise inva class_data.getSign() == 0lid
         };
       }
       break;
@@ -647,13 +649,13 @@ void setRoundingMode(unsigned int rm){ //Sets c++ rounding mode. FCSR is written
 
 
 //Helper function
-bool isSubnormal(float num) {
-  return 0;//num.parts.exponent == 0 && num.parts.mantissa != 0;
+bool isSubnormal(FPNumber num) {
+  return num.getExponent() == 0 && num.getMantissa() != 0;
 }
 
-bool isSubnormal(double num) {
-  return 0;//num.parts.exponent == 0 && num.parts.mantissa != 0;
-}
+// bool isSubnormal(double num) {
+//   return 0;//num.parts.exponent == 0 && num.parts.mantissa != 0;
+// }
 
 // void test_isSubormal
 
