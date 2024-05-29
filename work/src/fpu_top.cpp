@@ -117,11 +117,7 @@ void FPU::writebackStep(){
 //--------------------------
 void FPU::bd_load(uint32_t instruction, loadType dataFromMem){
   FpuPipeObj op = decodeOp(instruction, 0, 0, 0, 0, 0);
-  #ifdef EXT_D
-    op.data.bitpattern_64 = dataFromMem;
-  #else
-    op.data.bitpattern = dataFromMem;
-  #endif
+  op.data = dataFromMem;
   registerFile.write(op.addrTo, op.data);
 };
 

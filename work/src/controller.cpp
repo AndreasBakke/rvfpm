@@ -54,7 +54,7 @@ void Controller::addAcceptedInstruction(uint32_t instruction, unsigned int id, u
 
   if ((newOp.toMem || newOp.fromMem) && !newOp.stalledByCtrl && !newOp.speculative){
     STYPE dec_instr = {.instr = newOp.instr};
-    newOp.data.bitpattern = registerFile.read(dec_instr.parts.rs2).bitpattern;
+    newOp.data = registerFile.read(dec_instr.parts.rs2);
     addMemoryRequest(newOp);
   }
 
@@ -116,7 +116,7 @@ void Controller::resolveForwards(){ //Currently only resolves memory operations 
         FpuPipeObj& op = fpu_pipeline.at(i);
         #ifdef CTRL_RAW
           if (op.toMem && !op.added_to_mem_queue && op.addrFrom.front() == fpu_pipeline.fw_addr){ //Fw data if address is correct
-            op.data.bitpattern = fpu_pipeline.fw_data.bitpattern;
+            op.data = fpu_pipeline.fw_data;
             op.stalledByCtrl = 0;
             addMemoryRequest(op);
           }
@@ -132,7 +132,7 @@ void Controller::resolveForwards(){ //Currently only resolves memory operations 
         FpuPipeObj& op = fpu_pipeline.at_queue(i);
         #ifdef CTRL_RAW
           if (op.toMem && !op.added_to_mem_queue && op.addrFrom.front() == fpu_pipeline.fw_addr){
-            op.data.bitpattern = fpu_pipeline.fw_data.bitpattern;
+            op.data = fpu_pipeline.fw_data;
             op.stalledByCtrl = 0;
             addMemoryRequest(op);
           }
@@ -147,7 +147,7 @@ void Controller::resolveForwards(){ //Currently only resolves memory operations 
     if (fpu_pipeline.getWaitingOp().stalledByCtrl){
       FpuPipeObj op = fpu_pipeline.getWaitingOp();
       if (op.toMem && !op.added_to_mem_queue && op.addrFrom.front() == fpu_pipeline.fw_addr){
-          op.data.bitpattern = fpu_pipeline.fw_data.bitpattern;
+          op.data = fpu_pipeline.fw_data;
           op.stalledByCtrl = 0;
           addMemoryRequest(op);
           fpu_pipeline.setWaitingOp(op);
@@ -162,6 +162,47 @@ void Controller::resolveForwards(){ //Currently only resolves memory operations 
 //--------------------
 void Controller::commitInstruction(unsigned int id, bool kill){
   fpu_pipeline.commitInstruction(id, kill);
+};
+
+
+
+//--------------------
+// Memory interface
+//--------------------
+void Controller::addMemoryRequest(FpuPipeObj& op){ //Add to mem_req_queue
+  x_mem_req_t mem_req_s = {};
+  mem_req_s.id = op.id;
+  mem_req_s.addr = op.toMem ? op.addrTo : op.addrFrom.front();
+  mem_req_s.wdata = op.data;
+  mem_req_s.last = 1;
+  mem_req_s.size = op.size;
+  mem_req_s.mode = op.mode;
+  mem_req_s.we = op.toMem ? 1 : 0;
+  fpu_pipeline.mem_req_queue.push_back(mem_req_s);
+  op.added_to_mem_queue = 1;
+}
+
+void Controller::pollMemoryRequest(bool& mem_valid, x_mem_req_t& mem_req){
+  mem_valid = !fpu_pipeline.mem_req_queue.empty();
+  if (mem_valid) {
+    mem_req = fpu_pipeline.mem_req_queue.front();
+  }
+
+};
+
+void Controller::resetMemoryRequest(unsigned int id){
+  if (id == fpu_pipeline.mem_req_queue.front().id){
+    fpu_pipeline.mem_req_queue.pop_front();
+  }
+};
+
+
+void Controller::writeMemoryResponse(bool mem_ready, bool exc, unsigned int exccode, bool dbg){
+  this->mem_ready = mem_ready;
+  if (exc) {
+    std::cerr << "Exception in memory request - id: " << this->mem_req.id << std::endl;
+    std::cout << "Exception code: " << exccode << std::endl;
+  }
 };
 
 void Controller::writeMemoryResult(unsigned int id, uint32_t rdata, bool err, bool dbg) {
@@ -197,44 +238,6 @@ void Controller::writeMemoryResult(unsigned int id, uint32_t rdata, bool err, bo
   }
 }
 
-//--------------------
-// Memory interface
-//--------------------
-void Controller::addMemoryRequest(FpuPipeObj& op){ //Add to mem_req_queue
-  x_mem_req_t mem_req_s = {};
-  mem_req_s.id = op.id;
-  mem_req_s.addr = op.toMem ? op.addrTo : op.addrFrom.front();
-  mem_req_s.wdata = op.data.bitpattern;
-  mem_req_s.last = 1;
-  mem_req_s.size = op.size;
-  mem_req_s.mode = op.mode;
-  mem_req_s.we = op.toMem ? 1 : 0;
-  fpu_pipeline.mem_req_queue.push_back(mem_req_s);
-  op.added_to_mem_queue = 1;
-}
-
-void Controller::pollMemoryRequest(bool& mem_valid, x_mem_req_t& mem_req){
-  mem_valid = !fpu_pipeline.mem_req_queue.empty();
-  if (mem_valid) {
-    mem_req = fpu_pipeline.mem_req_queue.front();
-  }
-
-};
-
-void Controller::resetMemoryRequest(unsigned int id){
-  if (id == fpu_pipeline.mem_req_queue.front().id){
-    fpu_pipeline.mem_req_queue.pop_front();
-  }
-};
-
-
-void Controller::writeMemoryResponse(bool mem_ready, bool exc, unsigned int exccode, bool dbg){
-  this->mem_ready = mem_ready;
-  if (exc) {
-    std::cerr << "Exception in memory request - id: " << this->mem_req.id << std::endl;
-    std::cout << "Exception code: " << exccode << std::endl;
-  }
-};
 
 void Controller::pollResult(bool& result_valid_ptr, x_result_t& result_ptr){
   result_valid_ptr = !fpu_pipeline.result_queue.empty();

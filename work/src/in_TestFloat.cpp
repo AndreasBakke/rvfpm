@@ -156,7 +156,7 @@ FPU testFPU = FPU();
 
 int main(int argc, char** argv) {
   std::string op, fmt, rm, input1, input2, input3, input4, flags;
-  unsigned int instr_fmt;
+  RISCV_FMT instr_fmt;
   //Use first 4 registers
   uint32_t r1 = 0;
   uint32_t r2 = 1;
@@ -211,16 +211,22 @@ int main(int argc, char** argv) {
       testFPU.addAcceptedInstruction(instr_r4type.instr, 0, 0, 0, 0, 0, 0, 0, 0);
       FpuPipeObj result = testFPU.testFloatOp();
       if (fmt=="D") {
-          std::cout << input1 << " " << input2 << " " << input3 << " " << doubleToHex(result.data.d) << " " << convFlags(result.flags)  << std::endl;
+          std::cout << input1 << " " << input2 << " " << input3 << " " << doubleToHex(result.data) << " " << convFlags(result.flags)  << std::endl;
       } else {
-          std::cout << input1 << " " << input2 << " " << input3 << " " << floatToHex(result.data.f) << " " << convFlags(result.flags)  << std::endl;
+          std::cout << input1 << " " << input2 << " " << input3 << " " << floatToHex(result.data) << " " << convFlags(result.flags)  << std::endl;
       }
     }
-  } else if (op == "fsqrt" || op == "ui32_to_f32" || op == "i32_to_f32" || op == "f32_to_ui32" || op == "f32_to_i32") { //fsqrt uses only three inputs
+  } else if (op == "fsqrt" || op == "ui32_to_f32" || op == "i32_to_f32" || op == "f32_to_ui32" || op == "f32_to_i32" || op == "ui32_to_f64" || op == "i32_to_f64" || op == "f64_to_ui32" || op == "f64_to_i32") { //fsqrt uses only three inputs
     while (std::cin >> input1 >> input2 >> flags) {
-      a = hexToUnsignedInt(input1);
-      b = hexToUnsignedInt(input2);
-      c = hexToUnsignedInt(input3);
+      if (fmt=="D") {
+        instr_fmt = D;
+        a = hexToUnsignedInt64(input1);
+        b = hexToUnsignedInt64(input2);
+      } else {
+        instr_fmt = S;
+        a = hexToUnsignedInt(input1);
+        b = hexToUnsignedInt(input2);
+      }
       //Load values
       ITYPE instr_load = {.parts= {7, r1, 0b010, 0, 0}};
       testFPU.bd_load(instr_load.instr, a);
@@ -229,72 +235,97 @@ int main(int argc, char** argv) {
       //Do operation
       RTYPE instr_rtype = {};
       if (op == "fsqrt") {
-        instr_rtype = {.parts= {OP_FP, rd, 0b000, r1, 0b00000, 0b00, FSQRT}};
+        instr_rtype = {.parts= {OP_FP, rd, 0b000, r1, 0b00000, instr_fmt, FSQRT}};
         testFPU.addAcceptedInstruction(instr_rtype.instr, 0, 0, 0, 0, 0, 0, 0, 0);
       }
-      else if (op == "ui32_to_f32") {
-        instr_rtype = {.parts= {OP_FP, rd, rm_i, r1, 0b00001, 0b00, FCVT_S_W}};
+      else if (op == "ui32_to_f32" || op == "ui32_to_f64") {
+        instr_rtype = {.parts= {OP_FP, rd, rm_i, r1, 0b00001, instr_fmt, FCVT_S_W}};
         testFPU.addAcceptedInstruction(instr_rtype.instr, 0, a, 0, 0, 0, 0, 0, 0);
       }
-      else if (op == "i32_to_f32") {
-        instr_rtype = {.parts= {OP_FP, rd, rm_i, r1, 0b00000, 0b00, FCVT_S_W}};
+      else if (op == "i32_to_f32" || op == "i32_to_f64") {
+        instr_rtype = {.parts= {OP_FP, rd, rm_i, r1, 0b00000, instr_fmt, FCVT_S_W}};
         testFPU.addAcceptedInstruction(instr_rtype.instr, 0, a, 0, 0, 0, 0, 0, 0);
       }
-      else if (op == "f32_to_ui32") {
-        instr_rtype = {.parts= {OP_FP, rd, rm_i, r1, 0b00001, 0b00, FCVT_W_S}};
+      else if (op == "f32_to_ui32" || op == "f64_to_ui32") {
+        instr_rtype = {.parts= {OP_FP, rd, rm_i, r1, 0b00001, instr_fmt, FCVT_W_S}};
         testFPU.addAcceptedInstruction(instr_rtype.instr, 0, 0, 0, 0, 0, 0, 0, 0);
       }
-      else if (op == "f32_to_i32") {
-        instr_rtype = {.parts= {OP_FP, rd, rm_i, r1, 0b00000, 0b00, FCVT_W_S}};
+      else if (op == "f32_to_i32" || op == "f64_to_i32") {
+        instr_rtype = {.parts= {OP_FP, rd, rm_i, r1, 0b00000, instr_fmt, FCVT_W_S}};
         testFPU.addAcceptedInstruction(instr_rtype.instr, 0, 0, 0, 0, 0, 0, 0, 0);
       }
       FpuPipeObj result = testFPU.testFloatOp();
-      if (op == "fsqrt" || op == "ui32_to_f32" || op == "i32_to_f32") {
-        std::cout << input1 << " " << floatToHex(result.data.f) << " " << convFlags(result.flags)  << std::endl;
+      if (op == "fsqrt" || op == "ui32_to_f32" || op == "i32_to_f32" || op == "ui32_to_f64" || op == "i32_to_f64") {
+        if (fmt == "D") {
+          std::cout << input1 << " " << doubleToHex(result.data) << " " << convFlags(result.flags)  << std::endl;
+        } else {
+          std::cout << input1 << " " << floatToHex(result.data) << " " << convFlags(result.flags)  << std::endl;
+        }
       } else {
-        std::cout << input1 << " " << uint32ToHexString(static_cast<uint32_t>(result.data.s)) << " " << convFlags(result.flags & 0b01111)  << std::endl; //Conversion to int doesn't check for exactness
+        std::cout << input1 << " " << uint32ToHexString(static_cast<uint32_t>((int)result.data)) << " " << convFlags(result.flags & 0b01111)  << std::endl; //Conversion to int doesn't check for exactness
       }
     }
-    } else if ( op == "ui64_to_f32" || op == "i64_to_f32" || op == "f32_to_ui64" || op == "f32_to_i64") { //fsqrt uses only three inputs
+    } else if ( op == "ui64_to_f32" || op == "i64_to_f32" || op == "f32_to_ui64" || op == "f32_to_i64" || op == "ui64_to_f64" || op == "i64_to_f64" || op == "f64_to_ui64" || op == "f64_to_i64") { //fsqrt uses only three inputs
     while (std::cin >> input1 >> input2 >> flags) {
-      a = hexToUnsignedInt64(input1);
-      b = hexToUnsignedInt64(input2);
-      c = hexToUnsignedInt64(input3);
+      if (fmt=="D") {
+        instr_fmt = D;
+      } else {
+        instr_fmt = S;
+      }
+      unsigned long a = hexToUnsignedInt64(input1);
+      unsigned long b = hexToUnsignedInt64(input2);
+      unsigned long c = hexToUnsignedInt64(input3);
       //Load values
-      ITYPE instr_load = {.parts= {7, r1, 0b010, 0, 0}};
-      testFPU.bd_load(instr_load.instr, a);
-      instr_load = {.parts= {7, r2, 0b010, 0, 0}};
-      testFPU.bd_load(instr_load.instr, b);
+      if (op == "ui64_to_f32" || op == "i64_to_f32" || op == "ui64_to_f64" || op == "i64_to_f64"){
+
+      } else {
+        ITYPE instr_load = {.parts= {7, r1, 0b010, 0, 0}};
+        testFPU.bd_load(instr_load.instr, a);
+        instr_load = {.parts= {7, r2, 0b010, 0, 0}};
+        testFPU.bd_load(instr_load.instr, b);
+      }
       //Do operation
       RTYPE instr_rtype = {};
-       if (op == "ui64_to_f32") {
-        instr_rtype = {.parts= {OP_FP, rd, rm_i, r1, 0b00011, 0b00, FCVT_S_W}};
+       if (op == "ui64_to_f32" || op == "ui64_to_f64") {
+        instr_rtype = {.parts= {OP_FP, rd, rm_i, r1, 0b00011, instr_fmt, FCVT_S_W}};
         testFPU.addAcceptedInstruction(instr_rtype.instr, 0, a, 0, 0, 0, 0, 0, 0);
       }
-      else if (op == "i64_to_f32") {
-        instr_rtype = {.parts= {OP_FP, rd, rm_i, r1, 0b00010, 0b00, FCVT_S_W}};
+      else if (op == "i64_to_f32" || op == "i64_to_f64") {
+        instr_rtype = {.parts= {OP_FP, rd, rm_i, r1, 0b00010, instr_fmt, FCVT_S_W}};
         testFPU.addAcceptedInstruction(instr_rtype.instr, 0, a, 0, 0, 0, 0, 0, 0);
       }
-      else if (op == "f32_to_ui64") {
-        instr_rtype = {.parts= {OP_FP, rd, rm_i, r1, 0b00011, 0b00, FCVT_W_S}};
+      else if (op == "f32_to_ui64" || op == "f64_to_ui64") {
+        instr_rtype = {.parts= {OP_FP, rd, rm_i, r1, 0b00011, instr_fmt, FCVT_W_S}};
         testFPU.addAcceptedInstruction(instr_rtype.instr, 0, 0, 0, 0, 0, 0, 0, 0);
       }
-      else if (op == "f32_to_i64") {
-        instr_rtype = {.parts= {OP_FP, rd, rm_i, r1, 0b00010, 0b00, FCVT_W_S}};
+      else if (op == "f32_to_i64" || op == "f64_to_i64") {
+        instr_rtype = {.parts= {OP_FP, rd, rm_i, r1, 0b00010, instr_fmt, FCVT_W_S}};
         testFPU.addAcceptedInstruction(instr_rtype.instr, 0, 0, 0, 0, 0, 0, 0, 0);
       }
       FpuPipeObj result = testFPU.testFloatOp();
-      if (op == "ui64_to_f32" || op == "i64_to_f32") {
-        std::cout << input1 << " " << floatToHex(result.data.f) << " " << convFlags(result.flags)  << std::endl;
+      if (op == "ui64_to_f32" || op == "i64_to_f32" || op == "ui64_to_f64" || op == "i64_to_f64") {
+        if (fmt == "D") {
+          std::cout << input1 << " " << doubleToHex(result.data) << " " << convFlags(result.flags)  << std::endl;
+        } else {
+          std::cout << input1 << " " << floatToHex(result.data) << " " << convFlags(result.flags)  << std::endl;
+        }
       } else {
-        std::cout << input1 << " " << uint64ToHexString(static_cast<uint64_t>(result.data.s_64)) << " " << convFlags(result.flags & 0b01111)  << std::endl; //Conversion to int doesn't check for exactness
+        std::cout << input1 << " " << uint64ToHexString((unsigned long) result.data) << " " << convFlags(result.flags & 0b01111)  << std::endl; //Conversion to int doesn't check for exactness
       }
     }
   } else {
     while (std::cin >> input1 >> input2 >> input3 >> flags) {
-      a = hexToUnsignedInt(input1);
-      b = hexToUnsignedInt(input2);
-      c = hexToUnsignedInt(input3);
+      if (fmt=="D") {
+        instr_fmt = D;
+        a = hexToUnsignedInt64(input1);
+        b = hexToUnsignedInt64(input2);
+        c = hexToUnsignedInt64(input3);
+      } else {
+        instr_fmt = S;
+        a = hexToUnsignedInt(input1);
+        b = hexToUnsignedInt(input2);
+        c = hexToUnsignedInt(input3);
+      }
       //Load values
       ITYPE instr_load = {.parts= {7, r1, 0b010, 0, 0}};
       testFPU.bd_load(instr_load.instr, a);
@@ -304,38 +335,42 @@ int main(int argc, char** argv) {
       RTYPE instr_rtype;
       if (op == "fadd")
       {
-        instr_rtype = {.parts= {OP_FP, rd, 0b000, r1, r2, 0b00, FADD}};
+        instr_rtype = {.parts= {OP_FP, rd, 0b000, r1, r2, instr_fmt, FADD}};
       }
       else if (op == "fsub") //FSUB_S:
       {
-        instr_rtype = {.parts= {OP_FP, rd, 0b000, r1, r2, 0b00, FSUB}};
+        instr_rtype = {.parts= {OP_FP, rd, 0b000, r1, r2, instr_fmt, FSUB}};
       }
       else if (op == "fmul") //FMUL_S:
       {
-        instr_rtype = {.parts= {OP_FP, rd, 0b000, r1, r2, 0b00, FMUL}};
+        instr_rtype = {.parts= {OP_FP, rd, 0b000, r1, r2, instr_fmt, FMUL}};
       }
       else if (op == "fdiv") //FDIV_S:
       {
-        instr_rtype = {.parts= {OP_FP, rd, 0b000, r1, r2, 0b00, FDIV}};
+        instr_rtype = {.parts= {OP_FP, rd, 0b000, r1, r2, instr_fmt, FDIV}};
       }
       else if (op == "feq") //FEQ.S
       {
-        instr_rtype = {.parts = {OP_FP, rd, 0b010, r1, r2, 0b00, FCMP}};
+        instr_rtype = {.parts = {OP_FP, rd, 0b010, r1, r2, instr_fmt, FCMP}};
       }
       else if (op == "flt") //FLT.S
       {
-        instr_rtype = {.parts = {OP_FP, rd, 0b001, r1, r2, 0b00, FCMP}};
+        instr_rtype = {.parts = {OP_FP, rd, 0b001, r1, r2, instr_fmt, FCMP}};
       }
       else if (op == "fle") //FLE.s
       {
-        instr_rtype = {.parts = {OP_FP, rd, 0b000, r1, r2, 0b00, FCMP}};
+        instr_rtype = {.parts = {OP_FP, rd, 0b000, r1, r2, instr_fmt, FCMP}};
       }
       testFPU.addAcceptedInstruction(instr_rtype.instr, 0, 0, 0, 0, 0, 0, 0, 0);
       FpuPipeObj result = testFPU.testFloatOp();
       if (op == "feq" || op == "flt" || op == "fle"){
-        std::cout << input1 << " " << input2 << " " << std::to_string(result.data.s).front() << " " << convFlags(result.flags)  << std::endl;
+        std::cout << input1 << " " << input2 << " " << std::to_string(static_cast<int>(result.data)).front() << " " << convFlags(result.flags)  << std::endl;
       } else {
-        std::cout << input1 << " " << input2 << " " << floatToHex(result.data.f) << " " << convFlags(result.flags)  << std::endl;
+        if (fmt == "D") {
+          std::cout << input1 << " " << input2 << " " << doubleToHex(result.data) << " " << convFlags(result.flags)  << std::endl;
+        } else{
+          std::cout << input1 << " " << input2 << " " << floatToHex(result.data) << " " << convFlags(result.flags)  << std::endl;
+        }
       }
     }
   }

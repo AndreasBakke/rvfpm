@@ -35,13 +35,13 @@ package in_xif;
   //Pipeline parameters
   parameter PIPELINE_STAGES   = `NUM_PIPELINE_STAGES;
   parameter QUEUE_DEPTH       = `QUEUE_DEPTH; //Size of operation queue
-  parameter FORWARDING        = `FORWARDING; //Set to 1 to enable forwarding; not implemented
+  parameter FORWARDING        = `FORWARDING; //Set to 1 to enable forwarding;
   parameter OUT_OF_ORDER      = `OOO; //Set to 1 to enable out of order execution; not implemented
 
   //CORE-V-XIF parameters for coprocessor
   parameter X_NUM_RS          = `X_NUM_RS; //Read ports
   parameter X_ID_WIDTH        = `X_ID_WIDTH;
-  parameter X_MEM_WIDTH       = `FLEN; //TODO: dependent on extension
+  parameter X_MEM_WIDTH       = `FLEN;
   parameter X_RFR_WIDTH       = `XLEN; //Read acces width
   parameter X_RFW_WIDTH       = `XLEN; //Write acces width
   parameter X_MISA            = `X_MISA; //TODO: not used

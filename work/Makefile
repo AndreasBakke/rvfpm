@@ -15,7 +15,7 @@ endif
 
 
 #Filepaths for the c++ core
-COREFILES = src/fpu_top.cpp src/fpu_predecoder.cpp src/controller.cpp src/fpu_decode.cpp src/fpu_execute.cpp src/fpu_pipeline.cpp src/fpu_rf.cpp
+COREFILES = src/fpu_top.cpp src/fpu_predecoder.cpp src/controller.cpp src/fpu_decode.cpp src/fpu_execute.cpp src/fpu_pipeline.cpp src/fpu_rf.cpp src/fp_number.cpp
 
 CONFIG:=""
 SIM_LENGTH = -all
@@ -42,26 +42,24 @@ TestFloat: #Compile and test for IEEE754 compliance
 	$(CXX) $(CXXFLAGS) -I ./include src/in_TestFloat.cpp $(COREFILES)  -o bin/rvfpm_testFloat
 	chmod a+x,g+x ./bin/testfloat_ver_$(ARCH)
 	chmod a+x,g+x ./bin/testfloat_gen_$(ARCH)
-	+make -i -j4 test_all
+	+make -i -j4 test_all fmt="S" fbits=32
+	+make -i -j4 test_all fmt="D" fbits=64
+
 	python3 tests/result_parser.py -arch=$(ARCH)
 
 test_all: test_near_even test_minMag test_min test_max
 
 test_near_even:
-	+make -i TestFloat_all args="-rnear_even" fmt="S" fbits=32
-	+make -i TestFloat_all args="-rnear_even" fmt="D" fbits=64
+	+make -i TestFloat_all args="-rnear_even"
 
 test_minMag:
-	+make -i TestFloat_all args="-rminMag" fmt="S" fbits=32
-	+make -i TestFloat_all args="-rminMag" fmt="D" fbits=64
+	+make -i TestFloat_all args="-rminMag"
 
 test_min:
-	+make -i TestFloat_all args="-rmin" fmt="S" fbits=32
-	+make -i TestFloat_all args="-rmin" fmt="D" fbits=64
+	+make -i TestFloat_all args="-rmin"
 
 test_max:
-	+make -i TestFloat_all args="-rmax" fmt="S" fbits=32
-	+make -i TestFloat_all args="-rmax" fmt="D" fbits=64
+	+make -i TestFloat_all args="-rmax"
 
 .PHONY: test_all test_near_even test_minMag test_min test_max result_parser
 
@@ -75,7 +73,6 @@ TestFloat_all:
 	./bin/testfloat_gen_$(ARCH) f$(fbits)_eq  		-level $(LEVEL)	| ./bin/rvfpm_testFloat feq   $(fmt) $(args)					| ./bin/testfloat_ver_$(ARCH) $(args)	f$(fbits)_eq										-errors 0 > tests/$(ARCH)/$(fmt)/rm$(args)/f$(fbits)_eq.txt 2>&1
 	./bin/testfloat_gen_$(ARCH) f$(fbits)_lt  		-level $(LEVEL)	| ./bin/rvfpm_testFloat flt   $(fmt) $(args)					| ./bin/testfloat_ver_$(ARCH) $(args)	f$(fbits)_lt										-errors 0 > tests/$(ARCH)/$(fmt)/rm$(args)/f$(fbits)_lt.txt 2>&1
 	./bin/testfloat_gen_$(ARCH) f$(fbits)_le  		-level $(LEVEL)	| ./bin/rvfpm_testFloat fle   $(fmt) $(args)					| ./bin/testfloat_ver_$(ARCH) $(args)	f$(fbits)_le										-errors 0 > tests/$(ARCH)/$(fmt)/rm$(args)/f$(fbits)_le.txt 2>&1
-	./bin/testfloat_gen_$(ARCH) f$(fbits)_mulAdd  -level $(LEVEL)	| ./bin/rvfpm_testFloat fmadd $(fmt) $(args)					| ./bin/testfloat_ver_$(ARCH) $(args)	f$(fbits)_mulAdd		$(TININESS)	-errors 0 > tests/$(ARCH)/$(fmt)/rm$(args)/f$(fbits)_muladd.txt 2>&1
 	./bin/testfloat_gen_$(ARCH) ui32_to_f$(fbits) -level $(LEVEL)	| ./bin/rvfpm_testFloat ui32_to_f$(fbits) $(fmt) $(args)	| ./bin/testfloat_ver_$(ARCH) $(args)	ui32_to_f$(fbits)								-errors 0 > tests/$(ARCH)/$(fmt)/rm$(args)/f$(fbits)_uitf.txt 2>&1
 	./bin/testfloat_gen_$(ARCH) i32_to_f$(fbits)  -level $(LEVEL)	| ./bin/rvfpm_testFloat i32_to_f$(fbits)  $(fmt) $(args)	| ./bin/testfloat_ver_$(ARCH) $(args)	i32_to_f$(fbits)								-errors 0 > tests/$(ARCH)/$(fmt)/rm$(args)/f$(fbits)_itf.txt 2>&1
 	./bin/testfloat_gen_$(ARCH) f$(fbits)_to_ui32 -level $(LEVEL)	| ./bin/rvfpm_testFloat f$(fbits)_to_ui32 $(fmt) $(args)	| ./bin/testfloat_ver_$(ARCH) $(args)	f$(fbits)_to_ui32								-errors 0 > tests/$(ARCH)/$(fmt)/rm$(args)/f$(fbits)_ftui.txt 2>&1
@@ -84,10 +81,7 @@ TestFloat_all:
 	./bin/testfloat_gen_$(ARCH) i64_to_f$(fbits)  -level $(LEVEL)	| ./bin/rvfpm_testFloat i64_to_f$(fbits)  $(fmt) $(args)	| ./bin/testfloat_ver_$(ARCH) $(args)	i64_to_f$(fbits)								-errors 0 > tests/$(ARCH)/$(fmt)/rm$(args)/f$(fbits)_i64tf.txt 2>&1
 	./bin/testfloat_gen_$(ARCH) f$(fbits)_to_ui64 -level $(LEVEL)	| ./bin/rvfpm_testFloat f$(fbits)_to_ui64 $(fmt) $(args)	| ./bin/testfloat_ver_$(ARCH) $(args)	f$(fbits)_to_ui64								-errors 0 > tests/$(ARCH)/$(fmt)/rm$(args)/f$(fbits)_ftui64.txt 2>&1
 	./bin/testfloat_gen_$(ARCH) f$(fbits)_to_i64  -level $(LEVEL)	| ./bin/rvfpm_testFloat f$(fbits)_to_i64  $(fmt) $(args)	| ./bin/testfloat_ver_$(ARCH) $(args)	f$(fbits)_to_i64								-errors 0 > tests/$(ARCH)/$(fmt)/rm$(args)/f$(fbits)_fti64.txt 2>&1
-
-# TestFloat_all_D:
-# 	mkdir -p tests/$(ARCH)/$(fmt)/rm$(args)
-# 	./bin/testfloat_gen_$(ARCH) f64_mulAdd  -level $(LEVEL)	| ./bin/rvfpm_testFloat fmadd $(fmt) $(args)					| ./bin/testfloat_ver_$(ARCH) $(args)	f64_mulAdd		$(TININESS)	-errors 0 > tests/$(ARCH)/D/rm$(args)/f64_muladd.txt 2>&1
+	./bin/testfloat_gen_$(ARCH) f$(fbits)_mulAdd  -level $(LEVEL)	| ./bin/rvfpm_testFloat fmadd $(fmt) $(args)					| ./bin/testfloat_ver_$(ARCH) $(args)	f$(fbits)_mulAdd		$(TININESS)	-errors 0 > tests/$(ARCH)/$(fmt)/rm$(args)/f$(fbits)_muladd.txt 2>&1
 
 setup:
 	make clean

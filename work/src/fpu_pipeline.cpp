@@ -173,7 +173,7 @@ void FpuPipeline::memoryStep(){
     mem_req_s.id = memOp.id;
     mem_req_s.addr = memOp.toMem ? memOp.addrTo : memOp.addrFrom.front();
     STYPE dec_instr = {.instr = memOp.instr};
-    mem_req_s.wdata = registerFilePtr->read(dec_instr.parts.rs2).bitpattern;
+    mem_req_s.wdata = registerFilePtr->read(dec_instr.parts.rs2);
     mem_req_s.last = 1;
     mem_req_s.size = memOp.size;
     mem_req_s.mode = memOp.mode;
@@ -187,7 +187,7 @@ void FpuPipeline::memoryStep(){
     }
     mem_done = true;
     if (memOp.fromMem){
-      memOp.data.bitpattern = memOp.mem_result; //Add result to op. Written at WB step
+      memOp.data = memOp.mem_result; //Add result to op. Written at WB step
     }
   }
 
@@ -213,7 +213,7 @@ void FpuPipeline::addResult(FpuPipeObj op){ //Set relevant eXtension Interface v
   result_s.id = op.id;
   if (!op.fromMem && !op.toMem){
     result_s.rd = op.addrTo;
-    result_s.data = op.data.bitpattern;
+    result_s.data = op.data;
   }
   if(op.toXReg){
     result_s.we = 1;

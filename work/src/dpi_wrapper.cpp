@@ -141,7 +141,7 @@ extern "C" {
   //-----------------------
   unsigned int getRFContent(void* fpu_ptr, int reg) { //Backdoor to read content of register file
     FPU* fpu = static_cast<FPU*>(fpu_ptr);
-    return  fpu->bd_getData(reg).bitpattern;
+    return (unsigned int)fpu->bd_getData(reg);
   }
 
   unsigned int getPipeStageId(void* fpu_ptr, int stage) { //Get id of instruction in pipeline stage

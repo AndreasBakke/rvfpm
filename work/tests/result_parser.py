@@ -71,7 +71,7 @@ def summarize_tests(results):
   if (total_tests_failed != 0):
     print(f"The following instructions failed:")
     for fmt in failed_tests:
-      print(f"  {fmt}")
+      print(f"  Precision: {fmt}")
 
       for rm in failed_tests[fmt]:
         print(f"    {rm}")
