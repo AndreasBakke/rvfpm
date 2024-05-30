@@ -70,7 +70,7 @@ void execute_R4TYPE(FpuPipeObj& op, FpuRf* registerFile){
     data3 = registerFile->read(op.addrFrom[2]);
   #endif
   #ifdef FORWARDING
-    if(op.stalledByCtrl){
+    if(op.useFwData){
       data1 = op.addrFrom[0] == op.fw_addr ? op.fw_data : data1;
       data2 = op.addrFrom[1] == op.fw_addr ? op.fw_data : data2;
       data3 = op.addrFrom[2] == op.fw_addr ? op.fw_data : data3;
@@ -146,7 +146,7 @@ void execute_RTYPE(FpuPipeObj& op, FpuRf* registerFile){
     data2 = registerFile->read(op.addrFrom[1]);
   #endif
   #ifdef FORWARDING
-    if(op.stalledByCtrl){
+    if(op.useFwData){
       data1 = op.addrFrom[0] == op.fw_addr ?  op.fw_data : data1;
       data2 = op.addrFrom[1] == op.fw_addr ?  op.fw_data : data2;
     }
@@ -516,7 +516,7 @@ void execute_STYPE(FpuPipeObj& op, FpuRf* registerFile){
       op.data = registerFile->read(op.addrFrom.front());
     }
   #ifdef FORWARDING
-    if(op.stalledByCtrl){
+    if(op.useFwData){
       op.data = op.addrFrom[0] == op.fw_addr ? op.fw_data : op.data;
     }
   #endif

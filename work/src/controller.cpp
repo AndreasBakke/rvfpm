@@ -70,16 +70,37 @@ void Controller::addAcceptedInstruction(uint32_t instruction, unsigned int id, u
 //--------------------
 // Hazards
 //--------------------
-bool Controller::hasSameTarget(FpuPipeObj first, FpuPipeObj last){
-  if (last.isEmpty() || first.isEmpty()) {return false;}
-  if (first.toMem) {
-    if (first.addrFrom.front() == last.addrTo){ //Only need to check in one direction
+bool Controller::hasSameTarget(FpuPipeObj op_to_check, FpuPipeObj op2){
+  if (op2.isEmpty() || op_to_check.isEmpty()) {return false;}
+  if (op_to_check.toMem) {
+    if (op_to_check.addrFrom.front() == op2.addrTo && !op2.toMem){ //Only need to check in one direction
       return true;
     }
-    return false;
-  }
-  if(first.fromMem){ //No overlap if we are reading from memory
-    return false;
+    if(op_to_check.addrTo == op2.addrFrom.front() && op2.fromMem){
+      return true;
+    } 
+
+  } else if(op_to_check.fromMem){ //Make sure we have written to mem before reading from mem.
+    if (op_to_check.addrFrom.front() == op2.addrTo){
+      return true;
+    }
+    for (unsigned int addrFrom : op2.addrFrom){
+      if (op_to_check.addrTo == addrFrom){
+        return true;
+      }
+    }
+
+  } else { //If using a register later written to:
+    for (unsigned int addrFrom : op_to_check.addrFrom){
+      if (addrFrom == op2.addrTo && !op_to_check.fromXReg && !op2.toXReg){
+        return true;
+      }
+    }
+    for (unsigned int addrFrom : op2.addrFrom){ //if execute is before memory.
+      if(op_to_check.addrTo == addrFrom){
+        return true;
+      }
+    }
   }
   return false;
 }
@@ -90,12 +111,23 @@ void Controller::detectHazards(){
   for(int i=WRITEBACK_STEP+1; i<=std::max(EXECUTE_STEP, MEMORY_STEP); i++){
     fpu_pipeline.at(i).stalledByCtrl = 0;
 
-    if (fpu_pipeline.at(i).isEmpty() || fpu_pipeline.at(i).addrTo == 999 ){continue;}
-
-    if(i != EXECUTE_STEP && i != MEMORY_STEP){continue;}//no need to stall if nothing is done at the step
+    if (fpu_pipeline.at(i).isEmpty()){continue;}
 
     //Stall operation if the target register is the same as the one we are writing to
     if (hasSameTarget(fpu_pipeline.at(i), fpu_pipeline.at(WRITEBACK_STEP))){
+      fpu_pipeline.at(i).stalledByCtrl = 1;
+    }
+    
+    if (i < MEMORY_STEP && hasSameTarget(fpu_pipeline.at(MEMORY_STEP), fpu_pipeline.at(i))){
+      fpu_pipeline.at(MEMORY_STEP).stalledByCtrl = 1;
+    }
+    if (i < EXECUTE_STEP && hasSameTarget(fpu_pipeline.at(EXECUTE_STEP), fpu_pipeline.at(i))){
+      fpu_pipeline.at(EXECUTE_STEP).stalledByCtrl = 1;
+    }
+    if (i > MEMORY_STEP && hasSameTarget(fpu_pipeline.at(i), fpu_pipeline.at(MEMORY_STEP))){
+      fpu_pipeline.at(i).stalledByCtrl = 1;
+    }
+    if (i > EXECUTE_STEP && hasSameTarget(fpu_pipeline.at(i), fpu_pipeline.at(EXECUTE_STEP))){
       fpu_pipeline.at(i).stalledByCtrl = 1;
     }
   }
@@ -110,7 +142,7 @@ void Controller::detectHazards(){
 }
 
 #ifdef FORWARDING
-void Controller::resolveForwards(){ //Currently only resolves memory operations that have not done a mem-request due to the stall.
+void Controller::resolveForwards(){
   for (int i = WRITEBACK_STEP; i < fpu_pipeline.getNumStages(); i++){
     if (fpu_pipeline.at(i).stalledByCtrl){
         FpuPipeObj& op = fpu_pipeline.at(i);
@@ -119,6 +151,22 @@ void Controller::resolveForwards(){ //Currently only resolves memory operations 
             op.data = fpu_pipeline.fw_data;
             op.stalledByCtrl = 0;
             addMemoryRequest(op);
+            fpu_pipeline.fw_addr = 0xbeefcafe; //Reset
+            fpu_pipeline.fw_data = 0xBABECAFE; //reset
+            return;
+          }
+          else if (!op.fromXReg && !op.fromMem) {
+            for (unsigned int addrFrom : op.addrFrom){
+              if (addrFrom == fpu_pipeline.fw_addr){
+                op.fw_data = fpu_pipeline.fw_data;
+                op.fw_addr = fpu_pipeline.fw_addr;
+                op.stalledByCtrl = 0;
+                op.useFwData = 1;
+                fpu_pipeline.fw_addr = 0xcafecafe; //Reset
+                fpu_pipeline.fw_data = 0xBABECAFE; //res4636et
+                return;
+              }
+            }
           }
         #endif
         #ifdef CTRL_WAR
@@ -135,6 +183,9 @@ void Controller::resolveForwards(){ //Currently only resolves memory operations 
             op.data = fpu_pipeline.fw_data;
             op.stalledByCtrl = 0;
             addMemoryRequest(op);
+            fpu_pipeline.fw_addr = 0xcafecafe; //Reset
+            fpu_pipeline.fw_data = 0xBABECAFE; //reset
+            return;
           }
         #endif
         #ifdef CTRL_WAR

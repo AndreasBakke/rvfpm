@@ -133,12 +133,7 @@ void FpuPipeline::advanceStages(){
 void FpuPipeline::executeStep(){
   FpuPipeObj& exOp = pipeline.at(EXECUTE_STEP);
   if(!execute_done) { //If we are not done executing the op in execute step. Flag reset by stallCheck() if we advance
-    #ifndef FORWARDING
-      if(exOp.stalledByCtrl){mem_done = false; return;}
-    #else
-      exOp.fw_data = fw_data;
-      exOp.fw_addr = fw_addr;
-    #endif
+    if(exOp.stalledByCtrl){execute_done = false; return;}
     bool speculative = false;
     bool more_cycles_rem = false;
     if(exOp.speculative){
@@ -150,8 +145,10 @@ void FpuPipeline::executeStep(){
     else if(!(exOp.toMem || exOp.fromMem) && !exOp.isEmpty()) { //If we reach this point, we can assume that this operation has not been executed yet (or have been decremented enugh).
       executeOp(pipeline.at(EXECUTE_STEP), registerFilePtr);
       #ifdef FORWARDING
-        fw_data = exOp.data;
-        fw_addr = exOp.addrTo;
+        if (!exOp.toXReg && !exOp.toMem){
+          fw_data = exOp.data;
+          fw_addr = exOp.addrTo;
+        }
       #endif
     }
     execute_done = !speculative  && !more_cycles_rem;
@@ -167,7 +164,6 @@ void FpuPipeline::memoryStep(){
   } else if ((memOp.fromMem || memOp.toMem)){
     if(memOp.speculative){mem_done=false;return;}
     //Add op to queue if its not been added yet
-    if (memOp.speculative){mem_done = false;return;}
     if(!memOp.added_to_mem_queue){
       x_mem_req_t mem_req_s = {};
     mem_req_s.id = memOp.id;

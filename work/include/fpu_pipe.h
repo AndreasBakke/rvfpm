@@ -37,8 +37,9 @@ struct FpuPipeObj {
   uint32_t mem_result = 0;
   bool stalledByCtrl = 0;
   #ifdef FORWARDING
-    FPNumber fw_data;
-    unsigned int fw_addr;
+    FPNumber fw_data = 0xfeebfeeb;
+    unsigned int fw_addr = 0xbeefbeef;
+    bool useFwData = 0;
   #endif
 
 

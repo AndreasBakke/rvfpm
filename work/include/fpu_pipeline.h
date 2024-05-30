@@ -53,7 +53,7 @@ class FpuPipeline {
     bool isEmpty();
     #ifdef FORWARDING
       FPNumber fw_data; //Forwarded data
-      unsigned int fw_addr; //Address of forwarded data.
+      unsigned int fw_addr = 0xcafecafe; //Address of forwarded data.
     #endif
 
     //Issue/Commit interface
