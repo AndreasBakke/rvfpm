@@ -7,8 +7,9 @@ Compiled, tested and verified on x86_64 using GCC 12.0.0. Ibex verification done
 |---|---|---|
 |"F"|Implemented. 100% compliance using Berkeley TestFloat| Default extension.|
 |"RV64F"| Implemented. 100% compliance using Berkeley TestFloat. Not tested functionally. | Enable by setting RV64 in config. |
-|"Zfinx"| Implemented. | Verified functionally using Ibex. |
-|"D" |Implemented. Verification in progress.| Branch "EXTD"|
+|"Zfinx"| Implemented. | Verified functionally using Ibex. RV64 also implemented, but not verified. |
+|"D" |Implemented. Verification in progress.| Branch "RV32D"|
+|"D" |Implemented. Verification in progress.| Branch "RV32D"|
 |"Q" |In progress.| Branch "precisions"|
 |"Zfh", "Zfhmin"| In progress.| Branch "precisions"|
 |"Zfa"|Not started.||
