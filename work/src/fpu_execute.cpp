@@ -352,7 +352,7 @@ void execute_RTYPE(FpuPipeObj& op, FpuRf* registerFile){
             op.data = static_cast<uint64_t>(nearbyint((double)data1));
           }
         } else { //FCVT.LU.S
-          if (std::isnan((float)data1) && !( (data1.getMantissa() && 0x00400000)) {  // Check for sNaN
+          if (std::isnan((float)data1) && !(data1.getMantissa() && 0x00400000)) {  // Check for sNaN
             op.data = 0xFFFFFFFFFFFFFFFF;
             op.flags |= 0b00001;
           } else if (nearbyintf(data1) < 0.0f || (float)data1 > UINT64_MAX) {  // Check for out-of-range values
