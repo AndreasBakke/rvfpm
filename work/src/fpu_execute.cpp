@@ -57,8 +57,9 @@ void executeOp(FpuPipeObj& op, FpuRf* registerFile) {
 void execute_R4TYPE(FpuPipeObj& op, FpuRf* registerFile){
   std::feclearexcept(FE_ALL_EXCEPT); //Clear all flags
   RTYPE dec_instr = {.instr = op.instr};
+  RISCV_FMT fmt = dec_instr.parts_r4type.fmt;
   //Get data from registerFile or from forwarded data if forwarded
-  FPNumber data1, data2, data3;
+  FPNumber data1(fmt), data2(fmt), data3(fmt);
   #ifdef ZFINX
     data1 = op.operand_a;
     data2 = op.operand_b;
@@ -69,51 +70,62 @@ void execute_R4TYPE(FpuPipeObj& op, FpuRf* registerFile){
     data3 = registerFile->read(op.addrFrom[2]);
   #endif
   #ifdef FORWARDING
-    if(op.stalledByCtrl){
+    if(op.useFwData){
       data1 = op.addrFrom[0] == op.fw_addr ? op.fw_data : data1;
       data2 = op.addrFrom[1] == op.fw_addr ? op.fw_data : data2;
       data3 = op.addrFrom[2] == op.fw_addr ? op.fw_data : data3;
     }
   #endif
 
-  //Compute result -- will be added to pipeline
+  //Switch signs to match relevant op.
   switch (dec_instr.parts_r4type.opcode)
   {
-  case FMADD_S:
+  case FMADD:
   {
-    op.data.f = fmaf(data1.f, data2.f, data3.f);
-    if((data1.f == INFINITY && data2.f == 0) || (data1.f == 0 && data2.f == INFINITY) || (data1.f == -INFINITY && data2.f == 0) || (data1.f == 0 && data2.f == -INFINITY)) {
-      std::feraiseexcept(FE_INVALID); //raise invalid
-    }
     break;
   }
-  case FMSUB_S:
+  case FMSUB:
   {
-    op.data.f = fmaf(data1.f, data2.f, -data3.f);
-    if((data1.f == INFINITY && data2.f == 0) || (data1.f == 0 && data2.f == INFINITY) || (data1.f == -INFINITY && data2.f == 0) || (data1.f == 0 && data2.f == -INFINITY)) { //Required by RISC-V ISA, but not IEEE 754
-      std::feraiseexcept(FE_INVALID); //raise invalid
-    }
+    data3 = -data3;
     break;
   }
-  case FNMSUB_S:
+  case FNMSUB:
   {
-    op.data.f = fmaf(data1.f, -data2.f, data3.f); //Counterintuitively named wrt FMADD/FMSUB
-    if((data1.f == INFINITY && data2.f == 0) || (data1.f == 0 && data2.f == INFINITY) || (data1.f == -INFINITY && data2.f == 0) || (data1.f == 0 && data2.f == -INFINITY)) { //Required by RISC-V ISA, but not IEEE 754
-      std::feraiseexcept(FE_INVALID); //raise invalid
-    }
+    data2 = -data2;
     break;
   }
-  case FNMADD_S:
+  case FNMADD:
   {
-    op.data.f = fmaf(data1.f, -data2.f, -data3.f);
-    if((data1.f == INFINITY && data2.f == 0) || (data1.f == 0 && data2.f == INFINITY) || (data1.f == -INFINITY && data2.f == 0) || (data1.f == 0 && data2.f == -INFINITY)) { //Required by RISC-V ISA, but not IEEE 754
-      std::feraiseexcept(FE_INVALID); //raise invalid
-    }
+    data2 = -data2;
+    data3 = -data3;
     break;
   }
   default:
+  {
     std::feraiseexcept(FE_INVALID); //Invalid operation
     break;
+  }
+  }
+
+  //Execute
+  switch (dec_instr.parts_r4type.fmt)
+  {
+  case S:
+  {
+    op.data = fmaf(data1, data2, data3);
+    if(((float)data1 == INFINITY && (float)data2 == 0) || ((float)data1 == 0 && (float)data2 == INFINITY) || ((float)data1 == -INFINITY && (float)data2 == 0) || ((float)data1 == 0 && (float)data2 == -INFINITY)) { //Required by RISC-V ISA, but not IEEE 754
+      std::feraiseexcept(FE_INVALID); //raise invalid
+    }
+    break;
+  }
+  case D:
+  {
+    op.data = fma(data1, data2, data3);
+    if(((double)data1 == INFINITY && (double)data2 == 0) || ((double)data1 == 0 && (double)data2 == INFINITY) || ((double)data1 == -INFINITY && (double)data2 == 0) || ((double)data1 == 0 && (double)data2 == -INFINITY)) { //Required by RISC-V ISA, but not IEEE 754
+      std::feraiseexcept(FE_INVALID); //raise invalid
+    }
+    break;
+  }
   }
   op.flags |= getFlags(); //Get flags and add to result.
 };
@@ -123,8 +135,9 @@ void execute_R4TYPE(FpuPipeObj& op, FpuRf* registerFile){
 void execute_RTYPE(FpuPipeObj& op, FpuRf* registerFile){
   std::feclearexcept(FE_ALL_EXCEPT); //Clear all flags
   RTYPE dec_instr = {.instr = op.instr}; //"Decode" into RTYPE
-
-  FPNumber data1, data2;
+  RISCV_FMT fmt = dec_instr.parts.fmt;
+  FPNumber data1(fmt), data2(fmt);
+  op.data = FPNumber(fmt);
   #ifdef ZFINX
     data1 = op.operand_a;
     data2 = op.operand_b;
@@ -133,57 +146,61 @@ void execute_RTYPE(FpuPipeObj& op, FpuRf* registerFile){
     data2 = registerFile->read(op.addrFrom[1]);
   #endif
   #ifdef FORWARDING
-    if(op.stalledByCtrl){
-      data1 = op.addrFrom[0] == op.fw_addr ? op.fw_data : data1;
-      data2 = op.addrFrom[1] == op.fw_addr ? op.fw_data : data2;
+    if(op.useFwData){
+      data1 = op.addrFrom[0] == op.fw_addr ?  op.fw_data : data1;
+      data2 = op.addrFrom[1] == op.fw_addr ?  op.fw_data : data2;
     }
   #endif
+
   switch (dec_instr.parts.funct5)
   {
   case FADD:
   {
-    op.data.f = data1.f + data2.f;
+    op.data = data1 + data2;
     break;
   }
   case FSUB:
   {
-    op.data.f = data1.f - data2.f;
+    op.data = data1 - data2;
     break;
   }
   case FMUL:
   {
-    op.data.f = data1.f * data2.f;
+    op.data = data1 * data2;
     break;
   }
   case FDIV:
   {
-    op.data.f = data1.f / data2.f;
+    op.data = data1 / data2;
     break;
   }
   case FSQRT:
   {
-    op.data.f = sqrt(data1.f);
+    if (fmt == D) {
+      op.data = sqrt(data1);
+    } else {
+      op.data = sqrtf(data1);
+    }
     break;
   }
   case FSGNJ:
   {
-    op.data.parts.exponent = data1.parts.exponent;
-    op.data.parts.mantissa = data1.parts.mantissa;
+    op.data = data1;
     switch (dec_instr.parts.funct3)
     {
     case 0b000: //FSGNJ.S
     {
-      op.data.parts.sign = data2.parts.sign;
+      op.data.setSign(data2.getSign());
       break;
     }
     case 0b001: //FSGNJN.S
     {
-      op.data.parts.sign = !data2.parts.sign;
+      op.data.setSign(!data2.getSign());
       break;
     }
     case 0b010: //FSGNJX.S
     {
-      op.data.parts.sign = data2.parts.sign ^ data1.parts.sign;
+      op.data.setSign(data2.getSign() ^ data1.getSign());
       break;
     }
     default:
@@ -201,21 +218,32 @@ void execute_RTYPE(FpuPipeObj& op, FpuRf* registerFile){
     {
     case 0b000: //FMIN
     {
-      op.data.f = std::fmin(data1.f, data2.f);
-      //Fmin is not sensitive to 0 sign
-      if (data1.f == 0 && data2.f == 0)
+      if (fmt == D) {
+        op.data = std::fmin((double)data1, (double)data2);
+      } else {
+        op.data = std::fminf((float)data1, (float)data2);
+      }
+
+      if (data1 == 0 && data2 == 0) //Fmin is not sensitive to 0 sign
       {
-        op.data.f = data1.parts.sign ? data1.f : data2.f;
+        op.data = data1.getSign() ? data1 : data2;
       }
       break;
     }
     case 0b001: //FMAX
     {
-      op.data.f = std::fmax(data1.f, data2.f);
-      //Fmax is not sensitive to 0 sign
-      if (data1.f == 0 && data2.f == 0)
-      {
-        op.data.f = data1.parts.sign ? data2.f : data1.f;
+      if (fmt == D) {
+        op.data = std::fmax((double)data1, (double)data2);
+        if (data1 == 0.0 && data2 == 0.0)//Fmax is not sensitive to 0 sign
+        {
+          op.data = data1.getSign() ? data2 : data1;
+        }
+      } else {
+        op.data = std::fmaxf((float)data1, (float)data2);
+        if (data1 == 0.0f && data2 == 0.0f)//Fmax is not sensitive to 0 sign
+        {
+          op.data = data1.getSign() ? data2 : data1;
+        }
       }
       break;
     }
@@ -234,22 +262,22 @@ void execute_RTYPE(FpuPipeObj& op, FpuRf* registerFile){
     {
     case 0b010: //FEQ.S
     {
-      data1.f == data2.f ? op.data.u = 1 : op.data.u = 0;
+      data1 == data2 ? op.data = (unsigned int) 1 : op.data = (unsigned int) 0;
       break;
     }
     case 0b001: //FLT.s
     {
-      data1.f < data2.f ? op.data.u = 1 : op.data.u = 0;
+      data1 < data2 ? op.data = (unsigned int) 1 : op.data = (unsigned int) 0;
       break;
     }
     case 0b000: //FLE.S
     {
-      data1.f <= data2.f ? op.data.u = 1 : op.data.u = 0;
+      data1 <= data2 ? op.data = (unsigned int) 1 : op.data = (unsigned int) 0;
       break;
     }
     default:
     {
-      op.data.u = 0;
+      op.data = (unsigned int) 0;
       std::feraiseexcept(FE_INVALID); //raise invalid
       break;
     }
@@ -261,49 +289,89 @@ void execute_RTYPE(FpuPipeObj& op, FpuRf* registerFile){
     setRoundingMode(dec_instr.parts.funct3); //Fcvt always uses RM for rounding mode
     switch (dec_instr.parts.rs2)
     {
-    case 0b00000: //FCVT.W.S
+    case 0b00000:
     {
-      op.data.s= static_cast<int32_t>(nearbyint(data1.f)); //Use nearbyint instead of round, round does not follow rounding mode set in cfenv
-      break;
-    }
-    case 0b00001: //FCVT.WU.S
-    {
-      if (std::isnan(data1.f) && !(data1.parts.mantissa & 0x00400000)) {  // Check for sNaN
-        op.data.u = 0xFFFFFFFF;
-        op.flags |= 0b00001;
-      } else if (nearbyint(data1.f) < 0.0f || nearbyint(data1.f) > UINT32_MAX) {  // Check for out-of-range values
-        op.data.u = 0xFFFFFFFF;
-        op.flags |= 0b00001;
-      } else {
-        // Convert if within range
-        op.data.u = static_cast<unsigned int>(nearbyint(data1.f));
+      if (fmt == D) { //FCVT.W.D
+        op.data = static_cast<int32_t>(nearbyint(data1)); //Use nearbyint instead of round, round does not follow rounding mode set in cfenv
+      } else { //FCVT.W.S
+        op.data = static_cast<int32_t>(nearbyintf(data1)); //Use nearbyint instead of round, round does not follow rounding mode set in cfenv
       }
       break;
     }
-    case 0b00010: //FCVT.L.S //64 bit conversion (only if XLEN = 64)
+    case 0b00001:
     {
-      op.data.s_64 = static_cast<int64_t>(nearbyintl(data1.f));
-      break;
-    }
-    case 0b00011: //FCVT.LU.S
-    {
-      if (std::isnan(data1.f) && !(data1.parts.mantissa & 0x00400000)) {  // Check for sNaN
-        op.data.u_64 = 0xFFFFFFFFFFFFFFFF;
-        op.flags |= 0b00001;
-      } else if (nearbyintl(data1.f) < 0.0f || data1.f > UINT64_MAX) {  // Check for out-of-range values
-        op.data.u_64 = 0xFFFFFFFFFFFFFFFF;
-        op.flags |= 0b00001;
-      } else if(!std::isfinite(data1.f)){
-        op.data.u_64 = 0xFFFFFFFFFFFFFFFF;
-        op.flags |= 0b00001;
+      if (fmt == D) { //FCVT.WU.D
+        if (nearbyint(data1) < 0.0f || nearbyint(data1) > UINT32_MAX) {  // Check for out-of-range values
+          op.data = (unsigned int) 0xFFFFFFFF;
+          op.flags |= 0b00001;
+        } else { //FCVT.WU.S
+          // Convert if within range
+          op.data = static_cast<unsigned int>(nearbyint(data1));
+        }
       } else {
-        op.data.u_64 = static_cast<uint64_t>(nearbyintl(data1.f));
+        if (std::isnan((float)data1) && !(data1.getMantissa() && 0x00400000)) {  // Check for sNaN
+          op.data =(unsigned int) 0xFFFFFFFF;
+          op.flags |= 0b00001;
+        } else if (nearbyint((float)data1) < 0.0f || nearbyint((float)data1) > UINT32_MAX) {  // Check for out-of-range values
+          op.data =(unsigned int) 0xFFFFFFFF;
+          op.flags |= 0b00001;
+        } else if(!std::isfinite((float)data1)){
+          op.data = 0xFFFFFFFF;
+          op.flags |= 0b00001;
+        } else {
+          // Convert if within range
+          op.data = static_cast<unsigned int>(nearbyint((float)data1));
+        }
       }
+
       break;
     }
+    #ifdef RV64
+      case 0b00010:  //64 bit conversion for RV64F
+      {
+        if(fmt == D){ //FCVT.L.D
+          op.data = static_cast<int64_t>(nearbyint((double)data1));
+        } else { //FCVT.L.S
+          op.data = static_cast<int64_t>(nearbyintf(data1));
+        }
+        break;
+      }
+      case 0b00011:
+      {
+        if (fmt == D){ //FCVT.LU.D
+          if (std::isnan((double)data1) && !( (unsigned long) data1 && 0x0008000000000000)) {  // Check for sNaN
+            op.data = 0xFFFFFFFFFFFFFFFF;
+            op.flags |= 0b00001;
+          } else if (nearbyint((double)data1) < 0.0f || (double)data1 > UINT64_MAX) {  // Check for out-of-range values
+            op.data = 0xFFFFFFFFFFFFFFFF;
+            op.flags |= 0b00001;
+          } else if(!std::isfinite((double)data1)){
+            op.data = 0xFFFFFFFFFFFFFFFF;
+            op.flags |= 0b00001;
+          } else {
+            op.data = static_cast<uint64_t>(nearbyint((double)data1));
+          }
+        } else { //FCVT.LU.S
+          if (std::isnan((float)data1) && !( (data1.getMantissa() && 0x00400000)) {  // Check for sNaN
+            op.data = 0xFFFFFFFFFFFFFFFF;
+            op.flags |= 0b00001;
+          } else if (nearbyintf(data1) < 0.0f || (float)data1 > UINT64_MAX) {  // Check for out-of-range values
+            op.data = 0xFFFFFFFFFFFFFFFF;
+            op.flags |= 0b00001;
+          } else if(!std::isfinite((float)data1)){
+            op.data = 0xFFFFFFFFFFFFFFFF;
+            op.flags |= 0b00001;
+          } else {
+            op.data = static_cast<uint64_t>(nearbyintf(data1));
+          }
+        }
+
+        break;
+      }
+    #endif
     default:
     {
-      op.data.s = 0;
+      op.data = (int) 0;
       std::feraiseexcept(FE_INVALID); //raise invalid
     }
     }
@@ -316,24 +384,42 @@ void execute_RTYPE(FpuPipeObj& op, FpuRf* registerFile){
     {
     case 0b00000: //FCVT.S.W
     {
-      op.data.f = static_cast<float>(op.operand_a.s);
+      if(fmt == D){
+        op.data = static_cast<double>((int)op.operand_a);
+      } else {
+        op.data = static_cast<float>((int)op.operand_a);
+      }
       break;
     }
     case 0b00001: //FCVT.S.WU
     {
-      op.data.f = static_cast<float>(op.operand_a.u);
+      if(fmt == D){
+        op.data = static_cast<double>((unsigned int)op.operand_a);
+      } else {
+        op.data = static_cast<float>((unsigned int)op.operand_a);
+      }
       break;
     }
-    case 0b00010: //FCVT.S.L
-    {
-      op.data.f = static_cast<float>(op.operand_a.s_64);
-      break;
-    }
-    case 0b00011: //FCVT.S.LU
-    {
-      op.data.f = static_cast<float>(op.operand_a.u_64);
-      break;
-    }
+    #ifdef RV64
+      case 0b00010: //FCVT.S.L
+      {
+        if(fmt == D){
+          op.data = static_cast<double>((long)op.operand_a);
+        } else {
+          op.data = static_cast<float>((long)op.operand_a);
+        }
+        break;
+      }
+      case 0b00011: //FCVT.S.LU
+      {
+        if(fmt == D){
+          op.data = static_cast<double>((unsigned long)op.operand_a);
+        } else {
+          op.data = static_cast<float>((unsigned long)op.operand_a);
+        }
+        break;
+      }
+    #endif
     default:
       std::feraiseexcept(FE_INVALID); //raise invalid
       break;
@@ -346,54 +432,58 @@ void execute_RTYPE(FpuPipeObj& op, FpuRf* registerFile){
     {
     case 0b000: //FMV_X_W
     {
-      op.data.s = data1.bitpattern;
+      op.data = data1;
       break;
     }
     case 0b001: //FCLASS.S
     {
-      if(isSubnormal(data1))
+      float class_data = data1;
+      if (fmt == D) {
+        double class_data  = data1;
+      }
+      if(isSubnormal(class_data))
       {
         //subnormal number
-        if (data1.f < 0)
+        if (class_data < 0)
         {
-          op.data.bitpattern = 0b0000000100;
-        } else if (data1.f > 0)
+          op.data = 0b0000000100;
+        } else if (class_data > 0)
         {
-          op.data.bitpattern = 0b0000100000;
+          op.data = 0b0000100000;
         } else {
           std::feraiseexcept(FE_INVALID); //raise invalid
         }
       } else
       {
         //normal numbers
-        if (data1.f == -INFINITY) //negative inf.
+        if (class_data == -INFINITY) //negative inf.
         {
-          op.data.bitpattern = 0b0000000001;
-        } else if (data1.f < 0) //negative normal number
+          op.data = 0b0000000001;
+        } else if (class_data < 0) //negative normal number
         {
-          op.data.bitpattern = 0b0000000010;
-        } else if (data1.f == 0 && data1.parts.sign == 1) //negative zero
+          op.data = 0b0000000010;
+        } else if (class_data == 0 && std::signbit(class_data) == 1) //negative zero
         {
-          op.data.bitpattern = 0b0000001000;
-        } else if (data1.f == 0 && data1.parts.sign == 0) //positive 0
+          op.data = 0b0000001000;
+        } else if (class_data == 0) //positive 0
         {
-          op.data.bitpattern = 0b0000010000;
+          op.data = 0b0000010000;
 
-        } else if (data1.f == INFINITY) //positive inf
+        } else if (class_data == INFINITY) //positive inf
         {
-          op.data.bitpattern = 0b0010000000;
-        } else if (std::isnan(data1.f) && !(data1.bitpattern & 0x00400000)) //If leading mantissa-bit is not set -> sNaN
+          op.data = 0b0010000000;
+        } else if (std::isnan(class_data) && !((unsigned int) data1 & 0x00400000)) //If leading mantissa-bit is not set -> sNaN
         {
-          op.data.bitpattern = 0b0100000000; //SNaN
-        } else if (std::isnan(data1.f))
+          op.data = 0b0100000000; //SNaN
+        } else if (std::isnan(class_data))
         {
-          op.data.bitpattern = 0b1000000000; //QNaN
-        } else if (data1.f > 0) //positive normal number
+          op.data = 0b1000000000; //QNaN
+        } else if (class_data > 0) //positive normal number
         {
-          op.data.bitpattern = 0b0001000000;
+          op.data = 0b0001000000;
         } else {
-          op.data.bitpattern = 0b0000000000;
-          std::feraiseexcept(FE_INVALID); //raise invalid
+          op.data = 0b0000000000;
+          std::feraiseexcept(FE_INVALID); //raise inva class_data.getSign() == 0lid
         };
       }
       break;
@@ -407,7 +497,7 @@ void execute_RTYPE(FpuPipeObj& op, FpuRf* registerFile){
   case FMV_W_X:
   {
     //Moves bitpattern from X to W(F)
-    op.data.bitpattern =  op.operand_a.bitpattern;
+    op.data =  op.operand_a;
     break;
   }
   default:
@@ -426,7 +516,7 @@ void execute_STYPE(FpuPipeObj& op, FpuRf* registerFile){
       op.data = registerFile->read(op.addrFrom.front());
     }
   #ifdef FORWARDING
-    if(op.stalledByCtrl){
+    if(op.useFwData){
       op.data = op.addrFrom[0] == op.fw_addr ? op.fw_data : op.data;
     }
   #endif
@@ -445,24 +535,24 @@ void execute_CSRTYPE(FpuPipeObj& op, FpuRf* registerFile){
         {
           //Swap fflags with rs1
           unsigned int flags = registerFile->getFlags();
-          op.data.u = flags;
-          registerFile->setFlags(op.operand_a.u);
+          op.data = flags;
+          registerFile->setFlags(op.operand_a);
           break;
         }
         case(0x002): //frm
         {
           //Swap frm with rs1
           unsigned int rm = registerFile->readfrm();
-          op.data.u = rm;
-          registerFile->setfrm(op.operand_a.u);
+          op.data = rm;
+          registerFile->setfrm(op.operand_a);
           break;
         }
         case(0x003): //fcsr
         {
           //Swap fcsr with rs1
           unsigned int data = registerFile->read_fcsr().v;
-          op.data.u = data;
-          registerFile->write_fcsr(op.operand_a.u);
+          op.data = data;
+          registerFile->write_fcsr(op.operand_a);
           break;
         }
         default:
@@ -482,21 +572,21 @@ void execute_CSRTYPE(FpuPipeObj& op, FpuRf* registerFile){
         {
           //read fflags
           unsigned int flags = registerFile->getFlags();
-          op.data.u = flags;
+          op.data = flags;
           break;
         }
         case(0x002):
         {
           //read frm
           unsigned int rm = registerFile->readfrm();
-          op.data.u = rm;
+          op.data = rm;
           break;
         }
         case(0x003):
         {
           //read fcsr
           unsigned int data = registerFile->read_fcsr().v;
-          op.data.u = data;
+          op.data = data;
           break;
         }
       }
@@ -560,8 +650,12 @@ void setRoundingMode(unsigned int rm){ //Sets c++ rounding mode. FCSR is written
 
 //Helper function
 bool isSubnormal(FPNumber num) {
-  return num.parts.exponent == 0 && num.parts.mantissa != 0;
+  return num.getExponent() == 0 && num.getMantissa() != 0;
 }
+
+// bool isSubnormal(double num) {
+//   return 0;//num.parts.exponent == 0 && num.parts.mantissa != 0;
+// }
 
 // void test_isSubormal
 

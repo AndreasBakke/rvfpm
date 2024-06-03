@@ -37,7 +37,7 @@ class FPU {
     //Memory interface
     void pollMemoryRequest(bool& mem_valid, x_mem_req_t& mem_req);
     void resetMemoryRequest(unsigned int id);
-    void writeMemoryResult(unsigned int id, uint32_t rdata, bool err, bool dbg);
+    void writeMemoryResult(unsigned int id, loadType rdata, bool err, bool dbg);
     void writeMemoryResponse(bool mem_ready, bool exc, unsigned int exccode, bool dbg);
     void memoryStep();
 
@@ -48,7 +48,7 @@ class FPU {
 
     //Backdoor functions
     FpuPipeObj testFloatOp();
-    void bd_load(uint32_t instruction, unsigned int dataFromMem);
+    void bd_load(uint32_t instruction, loadType dataFromMem);
     FPNumber bd_getData(uint32_t addr);
     void bd_setRoundingMode(unsigned int rm);
     void bd_setFcsr(uint32_t data);

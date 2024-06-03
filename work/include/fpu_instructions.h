@@ -15,12 +15,18 @@ enum {
 enum  {
   FLW       = 7,
   FSW       = 39,
-  FMADD_S   = 67,
-  FMSUB_S   = 71,
-  FNMSUB_S  = 75,
-  FNMADD_S  = 79,
+  FMADD     = 67,
+  FMSUB     = 71,
+  FNMSUB    = 75,
+  FNMADD    = 79,
   OP_FP     = 83,
   CSR       = 115
+};
+enum RISCV_FMT {
+  S = 0b00,
+  D = 0b01,
+  H = 0b10,
+  Q = 0b11
 };
 
 //Typedef for extracting fields of different instructions
@@ -32,7 +38,7 @@ typedef union {
     unsigned int funct3 : 3;
     unsigned int rs1    : 5;
     unsigned int rs2    : 5;
-    unsigned int fmt    : 2;
+    RISCV_FMT fmt    : 2;
     unsigned int funct5 : 5;
   } parts;
   struct {
@@ -41,7 +47,7 @@ typedef union {
     unsigned int funct3 : 3;
     unsigned int rs1    : 5;
     unsigned int rs2    : 5;
-    unsigned int fmt    : 2;
+    RISCV_FMT fmt    : 2;
     unsigned int rs3    : 5;
   } parts_r4type;
 } RTYPE;
@@ -97,9 +103,3 @@ enum RTYPE_funct5 {
   FMV_W_X           = 30
 };
 
-enum RISCV_FMT {
-  S = 0b00,
-  D = 0b01,
-  H = 0b10,
-  Q = 0b11
-};

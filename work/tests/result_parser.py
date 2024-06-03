@@ -14,14 +14,16 @@ architecture = ""
 total_errors = 0
 
 def get_results(arch):
-  for test_dir in os.listdir("./tests/" + arch):
-    results[test_dir] = {}
-    for file in os.listdir("./tests/" + arch + "/" + test_dir + "/"):
-      file_path = os.path.join("./tests/", arch, test_dir, file)
-      try:
-        results[test_dir][file[:-4]] = extract_errors(file_path)
-      except Exception as e:
-        print(f"Error reading {file_path}: {e}")
+  for fmt in os.listdir("./tests/" + arch):
+    results[fmt] = {}
+    for test_dir in os.listdir("./tests/" + arch + "/" + fmt + "/"):
+      results[fmt][test_dir] = {}
+      for file in os.listdir("./tests/" + arch + "/" + fmt + "/" + test_dir + "/"):
+        file_path = os.path.join("./tests/", arch, fmt, test_dir, file)
+        try:
+          results[fmt][test_dir][file[:-4]] = extract_errors(file_path)
+        except Exception as e:
+          print(f"Error reading {file_path}: {e}")
   summarize_tests(results)
 
 def extract_errors(path):
@@ -44,16 +46,18 @@ def summarize_tests(results):
   failed_tests = {}
   total_tests_performed = 0
   total_tests_failed = 0
-  for rm in results:
-    failed_tests[rm] = {}
-    for test in results[rm]:
-      total_tests_performed += int(results[rm][test]["tests_performed"])
-      if results[rm][test]["errors"] != 0:
-        instructions_failed +=1
-        failed_tests[rm][test] = results[rm][test]
-        total_tests_failed += int(results[rm][test]["errors"])
-      else:
-        instructions_passed +=1
+  for fmt in results:
+    failed_tests[fmt] = {}
+    for rm in results[fmt]:
+      failed_tests[fmt][rm] = {}
+      for test in results[fmt][rm]:
+        total_tests_performed += int(results[fmt][rm][test]["tests_performed"])
+        if results[fmt][rm][test]["errors"] != 0:
+          instructions_failed +=1
+          failed_tests[fmt][rm][test] = results[fmt][rm][test]
+          total_tests_failed += int(results[fmt][rm][test]["errors"])
+        else:
+          instructions_passed +=1
   writeSummary(results, total_tests_performed, total_tests_failed)
   print("\n\n########################################")
   print("############ TEST COMPLETED ############")
@@ -62,14 +66,17 @@ def summarize_tests(results):
   print(f"TESTS FAILED: {total_tests_failed:,}\n\n")
 
 
-  print(f"A total of {total_tests_performed:,} tests for {instructions_failed + instructions_passed} total instructions using {len(results)} rounding modes was performed.")
+  print(f"A total of {total_tests_performed:,} tests for {instructions_failed + instructions_passed} total instructions using {len(results)} precisions and {len(results['S'])} rounding modes was performed.")
   print(f"{total_tests_failed:,} tests failed.\n")
   if (total_tests_failed != 0):
     print(f"The following instructions failed:")
-    for rm in failed_tests:
-      print(f"  {rm}")
-      for test in failed_tests[rm]:
-        print(f"     {test}: Tests performed = {int(failed_tests[rm][test]['tests_performed']):,}, tests failed = {int(failed_tests[rm][test]['errors']):,}")
+    for fmt in failed_tests:
+      print(f"  Precision: {fmt}")
+
+      for rm in failed_tests[fmt]:
+        print(f"    {rm}")
+        for test in failed_tests[fmt][rm]:
+          print(f"       {test}: Tests performed = {int(failed_tests[fmt][rm][test]['tests_performed']):,}, tests failed = {int(failed_tests[fmt][rm][test]['errors']):,}")
 
     print(f"\n For details, refer to summary in tests/summary_{architecture}.txt or the individual tests in: tests/{architecture}/<rounding mode>/<test>.txt\n")
   print("########################################")
@@ -84,24 +91,36 @@ def writeSummary(results, total_tests_performed, total_tests_failed):
     print(f"Failed to create file or header. Error: {e}")
     return
 
-  for rm in results:
+  for fmt in results:
     try:
       with open(file_path, 'a', encoding='utf-8') as file:
-          header = "#### ROUNDING MODE: " + rm + " ####"
+          header = "#### Precision: " + fmt + " ####"
           sep = "#"*len(header)
           file.write(f"\n{sep}\n")
           file.write(header)
           file.write(f"\n{sep}\n")
 
     except Exception as e:
-      print(f"Failed to write rounding mode to file. Error: {e}")
-    for test in results[rm]:
+      print(f"Failed to write format to file. Error: {e}")
+
+    for rm in results[fmt]:
       try:
         with open(file_path, 'a', encoding='utf-8') as file:
-          file.write(f"   {test}: Tests performed = {int(results[rm][test]['tests_performed']):,}, tests failed = {int(results[rm][test]['errors']):,}\n")
+            header = "#### ROUNDING MODE: " + rm + " ####"
+            sep = "   "+"#"*len(header)
+            file.write(f"\n{sep}\n")
+            file.write("   "+header)
+            file.write(f"\n{sep}\n")
 
       except Exception as e:
-        print(f"Failed to write test-result to file. Error: {e}")
+        print(f"Failed to write rounding mode to file. Error: {e}")
+      for test in results[fmt][rm]:
+        try:
+          with open(file_path, 'a', encoding='utf-8') as file:
+            file.write(f"      {test}: Tests performed = {int(results[fmt][rm][test]['tests_performed']):,}, tests failed = {int(results[fmt][rm][test]['errors']):,}\n")
+
+        except Exception as e:
+          print(f"Failed to write test-result to file. Error: {e}")
 
 def writeHeader(file, total_tests_performed, total_tests_failed):
   file.write("#####################################\n")

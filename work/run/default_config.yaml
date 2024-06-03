@@ -5,6 +5,7 @@ fpu:
     # - ZFINX
     # - ZFMin
     # - RV64 #Required for RV64. Also update XLEN and X_RFR/X_RFW to 64
+    # - EXT_D #Update FLEN and Mem width accordingly to 64
 
 xif:
   XLEN: 32          #Width of integer registers. - Set to 64 for RV64
@@ -37,7 +38,7 @@ execute_cycles: #Number of cycles for execution of each instruction
   FDIV: 16
 
 defines: #Will be added as defines
-  - RF_RESET_VALUE 0.0 #Reset value for the register file. NAN used if not specified
+  - RF_RESET_VALUE 0.0f #Reset value for the register file. NAN used if not specified
   - FCSR_RM_RESET_VALUE 0b000 #Rounding mode set on reset. 0 (RNE) used by default
   - queue_fallthrough #Operate queue in fallthrough mode
   # - NO_ROUNDING #Use cpp default rounding mode

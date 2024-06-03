@@ -23,9 +23,9 @@ void FpuRf::resetFpuRf(){
   #endif
   for (auto &reg : registerFile) {
     #ifdef RF_RESET_VALUE
-      reg = {.f = RF_RESET_VALUE}; //Initialize
+      reg = RF_RESET_VALUE; //Initialize
     #else
-      reg = {.f = NAN}; //Initialize to NAN
+      reg = NAN; //Initialize to NAN
     #endif
   }
 };
@@ -117,7 +117,7 @@ std::vector<float> FpuRf::getRf(){
   std::vector<float> v;
   for (int i = 0; i < registerFile.size(); i++)
   {
-    v[i] = registerFile[i].f;
+    v[i] = registerFile[i];
   }
 
   return v;
