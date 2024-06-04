@@ -6,10 +6,10 @@ Compiled, tested and verified on x86_64 using GCC 12.0.0. Ibex verification done
 |Extension|Status| Comment |
 |---|---|---|
 |"F"|Implemented. 100% compliance using Berkeley TestFloat| Default extension.|
-|"RV64F"| Implemented. 100% compliance using Berkeley TestFloat. Not tested functionally. | Enable by setting RV64 in config. |
-|"Zfinx"| Implemented. | Verified functionally using Ibex. RV64 also implemented, but not verified. |
-|"D" |Implemented. Verification in progress.| Branch "RV32D"|
-|"D" |Implemented. Verification in progress.| Branch "RV32D"|
+|"Zfinx"| Implemented. | Verified functionally using Ibex. |
+|"D" |Implemented. 100% compliance using Berkeley TestFloat. Not tested functionally.| Enable by setting EXT_D in config.|
+|"Zdinx" |Implemented. Not verified funtionally.| Enable by setting EXT_D and Zfinx in config.|
+|"RV64F/D"| Implemented. 100% compliance using Berkeley TestFloat. Not tested functionally. | Enable by setting RV64 in config. |
 |"Q" |In progress.| Branch "precisions"|
 |"Zfh", "Zfhmin"| In progress.| Branch "precisions"|
 |"Zfa"|Not started.||
@@ -50,8 +50,8 @@ A summary of tests performed, and errors encountered can be seen below. Refer to
 |Extension|Tests preformed|Errors|
 |---|---|---|
 F | 58,260,633,824 | 0
+D | 295,640,668,058 | 0
 RV64F | 580,448 | 0
-D | 0 | 0
 
 ## Functional verification
 For instructions not available in Berkeley TestFloat, functional verification were done by integrating rvfpm into lowRISCs [Ibex](https://github.com/lowRISC/ibex) in a seperate [Ibex fork](https://github.com/AndreasBakke/rvfpm_ibex_testing).

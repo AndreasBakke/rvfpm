@@ -2,7 +2,7 @@
 ######### TESTFLOAT SUMMARY #########
 #####################################
 
-TESTS PERFORMED: 51,713,376
+TESTS PERFORMED: 353,901,882,330
 TESTS FAILED: 0
 
 #####################################
@@ -16,86 +16,86 @@ TESTS FAILED: 0
    ######################################
    #### ROUNDING MODE: rm-rnear_even ####
    ######################################
-      f64_add: Tests performed = 46,464, tests failed = 0
-      f64_sub: Tests performed = 46,464, tests failed = 0
-      f64_mul: Tests performed = 46,464, tests failed = 0
-      f64_div: Tests performed = 46,464, tests failed = 0
-      f64_sqrt: Tests performed = 768, tests failed = 0
-      f64_eq: Tests performed = 46,464, tests failed = 0
-      f64_lt: Tests performed = 46,464, tests failed = 0
-      f64_le: Tests performed = 46,464, tests failed = 0
-      f64_uitf: Tests performed = 372, tests failed = 0
-      f64_itf: Tests performed = 372, tests failed = 0
-      f64_ftui: Tests performed = 768, tests failed = 0
-      f64_fti: Tests performed = 768, tests failed = 0
-      f64_ui64tf: Tests performed = 756, tests failed = 0
-      f64_i64tf: Tests performed = 756, tests failed = 0
-      f64_ftui64: Tests performed = 768, tests failed = 0
-      f64_fti64: Tests performed = 768, tests failed = 0
-      f64_muladd: Tests performed = 6,133,248, tests failed = 0
+      f64_add: Tests performed = 40,284,288, tests failed = 0
+      f64_sub: Tests performed = 40,284,288, tests failed = 0
+      f64_mul: Tests performed = 40,284,288, tests failed = 0
+      f64_div: Tests performed = 40,284,288, tests failed = 0
+      f64_sqrt: Tests performed = 26,112, tests failed = 0
+      f64_eq: Tests performed = 40,284,288, tests failed = 0
+      f64_lt: Tests performed = 40,284,288, tests failed = 0
+      f64_le: Tests performed = 40,284,288, tests failed = 0
+      f64_uitf: Tests performed = 15,500, tests failed = 0
+      f64_itf: Tests performed = 15,500, tests failed = 0
+      f64_ftui: Tests performed = 26,112, tests failed = 0
+      f64_fti: Tests performed = 26,112, tests failed = 0
+      f64_ui64tf: Tests performed = 63,756, tests failed = 0
+      f64_i64tf: Tests performed = 63,756, tests failed = 0
+      f64_ftui64: Tests performed = 26,112, tests failed = 0
+      f64_fti64: Tests performed = 26,112, tests failed = 0
+      f64_muladd: Tests performed = 73,130,538,879, tests failed = 0
 
    ################################
    #### ROUNDING MODE: rm-rmax ####
    ################################
-      f64_add: Tests performed = 46,464, tests failed = 0
-      f64_sub: Tests performed = 46,464, tests failed = 0
-      f64_mul: Tests performed = 46,464, tests failed = 0
-      f64_div: Tests performed = 46,464, tests failed = 0
-      f64_sqrt: Tests performed = 768, tests failed = 0
-      f64_eq: Tests performed = 46,464, tests failed = 0
-      f64_lt: Tests performed = 46,464, tests failed = 0
-      f64_le: Tests performed = 46,464, tests failed = 0
-      f64_uitf: Tests performed = 372, tests failed = 0
-      f64_itf: Tests performed = 372, tests failed = 0
-      f64_ftui: Tests performed = 768, tests failed = 0
-      f64_fti: Tests performed = 768, tests failed = 0
-      f64_ui64tf: Tests performed = 756, tests failed = 0
-      f64_i64tf: Tests performed = 756, tests failed = 0
-      f64_ftui64: Tests performed = 768, tests failed = 0
-      f64_fti64: Tests performed = 768, tests failed = 0
-      f64_muladd: Tests performed = 6,133,248, tests failed = 0
+      f64_add: Tests performed = 40,284,288, tests failed = 0
+      f64_sub: Tests performed = 40,284,288, tests failed = 0
+      f64_mul: Tests performed = 40,284,288, tests failed = 0
+      f64_div: Tests performed = 40,284,288, tests failed = 0
+      f64_sqrt: Tests performed = 26,112, tests failed = 0
+      f64_eq: Tests performed = 40,284,288, tests failed = 0
+      f64_lt: Tests performed = 40,284,288, tests failed = 0
+      f64_le: Tests performed = 40,284,288, tests failed = 0
+      f64_uitf: Tests performed = 15,500, tests failed = 0
+      f64_itf: Tests performed = 15,500, tests failed = 0
+      f64_ftui: Tests performed = 26,112, tests failed = 0
+      f64_fti: Tests performed = 26,112, tests failed = 0
+      f64_ui64tf: Tests performed = 63,756, tests failed = 0
+      f64_i64tf: Tests performed = 63,756, tests failed = 0
+      f64_ftui64: Tests performed = 26,112, tests failed = 0
+      f64_fti64: Tests performed = 26,112, tests failed = 0
+      f64_muladd: Tests performed = 74,738,898,984, tests failed = 0
 
    ################################
    #### ROUNDING MODE: rm-rmin ####
    ################################
-      f64_add: Tests performed = 46,464, tests failed = 0
-      f64_sub: Tests performed = 46,464, tests failed = 0
-      f64_mul: Tests performed = 46,464, tests failed = 0
-      f64_div: Tests performed = 46,464, tests failed = 0
-      f64_sqrt: Tests performed = 768, tests failed = 0
-      f64_eq: Tests performed = 46,464, tests failed = 0
-      f64_lt: Tests performed = 46,464, tests failed = 0
-      f64_le: Tests performed = 46,464, tests failed = 0
-      f64_uitf: Tests performed = 372, tests failed = 0
-      f64_itf: Tests performed = 372, tests failed = 0
-      f64_ftui: Tests performed = 768, tests failed = 0
-      f64_fti: Tests performed = 768, tests failed = 0
-      f64_ui64tf: Tests performed = 756, tests failed = 0
-      f64_i64tf: Tests performed = 756, tests failed = 0
-      f64_ftui64: Tests performed = 768, tests failed = 0
-      f64_fti64: Tests performed = 768, tests failed = 0
-      f64_muladd: Tests performed = 6,133,248, tests failed = 0
+      f64_add: Tests performed = 40,284,288, tests failed = 0
+      f64_sub: Tests performed = 40,284,288, tests failed = 0
+      f64_mul: Tests performed = 40,284,288, tests failed = 0
+      f64_div: Tests performed = 40,284,288, tests failed = 0
+      f64_sqrt: Tests performed = 26,112, tests failed = 0
+      f64_eq: Tests performed = 40,284,288, tests failed = 0
+      f64_lt: Tests performed = 40,284,288, tests failed = 0
+      f64_le: Tests performed = 40,284,288, tests failed = 0
+      f64_uitf: Tests performed = 15,500, tests failed = 0
+      f64_itf: Tests performed = 15,500, tests failed = 0
+      f64_ftui: Tests performed = 26,112, tests failed = 0
+      f64_fti: Tests performed = 26,112, tests failed = 0
+      f64_ui64tf: Tests performed = 63,756, tests failed = 0
+      f64_i64tf: Tests performed = 63,756, tests failed = 0
+      f64_ftui64: Tests performed = 26,112, tests failed = 0
+      f64_fti64: Tests performed = 26,112, tests failed = 0
+      f64_muladd: Tests performed = 73,041,753,731, tests failed = 0
 
    ###################################
    #### ROUNDING MODE: rm-rminMag ####
    ###################################
-      f64_add: Tests performed = 46,464, tests failed = 0
-      f64_sub: Tests performed = 46,464, tests failed = 0
-      f64_mul: Tests performed = 46,464, tests failed = 0
-      f64_div: Tests performed = 46,464, tests failed = 0
-      f64_sqrt: Tests performed = 768, tests failed = 0
-      f64_eq: Tests performed = 46,464, tests failed = 0
-      f64_lt: Tests performed = 46,464, tests failed = 0
-      f64_le: Tests performed = 46,464, tests failed = 0
-      f64_uitf: Tests performed = 372, tests failed = 0
-      f64_itf: Tests performed = 372, tests failed = 0
-      f64_ftui: Tests performed = 768, tests failed = 0
-      f64_fti: Tests performed = 768, tests failed = 0
-      f64_ui64tf: Tests performed = 756, tests failed = 0
-      f64_i64tf: Tests performed = 756, tests failed = 0
-      f64_ftui64: Tests performed = 768, tests failed = 0
-      f64_fti64: Tests performed = 768, tests failed = 0
-      f64_muladd: Tests performed = 6,133,248, tests failed = 0
+      f64_add: Tests performed = 40,284,288, tests failed = 0
+      f64_sub: Tests performed = 40,284,288, tests failed = 0
+      f64_mul: Tests performed = 40,284,288, tests failed = 0
+      f64_div: Tests performed = 40,284,288, tests failed = 0
+      f64_sqrt: Tests performed = 26,112, tests failed = 0
+      f64_eq: Tests performed = 40,284,288, tests failed = 0
+      f64_lt: Tests performed = 40,284,288, tests failed = 0
+      f64_le: Tests performed = 40,284,288, tests failed = 0
+      f64_uitf: Tests performed = 15,500, tests failed = 0
+      f64_itf: Tests performed = 15,500, tests failed = 0
+      f64_ftui: Tests performed = 26,112, tests failed = 0
+      f64_fti: Tests performed = 26,112, tests failed = 0
+      f64_ui64tf: Tests performed = 63,756, tests failed = 0
+      f64_i64tf: Tests performed = 63,756, tests failed = 0
+      f64_ftui64: Tests performed = 26,112, tests failed = 0
+      f64_fti64: Tests performed = 26,112, tests failed = 0
+      f64_muladd: Tests performed = 73,600,360,112, tests failed = 0
 
 ######################
 #### Precision: S ####
@@ -104,83 +104,83 @@ TESTS FAILED: 0
    ######################################
    #### ROUNDING MODE: rm-rnear_even ####
    ######################################
-      f32_add: Tests performed = 46,464, tests failed = 0
-      f32_sub: Tests performed = 46,464, tests failed = 0
-      f32_mul: Tests performed = 46,464, tests failed = 0
-      f32_div: Tests performed = 46,464, tests failed = 0
-      f32_sqrt: Tests performed = 600, tests failed = 0
-      f32_eq: Tests performed = 46,464, tests failed = 0
-      f32_lt: Tests performed = 46,464, tests failed = 0
-      f32_le: Tests performed = 46,464, tests failed = 0
-      f32_uitf: Tests performed = 372, tests failed = 0
-      f32_itf: Tests performed = 372, tests failed = 0
-      f32_ftui: Tests performed = 600, tests failed = 0
-      f32_fti: Tests performed = 600, tests failed = 0
-      f32_ui64tf: Tests performed = 756, tests failed = 0
-      f32_i64tf: Tests performed = 756, tests failed = 0
-      f32_ftui64: Tests performed = 600, tests failed = 0
-      f32_fti64: Tests performed = 600, tests failed = 0
-      f32_muladd: Tests performed = 6,133,248, tests failed = 0
+      f32_add: Tests performed = 7,496,192, tests failed = 0
+      f32_sub: Tests performed = 7,496,192, tests failed = 0
+      f32_mul: Tests performed = 7,496,192, tests failed = 0
+      f32_div: Tests performed = 7,496,192, tests failed = 0
+      f32_sqrt: Tests performed = 8,800, tests failed = 0
+      f32_eq: Tests performed = 7,496,192, tests failed = 0
+      f32_lt: Tests performed = 7,496,192, tests failed = 0
+      f32_le: Tests performed = 7,496,192, tests failed = 0
+      f32_uitf: Tests performed = 15,500, tests failed = 0
+      f32_itf: Tests performed = 15,500, tests failed = 0
+      f32_ftui: Tests performed = 8,800, tests failed = 0
+      f32_fti: Tests performed = 8,800, tests failed = 0
+      f32_ui64tf: Tests performed = 63,756, tests failed = 0
+      f32_i64tf: Tests performed = 63,756, tests failed = 0
+      f32_ftui64: Tests performed = 8,800, tests failed = 0
+      f32_fti64: Tests performed = 8,800, tests failed = 0
+      f32_muladd: Tests performed = 14,512,627,712, tests failed = 0
 
    ################################
    #### ROUNDING MODE: rm-rmin ####
    ################################
-      f32_add: Tests performed = 46,464, tests failed = 0
-      f32_sub: Tests performed = 46,464, tests failed = 0
-      f32_mul: Tests performed = 46,464, tests failed = 0
-      f32_div: Tests performed = 46,464, tests failed = 0
-      f32_sqrt: Tests performed = 600, tests failed = 0
-      f32_eq: Tests performed = 46,464, tests failed = 0
-      f32_lt: Tests performed = 46,464, tests failed = 0
-      f32_le: Tests performed = 46,464, tests failed = 0
-      f32_uitf: Tests performed = 372, tests failed = 0
-      f32_itf: Tests performed = 372, tests failed = 0
-      f32_ftui: Tests performed = 600, tests failed = 0
-      f32_fti: Tests performed = 600, tests failed = 0
-      f32_ui64tf: Tests performed = 756, tests failed = 0
-      f32_i64tf: Tests performed = 756, tests failed = 0
-      f32_ftui64: Tests performed = 600, tests failed = 0
-      f32_fti64: Tests performed = 600, tests failed = 0
-      f32_muladd: Tests performed = 6,133,248, tests failed = 0
+      f32_add: Tests performed = 7,496,192, tests failed = 0
+      f32_sub: Tests performed = 7,496,192, tests failed = 0
+      f32_mul: Tests performed = 7,496,192, tests failed = 0
+      f32_div: Tests performed = 7,496,192, tests failed = 0
+      f32_sqrt: Tests performed = 8,800, tests failed = 0
+      f32_eq: Tests performed = 7,496,192, tests failed = 0
+      f32_lt: Tests performed = 7,496,192, tests failed = 0
+      f32_le: Tests performed = 7,496,192, tests failed = 0
+      f32_uitf: Tests performed = 15,500, tests failed = 0
+      f32_itf: Tests performed = 15,500, tests failed = 0
+      f32_ftui: Tests performed = 8,800, tests failed = 0
+      f32_fti: Tests performed = 8,800, tests failed = 0
+      f32_ui64tf: Tests performed = 63,756, tests failed = 0
+      f32_i64tf: Tests performed = 63,756, tests failed = 0
+      f32_ftui64: Tests performed = 8,800, tests failed = 0
+      f32_fti64: Tests performed = 8,800, tests failed = 0
+      f32_muladd: Tests performed = 14,512,627,712, tests failed = 0
 
    ################################
    #### ROUNDING MODE: rm-rmax ####
    ################################
-      f32_add: Tests performed = 46,464, tests failed = 0
-      f32_sub: Tests performed = 46,464, tests failed = 0
-      f32_mul: Tests performed = 46,464, tests failed = 0
-      f32_div: Tests performed = 46,464, tests failed = 0
-      f32_sqrt: Tests performed = 600, tests failed = 0
-      f32_eq: Tests performed = 46,464, tests failed = 0
-      f32_lt: Tests performed = 46,464, tests failed = 0
-      f32_le: Tests performed = 46,464, tests failed = 0
-      f32_uitf: Tests performed = 372, tests failed = 0
-      f32_itf: Tests performed = 372, tests failed = 0
-      f32_ftui: Tests performed = 600, tests failed = 0
-      f32_fti: Tests performed = 600, tests failed = 0
-      f32_ui64tf: Tests performed = 756, tests failed = 0
-      f32_i64tf: Tests performed = 756, tests failed = 0
-      f32_ftui64: Tests performed = 600, tests failed = 0
-      f32_fti64: Tests performed = 600, tests failed = 0
-      f32_muladd: Tests performed = 6,133,248, tests failed = 0
+      f32_add: Tests performed = 7,496,192, tests failed = 0
+      f32_sub: Tests performed = 7,496,192, tests failed = 0
+      f32_mul: Tests performed = 7,496,192, tests failed = 0
+      f32_div: Tests performed = 7,496,192, tests failed = 0
+      f32_sqrt: Tests performed = 8,800, tests failed = 0
+      f32_eq: Tests performed = 7,496,192, tests failed = 0
+      f32_lt: Tests performed = 7,496,192, tests failed = 0
+      f32_le: Tests performed = 7,496,192, tests failed = 0
+      f32_uitf: Tests performed = 15,500, tests failed = 0
+      f32_itf: Tests performed = 15,500, tests failed = 0
+      f32_ftui: Tests performed = 8,800, tests failed = 0
+      f32_fti: Tests performed = 8,800, tests failed = 0
+      f32_ui64tf: Tests performed = 63,756, tests failed = 0
+      f32_i64tf: Tests performed = 63,756, tests failed = 0
+      f32_ftui64: Tests performed = 8,800, tests failed = 0
+      f32_fti64: Tests performed = 8,800, tests failed = 0
+      f32_muladd: Tests performed = 14,512,627,712, tests failed = 0
 
    ###################################
    #### ROUNDING MODE: rm-rminMag ####
    ###################################
-      f32_add: Tests performed = 46,464, tests failed = 0
-      f32_sub: Tests performed = 46,464, tests failed = 0
-      f32_mul: Tests performed = 46,464, tests failed = 0
-      f32_div: Tests performed = 46,464, tests failed = 0
-      f32_sqrt: Tests performed = 600, tests failed = 0
-      f32_eq: Tests performed = 46,464, tests failed = 0
-      f32_lt: Tests performed = 46,464, tests failed = 0
-      f32_le: Tests performed = 46,464, tests failed = 0
-      f32_uitf: Tests performed = 372, tests failed = 0
-      f32_itf: Tests performed = 372, tests failed = 0
-      f32_ftui: Tests performed = 600, tests failed = 0
-      f32_fti: Tests performed = 600, tests failed = 0
-      f32_ui64tf: Tests performed = 756, tests failed = 0
-      f32_i64tf: Tests performed = 756, tests failed = 0
-      f32_ftui64: Tests performed = 600, tests failed = 0
-      f32_fti64: Tests performed = 600, tests failed = 0
-      f32_muladd: Tests performed = 6,133,248, tests failed = 0
+      f32_add: Tests performed = 7,496,192, tests failed = 0
+      f32_sub: Tests performed = 7,496,192, tests failed = 0
+      f32_mul: Tests performed = 7,496,192, tests failed = 0
+      f32_div: Tests performed = 7,496,192, tests failed = 0
+      f32_sqrt: Tests performed = 8,800, tests failed = 0
+      f32_eq: Tests performed = 7,496,192, tests failed = 0
+      f32_lt: Tests performed = 7,496,192, tests failed = 0
+      f32_le: Tests performed = 7,496,192, tests failed = 0
+      f32_uitf: Tests performed = 15,500, tests failed = 0
+      f32_itf: Tests performed = 15,500, tests failed = 0
+      f32_ftui: Tests performed = 8,800, tests failed = 0
+      f32_fti: Tests performed = 8,800, tests failed = 0
+      f32_ui64tf: Tests performed = 63,756, tests failed = 0
+      f32_i64tf: Tests performed = 63,756, tests failed = 0
+      f32_ftui64: Tests performed = 8,800, tests failed = 0
+      f32_fti64: Tests performed = 8,800, tests failed = 0
+      f32_muladd: Tests performed = 14,512,627,712, tests failed = 0
