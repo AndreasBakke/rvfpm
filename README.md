@@ -50,8 +50,8 @@ A summary of tests performed, and errors encountered can be seen below. Refer to
 |Extension|Tests preformed|Errors|
 |---|---|---|
 F | 58,260,633,824 | 0
+D | 295,640,668,058 | 0
 RV64F | 580,448 | 0
-D | 0 | 0
 
 ## Functional verification
 For instructions not available in Berkeley TestFloat, functional verification were done by integrating rvfpm into lowRISCs [Ibex](https://github.com/lowRISC/ibex) in a seperate [Ibex fork](https://github.com/AndreasBakke/rvfpm_ibex_testing).
